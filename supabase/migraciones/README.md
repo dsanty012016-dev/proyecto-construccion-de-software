@@ -12,6 +12,7 @@ Todo cambio en la base de datos (tablas, políticas RLS, funciones) se escribe a
 | `006-cerrar-rls-auto-enable.sql` | Quita el permiso público a una función que crea Supabase |
 | `007-ubicacion-sede.sql` | Coordenadas de la sede de la Santo Tomás (destino de los viajes) |
 | `008-tiempo-real.sql` | Viajes y ofertas en Supabase Realtime (respeta RLS) |
+| `009-cambio-de-modo.sql` | `cambiar_modo`: la misma cuenta pasa de estudiante a conductor y al revés |
 
 ## Reglas
 - Nunca editar un script ya ejecutado en Supabase: se crea uno nuevo que lo corrija.

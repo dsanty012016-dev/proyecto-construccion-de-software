@@ -295,6 +295,63 @@ select prueba.ok((select not disponible from public.perfiles where id = :'carlos
 set role authenticated;
 
 -- ---------------------------------------------------------------------------
+-- 8b. Cambio de modo (009)
+-- ---------------------------------------------------------------------------
+\echo '== Cambio de modo'
+
+select prueba.como(:'beto');
+select public.cambiar_modo('conductor');
+reset role;
+select prueba.ok((select rol = 'conductor' and not disponible from public.perfiles where id = :'beto'), 'un estudiante sin viaje activo pasa a conductor');
+set role authenticated;
+select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'X', 4.08, -73.58, 'U')$$, 'Solo los estudiantes', 'en modo conductor no pide viajes');
+select public.cambiar_modo('conductor');
+select prueba.ok((select rol = 'conductor' from public.perfiles), 'pedir el mismo modo no hace nada');
+select public.cambiar_modo('estudiante');
+select prueba.ok((select rol = 'estudiante' from public.perfiles), 'y puede volver a estudiante');
+select public.solicitar_viaje(4.15, -73.64, 'Barrio El Buque', 4.08, -73.58, 'USTA Villavicencio') as viaje_beto_3 \gset
+select prueba.falla($$select public.cambiar_modo('conductor')$$, 'Termina o cancela tu viaje', 'con un viaje pedido no cambia de modo');
+
+-- Conductora con una oferta activa pasa a estudiante.
+select prueba.como(:'diana');
+select public.cambiar_disponibilidad(true);
+select public.ofertar(:'viaje_beto_3', 7000) as oferta_diana_3 \gset
+select public.cambiar_modo('estudiante');
+reset role;
+select prueba.ok((select rol = 'estudiante' and not disponible from public.perfiles where id = :'diana'), 'al pasar a estudiante deja de estar disponible');
+select prueba.ok((select estado = 'retirada' from public.ofertas where id = :'oferta_diana_3'), 'y se retiran sus ofertas');
+select prueba.ok((select count(*) = 1 from public.vehiculos where conductor_id = :'diana'), 'y conserva su vehículo');
+set role authenticated;
+select prueba.falla(format('select public.ofertar(%L, 7000)', :'viaje_beto_3'), 'Ponte disponible', 'en modo estudiante no oferta');
+select prueba.falla($$select public.cambiar_disponibilidad(true)$$, 'Solo los conductores', 'en modo estudiante no se pone disponible');
+
+-- Con un viaje aceptado como conductora no cambia.
+select public.cambiar_modo('conductor');
+select public.cambiar_disponibilidad(true);
+select public.ofertar(:'viaje_beto_3', 7000) as oferta_diana_4 \gset
+select prueba.como(:'beto');
+select public.aceptar_oferta(:'oferta_diana_4');
+select prueba.falla($$select public.cambiar_modo('conductor')$$, 'Termina o cancela tu viaje', 'el estudiante con viaje aceptado no cambia de modo');
+select prueba.como(:'diana');
+select prueba.falla($$select public.cambiar_modo('estudiante')$$, 'Termina o cancela tu viaje', 'con un viaje aceptado como conductora no cambia de modo');
+reset role;
+select prueba.ok((select estado = 'aceptada' from public.ofertas where id = :'oferta_diana_4'), 'el intento fallido no toca la oferta aceptada');
+set role authenticated;
+select public.cancelar_viaje(:'viaje_beto_3');
+select public.cambiar_modo('estudiante');
+select prueba.ok((select rol = 'estudiante' from public.perfiles), 'terminado el viaje, ya puede cambiar');
+
+-- Sin sesión o sin rol elegido.
+select prueba.como(null);
+select prueba.falla($$select public.cambiar_modo('conductor')$$, 'Inicia sesión', 'sin sesión no cambia de modo');
+
+-- Los triggers respaldan el modo aunque alguien llegue a la tabla por otro lado.
+reset role;
+select prueba.falla(format('insert into public.viajes (estudiante_id, universidad_id, origen_lat, origen_lng, origen_texto, destino_lat, destino_lng, destino_texto) values (%L, 1, 4.1, -73.6, %L, 4.08, -73.58, %L)', :'carlos', 'a', 'b'), 'Solo los estudiantes', 'un conductor no queda como estudiante de un viaje');
+select prueba.falla(format('insert into public.ofertas (viaje_id, conductor_id, precio) select id, %L, 5000 from public.viajes limit 1', :'ana'), 'Ponte disponible', 'un estudiante no queda como conductor de una oferta');
+set role authenticated;
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'

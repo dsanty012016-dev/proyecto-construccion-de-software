@@ -12,6 +12,7 @@ type Accion = (anterior: EstadoFormulario, formulario: FormData) => Promise<Esta
 const ESTILOS = {
   primario: "h-14 w-full rounded-xl bg-primario font-titulo text-base font-semibold text-texto hover:bg-primario/85",
   pequeno: "min-h-11 rounded-xl bg-primario px-5 font-titulo text-sm font-semibold text-texto hover:bg-primario/85",
+  pequenoBorde: "min-h-11 rounded-xl border border-texto-suave/30 px-4 text-sm font-semibold text-texto hover:bg-superficie",
   borde: "min-h-12 w-full rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-superficie",
   peligro: "min-h-12 w-full rounded-xl font-semibold text-error hover:bg-error/10",
 } as const;
