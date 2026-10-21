@@ -175,7 +175,9 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, classNa
 
   return (
     <div role="region" aria-label={etiqueta} className={`relative overflow-hidden rounded-2xl bg-superficie ${className ?? "h-64"}`}>
-      <div ref={contenedor} className="absolute inset-0" />
+      {/* Alto y ancho explícitos: la hoja de MapLibre le pone position: relative
+          al contenedor y le gana a "absolute inset-0", que lo dejaba en 0 px. */}
+      <div ref={contenedor} className="h-full w-full" />
 
       {modoElegir && estado === "listo" && (
         // Pin fijo: la punta queda justo en el centro del mapa.
