@@ -13,6 +13,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 6 | Textos, ajustes visuales, accesibilidad | Haiku 5.5 | Bajo |
 | 4c | Cupos publicados por el conductor: hora de salida, puestos, precio por puesto y solicitudes en el trayecto que el conductor aprueba | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 4d | Cambio de rol: la misma cuenta usa la app como estudiante o como conductor | Opus diseña, Sonnet implementa | Alto, luego medio |
+| 4e | Verificación del conductor: cédula, licencia y tarjeta de propiedad revisadas por un administrador | Opus | Alto |
 | 4b | Billetera simulada: saldo, recargas de prueba, pago del viaje y comisión del 10 % al conductor (rama `fase-pagos`) | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
@@ -26,6 +27,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 - Fase 4, parte 1: mapa (MapLibre + OpenFreeMap) para elegir la recogida, mapas en los viajes y tiempo real con Supabase Realtime (rama `fase-4-mapa`, migración 008). Parte 2 pendiente: seguimiento en vivo del conductor y compartir el viaje.
 - Fase 4d: cambio de modo estudiante ↔ conductor con la misma cuenta (rama `fase-4d-cambio-rol`, migración 009).
 - Fase 4c: cupos publicados por el conductor y puestos que piden los estudiantes, con aprobación (rama `fase-4c-cupos`, migración 010).
+- Fase 4e: verificación del conductor con documentos en almacenamiento privado y panel de administración (rama `fase-4e-verificacion`, migración 011).
 
 ## Decisiones tomadas
 - **Una sola app Next.js** (sitio público + app PWA + Supabase), no web y API separadas. Si luego se quiere app nativa, `app/api/v1/` y las reglas en la base de datos lo permiten sin rehacer.
