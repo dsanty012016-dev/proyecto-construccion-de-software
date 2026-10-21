@@ -15,6 +15,7 @@ Todo cambio en la base de datos (tablas, políticas RLS, funciones) se escribe a
 | `009-cambio-de-modo.sql` | `cambiar_modo`: la misma cuenta pasa de estudiante a conductor y al revés |
 | `010-cupos.sql` | Cupos publicados por el conductor y puestos que piden los estudiantes (con aprobación) |
 | `011-verificacion-conductor.sql` | Documentos del conductor (bucket privado), administradores y bloqueo hasta aprobarlos |
+| `012-billetera.sql` | Billetera simulada, pagos retenidos, cobros por cancelación, strikes y suspensiones |
 
 ## Reglas
 - Nunca editar un script ya ejecutado en Supabase: se crea uno nuevo que lo corrija.
