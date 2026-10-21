@@ -1,0 +1,31 @@
+name: CI
+
+# Revisa que el proyecto compile y pase el lint en cada subida.
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Cuando exista package-lock.json, cambiar a "npm ci" para instalaciones exactas.
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (incluye revisión de tipos)
+        run: npm run build

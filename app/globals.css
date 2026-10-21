@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* Identidad visual de UniGo (ver docs/identidad.md; modo oscuro primero).
+   Los colores se definen UNA sola vez aquí; en los componentes se usan como
+   clases (bg-fondo, text-texto, bg-primario...) y nunca como hex sueltos. */
+@theme {
+  --color-fondo: #0b1220; /* azul noche: fondo de la app, mapa y conductor */
+  --color-superficie: #172033; /* tarjetas y componentes sobre el fondo */
+  --color-primario: #2563eb; /* botones, rellenos, ruta seleccionada, iconos grandes */
+  --color-secundario: #60a5fa; /* texto azul, enlaces, líneas de ruta, estados */
+  --color-texto: #f8fafc; /* títulos y texto principal */
+  --color-texto-suave: #94a3b8; /* descripciones y texto secundario */
+}
+
+/* Las fuentes las carga app/layout.tsx con next/font y dejan estas variables. */
+@theme inline {
+  --font-titulo: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-texto: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    font-family: var(--font-texto);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-titulo);
+    font-weight: 700;
+  }
+
+  /* Contraste: #2563eb como TEXTO sobre el fondo solo llega a 3,6:1.
+     Para texto o enlaces azules se usa --color-secundario (7,4:1). */
+  a {
+    color: var(--color-secundario);
+  }
+
+  /* Foco visible para quien navega con teclado. */
+  :focus-visible {
+    outline: 2px solid var(--color-secundario);
+    outline-offset: 2px;
+  }
+}
+
+/* Respeta a quien pide menos movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
