@@ -19,6 +19,8 @@ Si cambias una regla, cámbiala en los dos y en sus pruebas.
 - **Teléfono:** estudiante y conductor se ven el celular solo mientras el viaje está aceptado o en curso.
 - **Compartir viaje:** el estudiante podrá enviar un enlace para seguir su viaje; se hace en la fase 4 (necesita ubicación en tiempo real).
 
+- **Recogida:** el estudiante elige el punto en el mapa (o con la ubicación del celular). No puede ser la misma universidad (menos de 100 m se rechaza en pantalla; la base rechaza el mismo punto exacto).
+
 ## Cómo funciona un viaje
 ```
 solicitado ──(el estudiante acepta una oferta)──▶ aceptado ──(recoge)──▶ en_curso ──(llega)──▶ terminado
@@ -42,5 +44,5 @@ solicitado ──(el estudiante acepta una oferta)──▶ aceptado ──(reco
 | 5 | ¿Las solicitudes vencen si nadie oferta? | No vencen; el estudiante las cancela. |
 
 ## Pendiente para otras fases
-- Ubicación exacta de la sede (columnas `lat` y `lng` de `universidades`): se llena en la fase 4 con el mapa.
+- ~~Ubicación de la sede~~: lista (migración 007).
 - Supabase devuelve un error genérico ("Database error saving new user") cuando el trigger rechaza un correo. Por eso el formulario de registro (fase 2) también valida el dominio para mostrar un mensaje claro.

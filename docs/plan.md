@@ -20,9 +20,13 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 
 - Fase 2: registro, entrar, recuperar contraseña y elegir rol con correo y contraseña (rama `fase-2-auth`). Migraciones aplicadas en el proyecto Unigo de Supabase. Configuración del panel en `docs/supabase-auth.md`.
 
+- Fase 3: pantallas de estudiante y conductor, barra inferior, calificación e historial (rama `fase-3-pantallas`). Migración 007 con la ubicación de la sede.
+- Fase 4, parte 1: mapa (MapLibre + OpenFreeMap) para elegir la recogida, mapas en los viajes y tiempo real con Supabase Realtime (rama `fase-4-mapa`, migración 008). Parte 2 pendiente: seguimiento en vivo del conductor y compartir el viaje.
+
 ## Decisiones tomadas
 - **Una sola app Next.js** (sitio público + app PWA + Supabase), no web y API separadas. Si luego se quiere app nativa, `app/api/v1/` y las reglas en la base de datos lo permiten sin rehacer.
-- **Mapa:** MapLibre con estilo oscuro (gratis). El cálculo de rutas necesita un servicio aparte; se decide en la fase 4.
+- **Mapa:** MapLibre con el estilo oscuro de OpenFreeMap (gratis, sin clave, datos de OpenStreetMap). Por ahora la ruta se dibuja en línea recta y la distancia es en línea recta; para navegar, el conductor abre Google Maps. Un servicio de rutas real (OSRM u otro) queda para después.
+- **Tiempo real:** Supabase Realtime sobre `viajes` y `ofertas` (respeta RLS), con refresco de respaldo cada 30 s.
 - **PWA:** manifiesto ahora; service worker y modo sin conexión después. Limitación: el navegador no envía ubicación con la pantalla apagada.
 - **A-Frame:** solo en el sitio público (fase 5), no en la app.
 
