@@ -67,6 +67,18 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - En modo conductor se registra el vehículo; para ponerse disponible y ofertar sigue haciendo falta tenerlo.
 - Lo hace cumplir `cambiar_modo` (009-cambio-de-modo.sql), con triggers de respaldo al pedir viajes y al ofertar.
 
+## Verificación del conductor (fase 4e, migración 011)
+**Decidido por el equipo**
+- Para conducir hay que subir **cédula**, **licencia de conducción** y **tarjeta de propiedad** del vehículo.
+- Los revisa **a mano un administrador** (David y Dilan). Nadie revisa sus propios documentos.
+- **Hasta que los tres estén aprobados**, el conductor no puede ponerse disponible, ofertar ni publicar cupos.
+
+**Cómo quedó construido**
+- Los archivos van a un almacenamiento **privado** de Supabase: solo los ven su dueño y los administradores, con enlaces que vencen en 5 minutos.
+- Al subirlos, el conductor **autoriza el tratamiento de sus datos** (Ley 1581 de 2012); queda la fecha.
+- Si un documento se rechaza (con motivo) o se vuelve a subir, el conductor deja de estar disponible hasta que lo aprueben otra vez. Si cambia la placa, la tarjeta de propiedad vuelve a revisión.
+- Pendiente: política de privacidad escrita, borrar archivos viejos y vencimiento de la licencia.
+
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |
 |---|---|---|

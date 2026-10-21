@@ -102,6 +102,7 @@ describe("rutas", () => {
     expect(redireccionPara("/conductor/viaje", false)).toBe("/entrar?siguiente=%2Fconductor%2Fviaje");
     expect(redireccionPara("/viajes", false)).toBe("/entrar?siguiente=%2Fviajes");
     expect(redireccionPara("/perfil", false)).toBe("/entrar?siguiente=%2Fperfil");
+    expect(redireccionPara("/admin", false)).toBe("/entrar?siguiente=%2Fadmin");
     expect(redireccionPara("/estudiante", true)).toBeNull();
   });
 

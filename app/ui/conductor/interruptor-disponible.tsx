@@ -5,8 +5,17 @@ import { cambiarDisponibilidad } from "@/app/lib/acciones-viaje";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 
 // "Estás disponible": interruptor que llama a cambiar_disponibilidad. La base
-// rechaza ponerse disponible sin vehículo y retira las ofertas al desconectarse.
-export function InterruptorDisponible({ disponible, tieneVehiculo }: { disponible: boolean; tieneVehiculo: boolean }) {
+// rechaza ponerse disponible sin vehículo o sin documentos aprobados (011) y
+// retira las ofertas al desconectarse.
+export function InterruptorDisponible({
+  disponible,
+  tieneVehiculo,
+  verificado,
+}: {
+  disponible: boolean;
+  tieneVehiculo: boolean;
+  verificado: boolean;
+}) {
   const [estado, accion, pendiente] = useActionState(cambiarDisponibilidad, ESTADO_INICIAL);
   return (
     <form action={accion} className="space-y-2">
@@ -17,7 +26,13 @@ export function InterruptorDisponible({ disponible, tieneVehiculo }: { disponibl
             {disponible ? "Estás disponible" : "No estás disponible"}
           </p>
           <p className={`text-sm ${disponible ? "text-texto" : "text-texto-suave"}`}>
-            {disponible ? "Recibirás solicitudes de viaje." : tieneVehiculo ? "Actívate para ver solicitudes." : "Registra tu vehículo para activarte."}
+            {disponible
+              ? "Recibirás solicitudes de viaje."
+              : !tieneVehiculo
+                ? "Registra tu vehículo para activarte."
+                : !verificado
+                  ? "Podrás activarte cuando aprueben tus documentos."
+                  : "Actívate para ver solicitudes."}
           </p>
         </div>
         <button
@@ -25,7 +40,7 @@ export function InterruptorDisponible({ disponible, tieneVehiculo }: { disponibl
           role="switch"
           aria-checked={disponible}
           aria-labelledby="etiqueta-disponible"
-          disabled={pendiente || (!disponible && !tieneVehiculo)}
+          disabled={pendiente || (!disponible && (!tieneVehiculo || !verificado))}
           className={`relative h-9 w-16 shrink-0 rounded-full transition-colors disabled:opacity-60 ${disponible ? "bg-texto" : "bg-texto-suave/40"}`}
         >
           <span

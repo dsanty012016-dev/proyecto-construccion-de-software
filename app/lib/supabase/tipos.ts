@@ -10,6 +10,8 @@ type EstadoViaje = Database["public"]["Enums"]["estado_viaje"];
 type EstadoOferta = Database["public"]["Enums"]["estado_oferta"];
 type EstadoCupo = Database["public"]["Enums"]["estado_cupo"];
 type EstadoPuesto = Database["public"]["Enums"]["estado_puesto"];
+type TipoDocumento = Database["public"]["Enums"]["tipo_documento"];
+type EstadoDocumento = Database["public"]["Enums"]["estado_documento"];
 
 type Relacion = {
   foreignKeyName: string;
@@ -129,10 +131,35 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["ofertas"]["Insert"]>;
         Relationships: Relacion[];
       };
+      documentos_conductor: {
+        Row: {
+          autorizado_en: string;
+          conductor_id: string;
+          enviado_en: string;
+          estado: EstadoDocumento;
+          id: string;
+          motivo: string | null;
+          revisado_en: string | null;
+          revisado_por: string | null;
+          ruta: string;
+          tipo: TipoDocumento;
+        };
+        Insert: {
+          autorizado_en: string;
+          conductor_id: string;
+          ruta: string;
+          tipo: TipoDocumento;
+          estado?: EstadoDocumento;
+          id?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["documentos_conductor"]["Insert"]>;
+        Relationships: Relacion[];
+      };
       perfiles: {
         Row: {
           creado_en: string;
           disponible: boolean;
+          es_admin: boolean;
           id: string;
           nombre: string;
           rol: Rol | null;
@@ -272,8 +299,10 @@ export type Database = {
       puestos_libres: { Args: { p_cupos: string[] }; Returns: { cupo_id: string; libres: number }[] };
       responder_puesto: { Args: { p_puesto: string; p_aprobar: boolean }; Returns: undefined };
       retirar_puesto: { Args: { p_cupo: string }; Returns: undefined };
+      revisar_documento: { Args: { p_documento: string; p_aprobar: boolean; p_motivo?: string }; Returns: undefined };
       terminar_cupo: { Args: { p_cupo: string }; Returns: undefined };
       elegir_rol: { Args: { p_rol: Rol }; Returns: undefined };
+      enviar_documento: { Args: { p_tipo: TipoDocumento; p_ruta: string; p_autorizo: boolean }; Returns: undefined };
       iniciar_viaje: { Args: { p_viaje: string }; Returns: undefined };
       ofertar: { Args: { p_precio: number; p_viaje: string }; Returns: string };
       perfiles_publicos: {
@@ -303,10 +332,12 @@ export type Database = {
     };
     Enums: {
       estado_cupo: "publicado" | "en_curso" | "terminado" | "cancelado";
+      estado_documento: "pendiente" | "aprobado" | "rechazado";
       estado_oferta: "activa" | "retirada" | "aceptada" | "rechazada";
       estado_puesto: "pendiente" | "aprobado" | "rechazado" | "retirado" | "cancelado";
       estado_viaje: "solicitado" | "aceptado" | "en_curso" | "terminado" | "cancelado";
       rol_usuario: "estudiante" | "conductor";
+      tipo_documento: "cedula" | "licencia" | "tarjeta_propiedad";
     };
     CompositeTypes: { [_ in never]: never };
   };

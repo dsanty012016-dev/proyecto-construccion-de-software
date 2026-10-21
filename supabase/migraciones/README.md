@@ -14,6 +14,7 @@ Todo cambio en la base de datos (tablas, políticas RLS, funciones) se escribe a
 | `008-tiempo-real.sql` | Viajes y ofertas en Supabase Realtime (respeta RLS) |
 | `009-cambio-de-modo.sql` | `cambiar_modo`: la misma cuenta pasa de estudiante a conductor y al revés |
 | `010-cupos.sql` | Cupos publicados por el conductor y puestos que piden los estudiantes (con aprobación) |
+| `011-verificacion-conductor.sql` | Documentos del conductor (bucket privado), administradores y bloqueo hasta aprobarlos |
 
 ## Reglas
 - Nunca editar un script ya ejecutado en Supabase: se crea uno nuevo que lo corrija.
