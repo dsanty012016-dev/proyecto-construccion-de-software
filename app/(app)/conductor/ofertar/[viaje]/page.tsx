@@ -5,6 +5,7 @@ import { nombreCorto } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
+import { Mapa } from "@/app/ui/comun/mapa";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 import { FormularioOferta } from "@/app/ui/conductor/formulario-oferta";
 
@@ -19,6 +20,8 @@ export default async function PaginaOfertar({ params }: { params: Promise<{ viaj
   const solicitud = await solicitudParaOfertar(viajeId, usuario.id);
   if (!solicitud) redirect("/conductor");
   const { viaje, estudiante, miOferta } = solicitud;
+  const origen = { lat: viaje.origen_lat, lng: viaje.origen_lng };
+  const destino = { lat: viaje.destino_lat, lng: viaje.destino_lng };
 
   return (
     <main className="space-y-6 px-5 pt-6">
@@ -30,6 +33,7 @@ export default async function PaginaOfertar({ params }: { params: Promise<{ viaj
         </div>
         <RutaViaje origen={viaje.origen_texto} destino={viaje.destino_texto} />
       </section>
+      <Mapa etiqueta="Mapa de la solicitud" centro={origen} origen={origen} destino={destino} className="h-52" />
       <FormularioOferta viajeId={viaje.id} precioActual={miOferta?.precio} />
     </main>
   );

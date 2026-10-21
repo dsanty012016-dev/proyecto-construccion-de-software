@@ -4,11 +4,12 @@ import { cancelarViaje } from "@/app/lib/acciones-viaje";
 import { viajeActivoDelEstudiante } from "@/app/lib/consultas-viaje";
 import { calificacionTexto, etiquetaEstado, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
-import { ActualizarCada } from "@/app/ui/comun/actualizar-cada";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
+import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoEstrella, IconoTelefono } from "@/app/ui/comun/iconos-app";
+import { Mapa } from "@/app/ui/comun/mapa";
 import { PasosViaje } from "@/app/ui/comun/pasos-viaje";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 import { TarjetaOferta } from "@/app/ui/estudiante/tarjeta-oferta";
@@ -22,19 +23,25 @@ export default async function PaginaViajeEstudiante() {
   const activo = await viajeActivoDelEstudiante(usuario.id);
   if (!activo) redirect("/estudiante");
   const { viaje, ofertas, conductor } = activo;
+  const origen = { lat: viaje.origen_lat, lng: viaje.origen_lng };
+  const destino = { lat: viaje.destino_lat, lng: viaje.destino_lng };
+  // Ofertas nuevas y cambios de estado llegan en tiempo real (RLS decide qué ve).
+  const enVivo = <EnVivo escuchas={[{ tabla: "viajes", filtro: `id=eq.${viaje.id}` }, { tabla: "ofertas", filtro: `viaje_id=eq.${viaje.id}` }]} />;
+  const mapa = <Mapa etiqueta="Mapa del viaje" centro={origen} origen={origen} destino={destino} className="h-52" />;
 
   if (viaje.estado === "solicitado") {
     return (
       <main className="space-y-6 px-5 pt-6">
-        <ActualizarCada segundos={5} />
+        {enVivo}
         <EncabezadoPantalla titulo={ofertas.length > 0 ? "Elige una oferta" : "Buscando conductores"} volverA="/estudiante" />
+        {mapa}
         <div className="rounded-2xl bg-superficie p-4">
           <RutaViaje origen={viaje.origen_texto} destino={viaje.destino_texto} />
         </div>
 
         {ofertas.length === 0 ? (
           <p role="status" className="rounded-2xl border border-texto-suave/25 p-5 text-center text-texto-suave">
-            Todavía no hay ofertas. Esta pantalla se actualiza sola apenas un conductor te escriba su precio.
+            Todavía no hay ofertas. Apenas un conductor te escriba su precio, aparecerá aquí sin recargar.
           </p>
         ) : (
           <section aria-labelledby="titulo-ofertas" className="space-y-3">
@@ -61,9 +68,10 @@ export default async function PaginaViajeEstudiante() {
   const vehiculo = conductor?.vehiculo;
   return (
     <main className="space-y-5 px-5 pt-6">
-      <ActualizarCada segundos={5} />
+      {enVivo}
       <EncabezadoPantalla titulo={etiquetaEstado(viaje.estado)} volverA="/estudiante" />
       <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} />
+      {mapa}
 
       <div className="rounded-2xl bg-superficie p-4">
         <RutaViaje origen={viaje.origen_texto} destino={viaje.destino_texto} />

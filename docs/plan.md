@@ -11,6 +11,8 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 4 | Mapa, ubicación y tiempo real (ofertas y seguimiento) | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 5 | Landing pública con A-Frame | Sonnet 5.5 | Medio |
 | 6 | Textos, ajustes visuales, accesibilidad | Haiku 5.5 | Bajo |
+| 4c | Cupos publicados por el conductor: hora de salida, puestos, precio por puesto y solicitudes en el trayecto que el conductor aprueba | Opus diseña, Sonnet implementa | Alto, luego medio |
+| 4d | Cambio de rol: la misma cuenta usa la app como estudiante o como conductor | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 4b | Billetera simulada: saldo, recargas de prueba, pago del viaje y comisión del 10 % al conductor (rama `fase-pagos`) | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
@@ -20,9 +22,13 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 
 - Fase 2: registro, entrar, recuperar contraseña y elegir rol con correo y contraseña (rama `fase-2-auth`). Migraciones aplicadas en el proyecto Unigo de Supabase. Configuración del panel en `docs/supabase-auth.md`.
 
+- Fase 3: pantallas de estudiante y conductor, barra inferior, calificación e historial (rama `fase-3-pantallas`). Migración 007 con la ubicación de la sede.
+- Fase 4, parte 1: mapa (MapLibre + OpenFreeMap) para elegir la recogida, mapas en los viajes y tiempo real con Supabase Realtime (rama `fase-4-mapa`, migración 008). Parte 2 pendiente: seguimiento en vivo del conductor y compartir el viaje.
+
 ## Decisiones tomadas
 - **Una sola app Next.js** (sitio público + app PWA + Supabase), no web y API separadas. Si luego se quiere app nativa, `app/api/v1/` y las reglas en la base de datos lo permiten sin rehacer.
-- **Mapa:** MapLibre con estilo oscuro (gratis). El cálculo de rutas necesita un servicio aparte; se decide en la fase 4.
+- **Mapa:** MapLibre con el estilo oscuro de OpenFreeMap (gratis, sin clave, datos de OpenStreetMap). La ruta por las vías la calcula el servicio público de FOSSGIS (OSRM sobre OpenStreetMap; máximo 1 consulta por segundo, con créditos en el mapa). Si falla, se dibuja la línea recta. Para navegar paso a paso, el conductor abre Google Maps. Con usuarios reales habría que tener un servidor de rutas propio o uno de pago.
+- **Tiempo real:** Supabase Realtime sobre `viajes` y `ofertas` (respeta RLS), con refresco de respaldo cada 30 s.
 - **PWA:** manifiesto ahora; service worker y modo sin conexión después. Limitación: el navegador no envía ubicación con la pantalla apagada.
 - **A-Frame:** solo en el sitio público (fase 5), no en la app.
 

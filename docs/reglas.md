@@ -19,6 +19,8 @@ Si cambias una regla, cámbiala en los dos y en sus pruebas.
 - **Teléfono:** estudiante y conductor se ven el celular solo mientras el viaje está aceptado o en curso.
 - **Compartir viaje:** el estudiante podrá enviar un enlace para seguir su viaje; se hace en la fase 4 (necesita ubicación en tiempo real).
 
+- **Recogida:** el estudiante elige el punto en el mapa (o con la ubicación del celular). No puede ser la misma universidad (menos de 100 m se rechaza en pantalla; la base rechaza el mismo punto exacto).
+
 ## Cómo funciona un viaje
 ```
 solicitado ──(el estudiante acepta una oferta)──▶ aceptado ──(recoge)──▶ en_curso ──(llega)──▶ terminado
@@ -33,6 +35,30 @@ solicitado ──(el estudiante acepta una oferta)──▶ aceptado ──(reco
 - Si el conductor deja de estar disponible o borra su vehículo, sus ofertas activas se retiran.
 - **Calificación:** al terminar, cada uno califica al otro una vez (1 a 5 estrellas, comentario opcional de hasta 300 caracteres).
 
+## Cupos publicados por el conductor (fase 4c, por construir)
+La otra forma de viajar: el conductor publica su recorrido y los estudiantes piden subirse en un punto del camino.
+
+**Decidido por el equipo**
+- El conductor publica un **cupo**: punto de salida, **hora de salida**, **número de puestos** y **precio fijo por puesto**. El destino es la universidad.
+- Un estudiante pide subirse indicando su **punto de recogida** en el mapa. El **conductor aprueba o rechaza** cada solicitud (ve qué tan lejos queda de su ruta).
+- Cada estudiante aprobado ocupa un puesto y paga el precio del puesto; la comisión del 10 % se le descuenta al conductor por cada estudiante.
+- Esto **cambia** la regla anterior de "viajes de una persona": en un cupo pueden ir varios estudiantes.
+
+- **Hora definida con anticipación:** el cupo siempre se publica con su hora de salida (no hay cupos "para ya").
+- **Pago:** se hace a más tardar **10 minutos antes** de la hora de salida. Quien no haya pagado para entonces pierde el puesto (cómo se libera el puesto queda por definir en la fase de pagos).
+
+**Provisional (propuesto, falta confirmar)**
+- Puestos: moto 1 (la placa ABC12D lo dice); carro de 1 a 4.
+- Hora de salida: desde ahora hasta 7 días adelante. Las solicitudes se cierran a la hora de salida.
+- Nadie tiene a la vez un viaje pedido activo y un puesto aprobado en un cupo.
+- Cancelar: el estudiante puede retirar su solicitud o su puesto antes de que el cupo salga; si el conductor cancela el cupo, se cancelan todos los puestos. Sin penalización (igual que hoy).
+- No hay límite fijo de desvío: el conductor decide al aprobar, viendo la distancia a su ruta.
+
+## Cambio de rol (decidido, para una fase futura)
+- Una misma cuenta puede usar la app **como estudiante y como conductor**: quien se registró como pasajero puede pasar a conductor si un día va a llevar a alguien, y al revés.
+- Para usar el modo conductor hace falta tener un vehículo registrado.
+- Hoy el rol se elige una sola vez (`elegir_rol` en 002-perfiles.sql). Cambiarlo implica pasar de "rol fijo" a "modo actual" en la base y en las pantallas, sin mezclar un viaje como pasajero con uno como conductor al mismo tiempo.
+
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |
 |---|---|---|
@@ -42,5 +68,5 @@ solicitado ──(el estudiante acepta una oferta)──▶ aceptado ──(reco
 | 5 | ¿Las solicitudes vencen si nadie oferta? | No vencen; el estudiante las cancela. |
 
 ## Pendiente para otras fases
-- Ubicación exacta de la sede (columnas `lat` y `lng` de `universidades`): se llena en la fase 4 con el mapa.
+- ~~Ubicación de la sede~~: lista (migración 007).
 - Supabase devuelve un error genérico ("Database error saving new user") cuando el trigger rechaza un correo. Por eso el formulario de registro (fase 2) también valida el dominio para mostrar un mensaje claro.

@@ -313,4 +313,10 @@ set role authenticated;
 select prueba.falla($$select privado.universidad_por_correo('a@ustavillavo.edu.co')$$, 'permission denied', 'las funciones internas del registro no se llaman desde la app');
 reset role;
 
+select prueba.ok(
+  (select count(*) = 2 from pg_publication_tables
+   where pubname = 'supabase_realtime' and schemaname = 'public' and tablename in ('viajes', 'ofertas')),
+  'viajes y ofertas están en tiempo real'
+);
+
 \echo '== Todas las pruebas pasaron'

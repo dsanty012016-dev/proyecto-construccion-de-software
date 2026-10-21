@@ -17,6 +17,9 @@ begin
 end;
 $$;
 
+-- Publicación que usa Supabase Realtime (en el proyecto real ya existe).
+create publication supabase_realtime;
+
 create schema auth;
 grant usage on schema auth to anon, authenticated, service_role;
 
