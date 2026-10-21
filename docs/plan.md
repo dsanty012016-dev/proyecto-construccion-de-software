@@ -25,7 +25,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 
 ## Decisiones tomadas
 - **Una sola app Next.js** (sitio público + app PWA + Supabase), no web y API separadas. Si luego se quiere app nativa, `app/api/v1/` y las reglas en la base de datos lo permiten sin rehacer.
-- **Mapa:** MapLibre con el estilo oscuro de OpenFreeMap (gratis, sin clave, datos de OpenStreetMap). Por ahora la ruta se dibuja en línea recta y la distancia es en línea recta; para navegar, el conductor abre Google Maps. Un servicio de rutas real (OSRM u otro) queda para después.
+- **Mapa:** MapLibre con el estilo oscuro de OpenFreeMap (gratis, sin clave, datos de OpenStreetMap). La ruta por las vías la calcula el servicio público de FOSSGIS (OSRM sobre OpenStreetMap; máximo 1 consulta por segundo, con créditos en el mapa). Si falla, se dibuja la línea recta. Para navegar paso a paso, el conductor abre Google Maps. Con usuarios reales habría que tener un servidor de rutas propio o uno de pago.
 - **Tiempo real:** Supabase Realtime sobre `viajes` y `ofertas` (respeta RLS), con refresco de respaldo cada 30 s.
 - **PWA:** manifiesto ahora; service worker y modo sin conexión después. Limitación: el navegador no envía ubicación con la pantalla apagada.
 - **A-Frame:** solo en el sitio público (fase 5), no en la app.

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { solicitudParaOfertar, viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
 import { nombreCorto } from "@/app/lib/formato";
-import { distanciaKm, distanciaTexto } from "@/app/lib/mapa";
 import { exigirRol } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
@@ -33,7 +32,6 @@ export default async function PaginaOfertar({ params }: { params: Promise<{ viaj
           <p className="font-bold">{estudiante ? nombreCorto(estudiante.nombre) : "Estudiante"}</p>
         </div>
         <RutaViaje origen={viaje.origen_texto} destino={viaje.destino_texto} />
-        <p className="text-sm text-texto-suave">Recorrido de unos {distanciaTexto(distanciaKm(origen, destino))} en línea recta.</p>
       </section>
       <Mapa etiqueta="Mapa de la solicitud" centro={origen} origen={origen} destino={destino} className="h-52" />
       <FormularioOferta viajeId={viaje.id} precioActual={miOferta?.precio} />

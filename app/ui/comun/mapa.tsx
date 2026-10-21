@@ -3,10 +3,12 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { GeoJSONSource, Map as MapaLibre, Marker } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
-import { type Coordenada, coordenadaValida, ESTILO_MAPA, limites } from "@/app/lib/mapa";
+import { type Coordenada, coordenadaValida, distanciaTexto, ESTILO_MAPA, limites } from "@/app/lib/mapa";
+import { buscarRuta, CREDITO_RUTAS } from "@/app/lib/ruta-vial";
 
 // Mapa de la app (MapLibre con el estilo oscuro de OpenFreeMap). Dos usos:
-// - Mostrar: recogida y destino con una línea entre ellos, encuadrados.
+// - Mostrar: recogida y destino con la ruta por las vías (FOSSGIS OSRM, ver
+//   ruta-vial.ts); mientras llega, o si el servicio falla, una línea recta punteada.
 // - Elegir (si se pasa alElegir): un pin fijo en el centro; la persona mueve el
 //   mapa (dedo, mouse o flechas del teclado) o toca un sitio, y el centro es el
 //   punto elegido. Así no depende del GPS.
@@ -44,6 +46,32 @@ function colorDeToken(nombre: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim() || "currentColor";
 }
 
+/** Crea o actualiza una línea del mapa (vacía = sin coordenadas). */
+function ponerLinea(mapa: MapaLibre, id: string, coordenadas: [number, number][], punteada: boolean) {
+  const datos: GeoJSON.Feature<GeoJSON.LineString> = {
+    type: "Feature",
+    properties: {},
+    geometry: { type: "LineString", coordinates: coordenadas },
+  };
+  const fuente = mapa.getSource(id) as GeoJSONSource | undefined;
+  if (fuente) {
+    fuente.setData(datos);
+    return;
+  }
+  mapa.addSource(id, { type: "geojson", data: datos });
+  mapa.addLayer({
+    id,
+    type: "line",
+    source: id,
+    layout: { "line-join": "round", "line-cap": punteada ? "butt" : "round" },
+    paint: {
+      "line-color": colorDeToken("--color-secundario"),
+      "line-width": punteada ? 3 : 5,
+      ...(punteada ? { "line-dasharray": [2, 1.5] } : {}),
+    },
+  });
+}
+
 export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, className }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<MapaLibre | null>(null);
@@ -53,6 +81,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, classNa
   const alElegirRef = useRef(alElegir);
   const animar = useRef(true);
   const [estado, setEstado] = useState<Estado>("cargando");
+  const [infoRuta, setInfoRuta] = useState<{ clave: string; km: number; minutos: number } | null>(null);
   const modoElegir = !!alElegir;
 
   // La función puede cambiar en cada render; el mapa siempre llama a la última.
@@ -77,7 +106,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, classNa
             style: ESTILO_MAPA,
             center: [inicio.lng, inicio.lat],
             zoom: 13,
-            attributionControl: { compact: true },
+            attributionControl: { compact: true, customAttribution: CREDITO_RUTAS },
           });
         } catch {
           // Sin WebGL (navegador viejo o desactivado).
@@ -142,26 +171,28 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, classNa
       }
     }
 
-    if (coordenadaValida(o) && coordenadaValida(d)) {
-      const linea: GeoJSON.Feature<GeoJSON.LineString> = {
-        type: "Feature",
-        properties: {},
-        geometry: { type: "LineString", coordinates: [[o.lng, o.lat], [d.lng, d.lat]] },
-      };
-      const fuente = mapa.getSource("ruta") as GeoJSONSource | undefined;
-      if (fuente) fuente.setData(linea);
-      else {
-        mapa.addSource("ruta", { type: "geojson", data: linea });
-        mapa.addLayer({
-          id: "ruta",
-          type: "line",
-          source: "ruta",
-          paint: { "line-color": colorDeToken("--color-secundario"), "line-width": 4, "line-dasharray": [2, 1.5] },
-        });
-      }
-      const caja = limites([o, d]);
-      if (caja) mapa.fitBounds(caja, { padding: 56, maxZoom: 15, animate: animar.current });
-    }
+    if (!coordenadaValida(o) || !coordenadaValida(d)) return;
+
+    // Primero la línea recta punteada; si llega la ruta por las vías, se cambia.
+    ponerLinea(mapa, "ruta-vial", [], false);
+    ponerLinea(mapa, "ruta-recta", [[o.lng, o.lat], [d.lng, d.lat]], true);
+    const caja = limites([o, d]);
+    if (caja) mapa.fitBounds(caja, { padding: 56, maxZoom: 15, animate: animar.current });
+
+    let vigente = true;
+    const clave = `${o.lat},${o.lng},${d.lat},${d.lng}`;
+    buscarRuta(o, d).then((ruta) => {
+      if (!vigente || !ruta || mapaRef.current !== mapa) return;
+      ponerLinea(mapa, "ruta-vial", ruta.coordenadas, false);
+      ponerLinea(mapa, "ruta-recta", [], true);
+      const puntos = ruta.coordenadas.map(([lng, lat]) => ({ lat, lng }));
+      const cajaRuta = limites(puntos);
+      if (cajaRuta) mapa.fitBounds(cajaRuta, { padding: 56, maxZoom: 15, animate: animar.current });
+      setInfoRuta({ clave, km: ruta.km, minutos: ruta.minutos });
+    });
+    return () => {
+      vigente = false;
+    };
   }, [estado, oLat, oLng, dLat, dLng]);
 
   // Mover la cámara cuando lo piden ("mi ubicación").
@@ -194,6 +225,12 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, classNa
           />
           <circle cx="12" cy="10.5" r="3" className="fill-texto" />
         </svg>
+      )}
+
+      {infoRuta && infoRuta.clave === `${oLat},${oLng},${dLat},${dLng}` && (
+        <p className="absolute bottom-2 left-2 rounded-lg bg-fondo/90 px-2.5 py-1 text-xs font-semibold text-texto">
+          {distanciaTexto(infoRuta.km)} · {infoRuta.minutos} min por vía
+        </p>
       )}
 
       {estado !== "listo" && (
