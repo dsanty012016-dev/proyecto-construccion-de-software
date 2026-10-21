@@ -4,6 +4,7 @@ import { historialDeViajes, viajeActivoDelEstudiante } from "@/app/lib/consultas
 import { etiquetaEstado, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
+import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
 import { IconoViajes } from "@/app/ui/comun/iconos-app";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 
@@ -19,9 +20,12 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
 
   return (
     <main className="space-y-6 px-5 pt-6">
-      <header>
-        <p className="text-sm text-texto-suave">Estudiante</p>
-        <h1 className="text-3xl tracking-tight">Hola, {perfil.nombre.split(" ")[0]}</h1>
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm text-texto-suave">Estudiante</p>
+          <h1 className="text-3xl tracking-tight">Hola, {perfil.nombre.split(" ")[0]}</h1>
+        </div>
+        <BotonCambiarModo modoActual="estudiante" />
       </header>
 
       {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}

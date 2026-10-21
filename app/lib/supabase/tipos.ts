@@ -186,6 +186,7 @@ export type Database = {
         Returns: undefined;
       };
       cambiar_disponibilidad: { Args: { p_disponible: boolean }; Returns: undefined };
+      cambiar_modo: { Args: { p_modo: Rol }; Returns: undefined };
       cancelar_viaje: { Args: { p_viaje: string }; Returns: undefined };
       elegir_rol: { Args: { p_rol: Rol }; Returns: undefined };
       iniciar_viaje: { Args: { p_viaje: string }; Returns: undefined };

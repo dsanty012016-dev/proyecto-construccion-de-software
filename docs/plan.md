@@ -24,6 +24,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 
 - Fase 3: pantallas de estudiante y conductor, barra inferior, calificación e historial (rama `fase-3-pantallas`). Migración 007 con la ubicación de la sede.
 - Fase 4, parte 1: mapa (MapLibre + OpenFreeMap) para elegir la recogida, mapas en los viajes y tiempo real con Supabase Realtime (rama `fase-4-mapa`, migración 008). Parte 2 pendiente: seguimiento en vivo del conductor y compartir el viaje.
+- Fase 4d: cambio de modo estudiante ↔ conductor con la misma cuenta (rama `fase-4d-cambio-rol`, migración 009).
 
 ## Decisiones tomadas
 - **Una sola app Next.js** (sitio público + app PWA + Supabase), no web y API separadas. Si luego se quiere app nativa, `app/api/v1/` y las reglas en la base de datos lo permiten sin rehacer.

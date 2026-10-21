@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { salir } from "@/app/lib/acciones-auth";
 import { perfilActual } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
+import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
 
 export const metadata: Metadata = { title: "Perfil" };
 
@@ -31,6 +32,20 @@ export default async function PaginaPerfil() {
           )}
         </dl>
       </section>
+
+      {perfil?.rol && (
+        <section aria-labelledby="titulo-modo" className="space-y-3 rounded-2xl bg-superficie p-5">
+          <h2 id="titulo-modo" className="text-lg">
+            Modo de uso
+          </h2>
+          <p className="text-sm text-texto-suave">
+            {perfil.rol === "estudiante"
+              ? "Hoy usas UniGo para pedir viajes. Si un día vas a llevar a alguien, cambia a conductor (para recibir solicitudes necesitas registrar tu vehículo)."
+              : "Hoy usas UniGo para llevar estudiantes. Si un día necesitas que te lleven, cambia a estudiante."}
+          </p>
+          <BotonCambiarModo modoActual={perfil.rol} ancho />
+        </section>
+      )}
 
       <form action={salir}>
         <button

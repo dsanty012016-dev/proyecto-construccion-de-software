@@ -54,10 +54,12 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - Cancelar: el estudiante puede retirar su solicitud o su puesto antes de que el cupo salga; si el conductor cancela el cupo, se cancelan todos los puestos. Sin penalización (igual que hoy).
 - No hay límite fijo de desvío: el conductor decide al aprobar, viendo la distancia a su ruta.
 
-## Cambio de rol (decidido, para una fase futura)
-- Una misma cuenta puede usar la app **como estudiante y como conductor**: quien se registró como pasajero puede pasar a conductor si un día va a llevar a alguien, y al revés.
-- Para usar el modo conductor hace falta tener un vehículo registrado.
-- Hoy el rol se elige una sola vez (`elegir_rol` en 002-perfiles.sql). Cambiarlo implica pasar de "rol fijo" a "modo actual" en la base y en las pantallas, sin mezclar un viaje como pasajero con uno como conductor al mismo tiempo.
+## Cambio de modo (fase 4d)
+- Una misma cuenta usa la app **como estudiante o como conductor** y puede cambiar cuando quiera (botón en Inicio y en Perfil). `perfiles.rol` es el **modo actual**; `elegir_rol` solo sirve la primera vez.
+- **No se cambia de modo con un viaje en marcha:** como estudiante (pedido, aceptado o en curso) ni como conductor (aceptado o en curso).
+- Al cambiar, deja de estar disponible y se retiran sus ofertas activas. El vehículo se conserva.
+- En modo conductor se registra el vehículo; para ponerse disponible y ofertar sigue haciendo falta tenerlo.
+- Lo hace cumplir `cambiar_modo` (009-cambio-de-modo.sql), con triggers de respaldo al pedir viajes y al ofertar.
 
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |

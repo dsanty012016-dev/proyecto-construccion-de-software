@@ -5,6 +5,7 @@ import { resumenDelConductor, solicitudesAbiertas, vehiculoDe, viajeActivoDelCon
 import { calificacionTexto, etiquetaEstado, hace, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
+import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { InterruptorDisponible } from "@/app/ui/conductor/interruptor-disponible";
@@ -31,9 +32,12 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       {(perfil.disponible || activo) && (
         <EnVivo escuchas={[{ tabla: "viajes" }, { tabla: "ofertas", filtro: `conductor_id=eq.${usuario.id}` }]} />
       )}
-      <header>
-        <p className="text-sm text-texto-suave">Conductor</p>
-        <h1 className="text-3xl tracking-tight">Hola, {perfil.nombre.split(" ")[0]}</h1>
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm text-texto-suave">Conductor</p>
+          <h1 className="text-3xl tracking-tight">Hola, {perfil.nombre.split(" ")[0]}</h1>
+        </div>
+        <BotonCambiarModo modoActual="conductor" />
       </header>
 
       {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
