@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { retirarPuesto } from "@/app/lib/acciones-cupo";
+import { pagarPuesto, retirarPuesto } from "@/app/lib/acciones-cupo";
 import { cupoParaEstudiante } from "@/app/lib/consultas-cupo";
 import { etiquetaPuesto } from "@/app/lib/cupo";
 import { calificacionTexto, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
+import { limiteDePago, puedePagarPuesto, salidaDeCupo } from "@/app/lib/pagos";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { Avatar } from "@/app/ui/comun/avatar";
@@ -22,7 +23,8 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const datos = await cupoParaEstudiante(id, usuario.id);
   if (!datos) redirect("/estudiante/cupos");
-  const { cupo, conductor, vehiculo, libres, miPuesto, telefonoConductor } = datos;
+  const { cupo, conductor, vehiculo, libres, miPuesto, telefonoConductor, ahora } = datos;
+  const saleMs = Date.parse(cupo.sale_en);
   const salida = { lat: cupo.salida_lat, lng: cupo.salida_lng };
   const destino = { lat: cupo.destino_lat, lng: cupo.destino_lng };
   const activo = cupo.estado === "publicado" || cupo.estado === "en_curso";
@@ -77,8 +79,20 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
             paradas={[{ lat: miPuesto.recogida_lat, lng: miPuesto.recogida_lng }]}
             className="h-52"
           />
-          {aprobado && (
-            <p className="text-sm text-texto-suave">Paga tu puesto a más tardar 10 minutos antes de la salida (la billetera llega pronto).</p>
+          {aprobado && miPuesto.pagado > 0 && <Aviso tipo="listo">Puesto pagado: {pesos(miPuesto.pagado)}.</Aviso>}
+          {aprobado && miPuesto.pagado === 0 && cupo.estado === "publicado" && (
+            puedePagarPuesto(saleMs, ahora) ? (
+              <div className="space-y-2">
+                <BotonAccion accion={pagarPuesto} campos={{ cupo: cupo.id }} enviando="Pagando…">
+                  Pagar mi puesto · {pesos(cupo.precio)}
+                </BotonAccion>
+                <p className="text-center text-sm text-texto-suave">
+                  Paga a más tardar el {fechaCorta(new Date(limiteDePago(saleMs)).toISOString())} o pierdes el puesto.
+                </p>
+              </div>
+            ) : (
+              <Aviso tipo="error">Ya pasó el límite para pagar (10 minutos antes de la salida).</Aviso>
+            )
           )}
           {telefonoConductor && (
             <a
@@ -90,7 +104,17 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
             </a>
           )}
           {cupo.estado === "publicado" && (
-            <BotonAccion accion={retirarPuesto} campos={{ cupo: cupo.id }} estilo="peligro" confirmar="¿Retirar tu solicitud de este cupo?">
+            <BotonAccion
+              accion={retirarPuesto}
+              campos={{ cupo: cupo.id }}
+              estilo="peligro"
+              confirmar={(() => {
+                if (!aprobado) return "¿Retirar tu solicitud de este cupo?";
+                const salida = salidaDeCupo(miPuesto.pagado, saleMs, ahora);
+                if (!salida.tarde) return miPuesto.pagado > 0 ? `¿Dejar tu puesto? Recuperas ${pesos(salida.devolucion)}.` : "¿Dejar tu puesto?";
+                return `Faltan menos de 40 minutos: ${miPuesto.pagado > 0 ? `se te cobra ${pesos(salida.cobro)} (30 %), recuperas ${pesos(salida.devolucion)} y ` : ""}sumas 1 strike. ¿Dejar tu puesto?`;
+              })()}
+            >
               {aprobado ? "Dejar mi puesto" : "Retirar solicitud"}
             </BotonAccion>
           )}
@@ -100,6 +124,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
       ) : (
         <>
           {miPuesto?.estado === "rechazado" && <Aviso tipo="info">El conductor no aprobó tu solicitud en este cupo. Puedes buscar otro.</Aviso>}
+          {miPuesto?.estado === "sin_pago" && <Aviso tipo="info">Perdiste el puesto porque no se pagó a tiempo.</Aviso>}
           {cupo.estado === "cancelado" && <Aviso tipo="info">El conductor canceló este cupo.</Aviso>}
           {cupo.estado === "terminado" && <Aviso tipo="info">Este cupo ya llegó a la universidad.</Aviso>}
           <Mapa etiqueta="Mapa del cupo" centro={salida} origen={salida} destino={destino} className="h-52" />

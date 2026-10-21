@@ -198,12 +198,15 @@ export async function guardarVehiculo(_anterior: EstadoFormulario, formulario: F
 
 /** Cancelar vale para ambos roles; después cada uno vuelve a su inicio. */
 export async function cancelarViaje(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
-  const validado = esquemaIdViaje.safeParse(datosDelFormulario(formulario));
+  const datos = datosDelFormulario(formulario);
+  const validado = esquemaIdViaje.safeParse(datos);
   if (!validado.success) return falla("Ese viaje no existe.");
+  // Si el estudiante cancela reportando al conductor, no paga ni recibe strike (012).
+  const justificacion = (datos.justificacion ?? "").trim().slice(0, 300) || undefined;
 
   const { supabase, usuario } = await conSesion();
   if (!usuario) return falla("Inicia sesión primero.");
-  const { error } = await supabase.rpc("cancelar_viaje", { p_viaje: validado.data.viaje });
+  const { error } = await supabase.rpc("cancelar_viaje", { p_viaje: validado.data.viaje, p_justificacion: justificacion });
   if (error) return falla(mensajeDeError(error));
 
   const { data: perfil } = await supabase.from("perfiles").select("rol").eq("id", usuario.id).single();

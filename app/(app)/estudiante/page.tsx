@@ -7,6 +7,7 @@ import { etiquetaEstado, fechaCorta, nombreCorto, pesos } from "@/app/lib/format
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
+import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
 import { IconoViajes } from "@/app/ui/comun/iconos-app";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 
@@ -35,6 +36,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
       </header>
 
       {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
+      <EstadoCuenta personaId={usuario.id} />
 
       {activo ? (
         <section aria-labelledby="titulo-activo" className="space-y-4 rounded-2xl bg-superficie p-5">

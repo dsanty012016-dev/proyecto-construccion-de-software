@@ -74,13 +74,14 @@ export function distanciaATramoKm(p: Coordenada, a: Coordenada, b: Coordenada): 
 }
 
 /** Cómo se llama cada estado de un puesto en las pantallas. */
-export function etiquetaPuesto(estado: "pendiente" | "aprobado" | "rechazado" | "retirado" | "cancelado"): string {
+export function etiquetaPuesto(estado: "pendiente" | "aprobado" | "rechazado" | "retirado" | "cancelado" | "sin_pago"): string {
   const etiquetas = {
     pendiente: "Esperando al conductor",
     aprobado: "Puesto aprobado",
     rechazado: "No aprobada",
     retirado: "La retiraste",
     cancelado: "Cupo cancelado",
+    sin_pago: "No se pagó a tiempo",
   };
   return etiquetas[estado];
 }

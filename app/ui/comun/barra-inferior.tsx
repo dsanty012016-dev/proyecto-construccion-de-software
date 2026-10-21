@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconoInicio, IconoPerfil, IconoVehiculo, IconoViajes } from "./iconos-app";
+import { IconoBilletera, IconoInicio, IconoPerfil, IconoVehiculo, IconoViajes } from "./iconos-app";
 
 // Barra de navegación inferior de la zona privada. Cambia según el rol y marca
 // la pestaña actual. Es "use client" solo para saber en qué ruta está.
@@ -20,10 +20,11 @@ const dentroDe = (ruta: string, base: string) => ruta === base || ruta.startsWit
 function pestanasDe(rol: "estudiante" | "conductor"): Pestana[] {
   const viajes: Pestana = { href: "/viajes", texto: "Viajes", icono: <IconoViajes />, activa: (r) => dentroDe(r, "/viajes") };
   const perfil: Pestana = { href: "/perfil", texto: "Perfil", icono: <IconoPerfil />, activa: (r) => dentroDe(r, "/perfil") };
+  const billetera: Pestana = { href: "/billetera", texto: "Billetera", icono: <IconoBilletera />, activa: (r) => dentroDe(r, "/billetera") };
 
   if (rol === "estudiante") {
     const inicio: Pestana = { href: "/estudiante", texto: "Inicio", icono: <IconoInicio />, activa: (r) => dentroDe(r, "/estudiante") };
-    return [inicio, viajes, perfil];
+    return [inicio, viajes, billetera, perfil];
   }
   // Para el conductor, ofertar, el viaje en curso y el cupo cuentan como "Inicio";
   // el vehículo tiene su propia pestaña.
@@ -34,7 +35,7 @@ function pestanasDe(rol: "estudiante" | "conductor"): Pestana[] {
     activa: (r) => r === "/conductor" || dentroDe(r, "/conductor/ofertar") || dentroDe(r, "/conductor/viaje") || dentroDe(r, "/conductor/cupo"),
   };
   const vehiculo: Pestana = { href: "/conductor/vehiculo", texto: "Vehículo", icono: <IconoVehiculo />, activa: (r) => dentroDe(r, "/conductor/vehiculo") || dentroDe(r, "/conductor/documentos") };
-  return [inicio, viajes, vehiculo, perfil];
+  return [inicio, viajes, vehiculo, billetera, perfil];
 }
 
 export function BarraInferior({ rol }: { rol: "estudiante" | "conductor" }) {
@@ -52,7 +53,7 @@ export function BarraInferior({ rol }: { rol: "estudiante" | "conductor" }) {
               <Link
                 href={pestana.href}
                 aria-current={activa ? "page" : undefined}
-                className={`flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-lg px-3 text-xs font-semibold ${activa ? "text-secundario" : "text-texto-suave"}`}
+                className={`flex min-h-12 min-w-14 flex-col items-center justify-center gap-0.5 rounded-lg px-1.5 text-xs font-semibold ${activa ? "text-secundario" : "text-texto-suave"}`}
               >
                 {pestana.icono}
                 {pestana.texto}

@@ -1,5 +1,6 @@
 import { aceptarOferta } from "@/app/lib/acciones-viaje";
 import type { ConductorConOferta } from "@/app/lib/consultas-viaje";
+import Link from "next/link";
 import { calificacionTexto, nombreCorto, pesos } from "@/app/lib/formato";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
@@ -7,7 +8,7 @@ import { IconoEstrella } from "@/app/ui/comun/iconos-app";
 
 // Una oferta de un conductor: quién es, su precio y su vehículo. Aceptarla
 // cierra la búsqueda (la regla la hace cumplir aceptar_oferta en la base).
-export function TarjetaOferta({ oferta }: { oferta: ConductorConOferta }) {
+export function TarjetaOferta({ oferta, saldo }: { oferta: ConductorConOferta; saldo: number }) {
   const { conductor, vehiculo } = oferta;
   const nombre = nombreCorto(conductor.nombre);
   return (
@@ -35,6 +36,11 @@ export function TarjetaOferta({ oferta }: { oferta: ConductorConOferta }) {
           </span>
         </BotonAccion>
       </div>
+      {saldo < oferta.precio && (
+        <p className="text-sm text-texto-suave">
+          Te faltan {pesos(oferta.precio - saldo)} para aceptarla. <Link href="/billetera">Recargar</Link>
+        </p>
+      )}
     </li>
   );
 }

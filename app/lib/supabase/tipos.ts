@@ -12,6 +12,7 @@ type EstadoCupo = Database["public"]["Enums"]["estado_cupo"];
 type EstadoPuesto = Database["public"]["Enums"]["estado_puesto"];
 type TipoDocumento = Database["public"]["Enums"]["tipo_documento"];
 type EstadoDocumento = Database["public"]["Enums"]["estado_documento"];
+type TipoMovimiento = Database["public"]["Enums"]["tipo_movimiento"];
 
 type Relacion = {
   foreignKeyName: string;
@@ -47,6 +48,46 @@ export type Database = {
           viaje_id: string;
         };
         Update: Partial<Database["public"]["Tables"]["calificaciones"]["Insert"]>;
+        Relationships: Relacion[];
+      };
+      billeteras: {
+        Row: { actualizado_en: string; persona_id: string; saldo: number };
+        Insert: { persona_id: string; saldo?: number };
+        Update: Partial<Database["public"]["Tables"]["billeteras"]["Insert"]>;
+        Relationships: Relacion[];
+      };
+      movimientos: {
+        Row: {
+          creado_en: string;
+          descripcion: string;
+          id: string;
+          monto: number;
+          persona_id: string;
+          puesto_id: string | null;
+          saldo_despues: number;
+          tipo: TipoMovimiento;
+          viaje_id: string | null;
+        };
+        Insert: { persona_id: string; tipo: TipoMovimiento; monto: number; saldo_despues: number; descripcion: string };
+        Update: Partial<Database["public"]["Tables"]["movimientos"]["Insert"]>;
+        Relationships: Relacion[];
+      };
+      strikes: {
+        Row: { creado_en: string; cupo_id: string | null; id: string; motivo: string; persona_id: string; viaje_id: string | null; vigente: boolean };
+        Insert: { persona_id: string; motivo: string };
+        Update: Partial<Database["public"]["Tables"]["strikes"]["Insert"]>;
+        Relationships: Relacion[];
+      };
+      suspensiones: {
+        Row: { desde: string; hasta: string; id: string; nivel: number; persona_id: string };
+        Insert: { persona_id: string; nivel: number; hasta: string };
+        Update: Partial<Database["public"]["Tables"]["suspensiones"]["Insert"]>;
+        Relationships: Relacion[];
+      };
+      reportes: {
+        Row: { autor_id: string; creado_en: string; id: string; motivo: string; revisado_en: string | null; sobre_id: string; viaje_id: string | null };
+        Insert: { autor_id: string; sobre_id: string; motivo: string };
+        Update: Partial<Database["public"]["Tables"]["reportes"]["Insert"]>;
         Relationships: Relacion[];
       };
       cupos: {
@@ -95,6 +136,8 @@ export type Database = {
           estado: EstadoPuesto;
           estudiante_id: string;
           id: string;
+          pagado: number;
+          pagado_en: string | null;
           recogida_lat: number;
           recogida_lng: number;
           recogida_texto: string;
@@ -241,6 +284,7 @@ export type Database = {
           origen_lat: number;
           origen_lng: number;
           origen_texto: string;
+          pago_retenido: number;
           precio: number | null;
           terminado_en: string | null;
           universidad_id: number;
@@ -279,8 +323,10 @@ export type Database = {
       cambiar_disponibilidad: { Args: { p_disponible: boolean }; Returns: undefined };
       cambiar_modo: { Args: { p_modo: Rol }; Returns: undefined };
       cancelar_cupo: { Args: { p_cupo: string }; Returns: undefined };
-      cancelar_viaje: { Args: { p_viaje: string }; Returns: undefined };
+      cancelar_viaje: { Args: { p_viaje: string; p_justificacion?: string }; Returns: undefined };
       iniciar_cupo: { Args: { p_cupo: string }; Returns: undefined };
+      pagar_puesto: { Args: { p_cupo: string }; Returns: undefined };
+      recargar: { Args: { p_monto: number }; Returns: number };
       pedir_puesto: {
         Args: { p_cupo: string; p_recogida_lat: number; p_recogida_lng: number; p_recogida_texto: string };
         Returns: string;
@@ -334,7 +380,8 @@ export type Database = {
       estado_cupo: "publicado" | "en_curso" | "terminado" | "cancelado";
       estado_documento: "pendiente" | "aprobado" | "rechazado";
       estado_oferta: "activa" | "retirada" | "aceptada" | "rechazada";
-      estado_puesto: "pendiente" | "aprobado" | "rechazado" | "retirado" | "cancelado";
+      estado_puesto: "pendiente" | "aprobado" | "rechazado" | "retirado" | "cancelado" | "sin_pago";
+      tipo_movimiento: "recarga" | "pago_viaje" | "reembolso_viaje" | "ganancia" | "pago_puesto" | "reembolso_puesto";
       estado_viaje: "solicitado" | "aceptado" | "en_curso" | "terminado" | "cancelado";
       rol_usuario: "estudiante" | "conductor";
       tipo_documento: "cedula" | "licencia" | "tarjeta_propiedad";
