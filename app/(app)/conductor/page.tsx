@@ -5,7 +5,7 @@ import { resumenDelConductor, solicitudesAbiertas, vehiculoDe, viajeActivoDelCon
 import { calificacionTexto, etiquetaEstado, hace, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
-import { ActualizarCada } from "@/app/ui/comun/actualizar-cada";
+import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { InterruptorDisponible } from "@/app/ui/conductor/interruptor-disponible";
 
@@ -27,7 +27,10 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
 
   return (
     <main className="space-y-6 px-5 pt-6">
-      {perfil.disponible && !activo && <ActualizarCada segundos={6} />}
+      {/* Solicitudes nuevas, ofertas aceptadas o rechazadas llegan en tiempo real. */}
+      {(perfil.disponible || activo) && (
+        <EnVivo escuchas={[{ tabla: "viajes" }, { tabla: "ofertas", filtro: `conductor_id=eq.${usuario.id}` }]} />
+      )}
       <header>
         <p className="text-sm text-texto-suave">Conductor</p>
         <h1 className="text-3xl tracking-tight">Hola, {perfil.nombre.split(" ")[0]}</h1>
@@ -86,7 +89,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
           <p className="text-sm text-texto-suave">Ponte disponible para ver las solicitudes de los estudiantes.</p>
         ) : solicitudes.length === 0 ? (
           <p role="status" className="rounded-2xl border border-texto-suave/25 p-5 text-center text-texto-suave">
-            No hay solicitudes por ahora. Esta pantalla se actualiza sola.
+            No hay solicitudes por ahora. Las nuevas aparecen aquí sin recargar.
           </p>
         ) : (
           <ul className="space-y-3">
