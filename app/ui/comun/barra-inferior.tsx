@@ -33,7 +33,7 @@ function pestanasDe(rol: "estudiante" | "conductor"): Pestana[] {
     icono: <IconoInicio />,
     activa: (r) => r === "/conductor" || dentroDe(r, "/conductor/ofertar") || dentroDe(r, "/conductor/viaje") || dentroDe(r, "/conductor/cupo"),
   };
-  const vehiculo: Pestana = { href: "/conductor/vehiculo", texto: "Vehículo", icono: <IconoVehiculo />, activa: (r) => dentroDe(r, "/conductor/vehiculo") };
+  const vehiculo: Pestana = { href: "/conductor/vehiculo", texto: "Vehículo", icono: <IconoVehiculo />, activa: (r) => dentroDe(r, "/conductor/vehiculo") || dentroDe(r, "/conductor/documentos") };
   return [inicio, viajes, vehiculo, perfil];
 }
 

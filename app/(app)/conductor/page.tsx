@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { retirarOferta } from "@/app/lib/acciones-viaje";
 import { cupoActivoDelConductor } from "@/app/lib/consultas-cupo";
+import { misDocumentos } from "@/app/lib/consultas-verificacion";
+import { TIPOS_DOCUMENTO } from "@/app/lib/documentos";
 import { resumenDelConductor, solicitudesAbiertas, vehiculoDe, viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
 import { calificacionTexto, etiquetaEstado, fechaCorta, hace, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
@@ -17,12 +19,16 @@ export const metadata: Metadata = { title: "Inicio" };
 export default async function PaginaConductor({ searchParams }: { searchParams: Promise<{ clave?: string }> }) {
   const { usuario, perfil } = await exigirRol("conductor");
   const { clave } = await searchParams;
-  const [vehiculo, activo, resumen, miCupo] = await Promise.all([
+  const [vehiculo, activo, resumen, miCupo, documentos] = await Promise.all([
     vehiculoDe(usuario.id),
     viajeActivoDelConductor(usuario.id),
     resumenDelConductor(usuario.id),
     cupoActivoDelConductor(usuario.id),
+    misDocumentos(usuario.id),
   ]);
+  const aprobados = TIPOS_DOCUMENTO.filter((t) => documentos[t]?.estado === "aprobado").length;
+  const rechazados = TIPOS_DOCUMENTO.filter((t) => documentos[t]?.estado === "rechazado").length;
+  const verificado = aprobados === TIPOS_DOCUMENTO.length;
   // Sin disponibilidad, RLS no le muestra solicitudes: ni se piden.
   const abiertas = perfil.disponible && !activo ? await solicitudesAbiertas(usuario.id) : null;
   const solicitudes = abiertas?.solicitudes ?? [];
@@ -49,6 +55,23 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       </header>
 
       {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
+
+      {!verificado && (
+        <section aria-labelledby="titulo-verificar" className="space-y-3 rounded-2xl border border-secundario/50 p-5">
+          <h2 id="titulo-verificar" className="text-lg">
+            {rechazados > 0 ? "Hay un documento por corregir" : "Verifica tu cuenta de conductor"}
+          </h2>
+          <p className="text-sm text-texto-suave">
+            Sube tu cédula, licencia y tarjeta de propiedad. Llevas {aprobados} de 3 aprobados.
+          </p>
+          <Link
+            href="/conductor/documentos"
+            className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto hover:bg-primario/85"
+          >
+            {Object.keys(documentos).length === 0 ? "Subir mis documentos" : "Ver mis documentos"}
+          </Link>
+        </section>
+      )}
 
       {activo && (
         <section aria-labelledby="titulo-viaje-activo" className="space-y-3 rounded-2xl border border-secundario/50 p-5">
@@ -97,7 +120,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
         )}
       </section>
 
-      <InterruptorDisponible disponible={perfil.disponible} tieneVehiculo={!!vehiculo} />
+      <InterruptorDisponible disponible={perfil.disponible} tieneVehiculo={!!vehiculo} verificado={verificado} />
 
       {!vehiculo && (
         <Link

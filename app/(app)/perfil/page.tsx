@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { salir } from "@/app/lib/acciones-auth";
 import { perfilActual } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
@@ -45,6 +46,27 @@ export default async function PaginaPerfil() {
           </p>
           <BotonCambiarModo modoActual={perfil.rol} ancho />
         </section>
+      )}
+
+      {(perfil?.es_admin || perfil?.rol === "conductor") && (
+        <nav aria-label="Más opciones" className="space-y-2">
+          {perfil?.rol === "conductor" && (
+            <Link
+              href="/conductor/documentos"
+              className="flex min-h-12 w-full items-center justify-center rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-superficie"
+            >
+              Mis documentos
+            </Link>
+          )}
+          {perfil?.es_admin && (
+            <Link
+              href="/admin"
+              className="flex min-h-12 w-full items-center justify-center rounded-xl border border-secundario/50 font-semibold text-texto hover:bg-superficie"
+            >
+              Panel de administración
+            </Link>
+          )}
+        </nav>
       )}
 
       <form action={salir}>

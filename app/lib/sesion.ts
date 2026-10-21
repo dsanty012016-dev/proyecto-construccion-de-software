@@ -12,7 +12,7 @@ export async function perfilActual() {
   // RLS: cada quien solo puede leer su propio perfil.
   const { data: perfil } = await supabase
     .from("perfiles")
-    .select("id, nombre, rol, telefono, disponible, universidad_id")
+    .select("id, nombre, rol, telefono, disponible, universidad_id, es_admin")
     .eq("id", data.user.id)
     .single();
 
@@ -34,5 +34,12 @@ export function inicioDeRol(rol: "estudiante" | "conductor" | null | undefined) 
 export async function exigirRol(rol: "estudiante" | "conductor") {
   const sesion = await perfilActual();
   if (!sesion.perfil || sesion.perfil.rol !== rol) redirect(inicioDeRol(sesion.perfil?.rol));
+  return { usuario: sesion.usuario, perfil: sesion.perfil };
+}
+
+/** Zona de administración: solo cuentas marcadas como administrador (011). */
+export async function exigirAdmin() {
+  const sesion = await perfilActual();
+  if (!sesion.perfil?.es_admin) redirect(inicioDeRol(sesion.perfil?.rol));
   return { usuario: sesion.usuario, perfil: sesion.perfil };
 }

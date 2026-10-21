@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cupoActivoDelConductor } from "@/app/lib/consultas-cupo";
+import { estoyVerificado } from "@/app/lib/consultas-verificacion";
 import { sedeDeUniversidad, vehiculoDe, viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
 import { puestosMaximos } from "@/app/lib/cupo";
 import { exigirRol } from "@/app/lib/sesion";
@@ -15,7 +16,11 @@ export default async function PaginaNuevoCupo() {
   const { usuario, perfil } = await exigirRol("conductor");
   if (await cupoActivoDelConductor(usuario.id)) redirect("/conductor/cupo");
   if (await viajeActivoDelConductor(usuario.id)) redirect("/conductor/viaje");
-  const [vehiculo, sede] = await Promise.all([vehiculoDe(usuario.id), sedeDeUniversidad(perfil.universidad_id)]);
+  const [vehiculo, sede, verificado] = await Promise.all([
+    vehiculoDe(usuario.id),
+    sedeDeUniversidad(perfil.universidad_id),
+    estoyVerificado(usuario.id),
+  ]);
 
   return (
     <main className="space-y-6 px-5 pt-6">
@@ -28,6 +33,16 @@ export default async function PaginaNuevoCupo() {
             className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto hover:bg-primario/85"
           >
             Registrar mi vehículo
+          </Link>
+        </div>
+      ) : !verificado ? (
+        <div className="space-y-3">
+          <Aviso tipo="info">Podrás publicar cupos cuando un administrador apruebe tus documentos.</Aviso>
+          <Link
+            href="/conductor/documentos"
+            className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto hover:bg-primario/85"
+          >
+            Ver mis documentos
           </Link>
         </div>
       ) : !sede || sede.lat === null || sede.lng === null ? (
