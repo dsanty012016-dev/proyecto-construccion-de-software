@@ -25,13 +25,13 @@ function pestanasDe(rol: "estudiante" | "conductor"): Pestana[] {
     const inicio: Pestana = { href: "/estudiante", texto: "Inicio", icono: <IconoInicio />, activa: (r) => dentroDe(r, "/estudiante") };
     return [inicio, viajes, perfil];
   }
-  // Para el conductor, ofertar y el viaje en curso cuentan como "Inicio";
+  // Para el conductor, ofertar, el viaje en curso y el cupo cuentan como "Inicio";
   // el vehículo tiene su propia pestaña.
   const inicio: Pestana = {
     href: "/conductor",
     texto: "Inicio",
     icono: <IconoInicio />,
-    activa: (r) => r === "/conductor" || dentroDe(r, "/conductor/ofertar") || dentroDe(r, "/conductor/viaje"),
+    activa: (r) => r === "/conductor" || dentroDe(r, "/conductor/ofertar") || dentroDe(r, "/conductor/viaje") || dentroDe(r, "/conductor/cupo"),
   };
   const vehiculo: Pestana = { href: "/conductor/vehiculo", texto: "Vehículo", icono: <IconoVehiculo />, activa: (r) => dentroDe(r, "/conductor/vehiculo") };
   return [inicio, viajes, vehiculo, perfil];

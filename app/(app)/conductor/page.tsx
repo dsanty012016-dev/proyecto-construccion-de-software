@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { retirarOferta } from "@/app/lib/acciones-viaje";
+import { cupoActivoDelConductor } from "@/app/lib/consultas-cupo";
 import { resumenDelConductor, solicitudesAbiertas, vehiculoDe, viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
-import { calificacionTexto, etiquetaEstado, hace, nombreCorto, pesos } from "@/app/lib/formato";
+import { calificacionTexto, etiquetaEstado, fechaCorta, hace, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
@@ -16,10 +17,11 @@ export const metadata: Metadata = { title: "Inicio" };
 export default async function PaginaConductor({ searchParams }: { searchParams: Promise<{ clave?: string }> }) {
   const { usuario, perfil } = await exigirRol("conductor");
   const { clave } = await searchParams;
-  const [vehiculo, activo, resumen] = await Promise.all([
+  const [vehiculo, activo, resumen, miCupo] = await Promise.all([
     vehiculoDe(usuario.id),
     viajeActivoDelConductor(usuario.id),
     resumenDelConductor(usuario.id),
+    cupoActivoDelConductor(usuario.id),
   ]);
   // Sin disponibilidad, RLS no le muestra solicitudes: ni se piden.
   const abiertas = perfil.disponible && !activo ? await solicitudesAbiertas(usuario.id) : null;
@@ -29,8 +31,14 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
   return (
     <main className="space-y-6 px-5 pt-6">
       {/* Solicitudes nuevas, ofertas aceptadas o rechazadas llegan en tiempo real. */}
-      {(perfil.disponible || activo) && (
-        <EnVivo escuchas={[{ tabla: "viajes" }, { tabla: "ofertas", filtro: `conductor_id=eq.${usuario.id}` }]} />
+      {(perfil.disponible || activo || miCupo) && (
+        <EnVivo
+          escuchas={[
+            { tabla: "viajes" },
+            { tabla: "ofertas", filtro: `conductor_id=eq.${usuario.id}` },
+            ...(miCupo ? [{ tabla: "puestos" as const, filtro: `cupo_id=eq.${miCupo.cupo.id}` }] : []),
+          ]}
+        />
       )}
       <header className="flex items-start justify-between gap-3">
         <div>
@@ -58,6 +66,36 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
           </Link>
         </section>
       )}
+
+      <section aria-labelledby="titulo-cupo" className="space-y-3 rounded-2xl bg-superficie p-5">
+        <h2 id="titulo-cupo" className="text-lg">
+          {miCupo ? (miCupo.cupo.estado === "en_curso" ? "Tu cupo va en camino" : "Tu cupo publicado") : "¿Vas a la U a una hora fija?"}
+        </h2>
+        {miCupo ? (
+          <>
+            <p className="text-sm text-texto-suave">
+              Sale {fechaCorta(miCupo.cupo.sale_en)} · {miCupo.aprobados.length}/{miCupo.cupo.puestos} puestos
+              {miCupo.pendientes.length > 0 && ` · ${miCupo.pendientes.length} por aprobar`}
+            </p>
+            <Link
+              href="/conductor/cupo"
+              className="flex h-14 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto transition-colors hover:bg-primario/85"
+            >
+              {miCupo.pendientes.length > 0 ? "Revisar solicitudes" : "Ver mi cupo"}
+            </Link>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-texto-suave">Publica tu recorrido con hora de salida y deja que los estudiantes se suban en el camino.</p>
+            <Link
+              href="/conductor/cupo/nuevo"
+              className="flex min-h-12 w-full items-center justify-center rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-fondo"
+            >
+              Publicar un cupo
+            </Link>
+          </>
+        )}
+      </section>
 
       <InterruptorDisponible disponible={perfil.disponible} tieneVehiculo={!!vehiculo} />
 

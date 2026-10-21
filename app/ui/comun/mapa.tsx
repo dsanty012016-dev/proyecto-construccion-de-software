@@ -28,16 +28,20 @@ interface Props {
   alElegir?: (punto: Coordenada) => void;
   /** Mueve la cámara a este punto (por ejemplo, "mi ubicación"). */
   irA?: Coordenada | null;
+  /** Puntos de recogida de otros estudiantes (cupos), como círculos pequeños. */
+  paradas?: Coordenada[];
   className?: string;
 }
 
-function elementoMarcador(tipo: "origen" | "destino") {
+function elementoMarcador(tipo: "origen" | "destino" | "parada") {
   const elemento = document.createElement("div");
   elemento.setAttribute("aria-hidden", "true");
-  elemento.className =
-    tipo === "origen"
-      ? "size-5 rounded-full border-[3px] border-texto bg-primario shadow-lg"
-      : "size-5 rounded-sm border-[3px] border-texto bg-secundario shadow-lg";
+  const clases = {
+    origen: "size-5 rounded-full border-[3px] border-texto bg-primario shadow-lg",
+    destino: "size-5 rounded-sm border-[3px] border-texto bg-secundario shadow-lg",
+    parada: "size-3.5 rounded-full border-2 border-primario bg-texto shadow",
+  };
+  elemento.className = clases[tipo];
   return elemento;
 }
 
@@ -72,11 +76,28 @@ function ponerLinea(mapa: MapaLibre, id: string, coordenadas: [number, number][]
   });
 }
 
-export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, className }: Props) {
+/**
+ * Encuadra la cámara marcando que el movimiento es de la app (no elige punto).
+ * Por si el mapa ya estaba encuadrado y no hubo movimiento, la marca se suelta sola.
+ */
+function encuadrar(mapa: MapaLibre, caja: [[number, number], [number, number]], encuadrando: { current: boolean }, animar: boolean) {
+  encuadrando.current = true;
+  mapa.fitBounds(caja, { padding: 56, maxZoom: 15, animate: animar });
+  setTimeout(() => {
+    encuadrando.current = false;
+  }, 1500);
+}
+
+export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, className }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<MapaLibre | null>(null);
   const libRef = useRef<Libreria | null>(null);
   const marcadores = useRef<{ origen?: Marker; destino?: Marker }>({});
+  const marcadoresParadas = useRef<Marker[]>([]);
+  // Cuando la app mueve la cámara para encuadrar la ruta, ese movimiento no
+  // cuenta como "elegir punto": solo los de la persona (o "mi ubicación").
+  const encuadrando = useRef(false);
+
   const centroInicial = useRef(centro);
   const alElegirRef = useRef(alElegir);
   const animar = useRef(true);
@@ -126,6 +147,10 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, classNa
           if (!cargado) setEstado("error");
         });
         instancia.on("moveend", () => {
+          if (encuadrando.current) {
+            encuadrando.current = false;
+            return;
+          }
           const c = instancia.getCenter();
           alElegirRef.current?.({ lat: c.lat, lng: c.lng });
         });
@@ -142,6 +167,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, classNa
       mapa?.remove();
       mapaRef.current = null;
       marcadores.current = {};
+      marcadoresParadas.current = [];
     };
   }, []);
 
@@ -177,7 +203,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, classNa
     ponerLinea(mapa, "ruta-vial", [], false);
     ponerLinea(mapa, "ruta-recta", [[o.lng, o.lat], [d.lng, d.lat]], true);
     const caja = limites([o, d]);
-    if (caja) mapa.fitBounds(caja, { padding: 56, maxZoom: 15, animate: animar.current });
+    if (caja) encuadrar(mapa, caja, encuadrando, animar.current);
 
     let vigente = true;
     const clave = `${o.lat},${o.lng},${d.lat},${d.lng}`;
@@ -187,13 +213,26 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, classNa
       ponerLinea(mapa, "ruta-recta", [], true);
       const puntos = ruta.coordenadas.map(([lng, lat]) => ({ lat, lng }));
       const cajaRuta = limites(puntos);
-      if (cajaRuta) mapa.fitBounds(cajaRuta, { padding: 56, maxZoom: 15, animate: animar.current });
+      if (cajaRuta) encuadrar(mapa, cajaRuta, encuadrando, animar.current);
       setInfoRuta({ clave, km: ruta.km, minutos: ruta.minutos });
     });
     return () => {
       vigente = false;
     };
   }, [estado, oLat, oLng, dLat, dLng]);
+
+  // Paradas de los estudiantes (se comparan por contenido).
+  const claveParadas = JSON.stringify(paradas ?? []);
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    const lib = libRef.current;
+    if (estado !== "listo" || !mapa || !lib) return;
+    for (const marcador of marcadoresParadas.current) marcador.remove();
+    const lista: Coordenada[] = JSON.parse(claveParadas);
+    marcadoresParadas.current = lista
+      .filter(coordenadaValida)
+      .map((p) => new lib.Marker({ element: elementoMarcador("parada") }).setLngLat([p.lng, p.lat]).addTo(mapa));
+  }, [estado, claveParadas]);
 
   // Mover la cámara cuando lo piden ("mi ubicación").
   const irLat = irA?.lat;

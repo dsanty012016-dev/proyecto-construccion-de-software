@@ -35,7 +35,7 @@ solicitado ──(el estudiante acepta una oferta)──▶ aceptado ──(reco
 - Si el conductor deja de estar disponible o borra su vehículo, sus ofertas activas se retiran.
 - **Calificación:** al terminar, cada uno califica al otro una vez (1 a 5 estrellas, comentario opcional de hasta 300 caracteres).
 
-## Cupos publicados por el conductor (fase 4c, por construir)
+## Cupos publicados por el conductor (fase 4c, migración 010)
 La otra forma de viajar: el conductor publica su recorrido y los estudiantes piden subirse en un punto del camino.
 
 **Decidido por el equipo**
@@ -47,12 +47,18 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - **Hora definida con anticipación:** el cupo siempre se publica con su hora de salida (no hay cupos "para ya").
 - **Pago:** se hace a más tardar **10 minutos antes** de la hora de salida. Quien no haya pagado para entonces pierde el puesto (cómo se libera el puesto queda por definir en la fase de pagos).
 
-**Provisional (propuesto, falta confirmar)**
+**Provisional (propuesto, falta confirmar; así quedó construido)**
 - Puestos: moto 1 (la placa ABC12D lo dice); carro de 1 a 4.
-- Hora de salida: desde ahora hasta 7 días adelante. Las solicitudes se cierran a la hora de salida.
+- Hora de salida: entre **15 minutos** y 7 días desde ahora (los 15 minutos dejan margen para el pago 10 minutos antes). Las solicitudes se cierran a la hora de salida.
+- Un conductor tiene un cupo activo a la vez; con un cupo publicado no oferta en viajes por pedido, y para publicar no puede tener ofertas activas.
+- El conductor solo puede salir si tiene al menos un estudiante aprobado; al salir, las solicitudes pendientes quedan rechazadas.
+- Un estudiante rechazado no vuelve a pedir en ese mismo cupo; si retiró su solicitud, sí puede volver a pedirla.
+- El teléfono del otro se ve solo con el puesto aprobado y el cupo activo.
 - Nadie tiene a la vez un viaje pedido activo y un puesto aprobado en un cupo.
 - Cancelar: el estudiante puede retirar su solicitud o su puesto antes de que el cupo salga; si el conductor cancela el cupo, se cancelan todos los puestos. Sin penalización (igual que hoy).
-- No hay límite fijo de desvío: el conductor decide al aprobar, viendo la distancia a su ruta.
+- No hay límite fijo de desvío: el conductor decide al aprobar, viendo la distancia aproximada (en línea recta) de cada recogida a su camino.
+
+**Pendiente para otras fases:** calificar los cupos y verlos en el historial; el pago (fase 4b).
 
 ## Cambio de modo (fase 4d)
 - Una misma cuenta usa la app **como estudiante o como conductor** y puede cambiar cuando quiera (botón en Inicio y en Perfil). `perfiles.rol` es el **modo actual**; `elegir_rol` solo sirve la primera vez.

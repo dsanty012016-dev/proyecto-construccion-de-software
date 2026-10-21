@@ -8,6 +8,8 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 type Rol = Database["public"]["Enums"]["rol_usuario"];
 type EstadoViaje = Database["public"]["Enums"]["estado_viaje"];
 type EstadoOferta = Database["public"]["Enums"]["estado_oferta"];
+type EstadoCupo = Database["public"]["Enums"]["estado_cupo"];
+type EstadoPuesto = Database["public"]["Enums"]["estado_puesto"];
 
 type Relacion = {
   foreignKeyName: string;
@@ -43,6 +45,68 @@ export type Database = {
           viaje_id: string;
         };
         Update: Partial<Database["public"]["Tables"]["calificaciones"]["Insert"]>;
+        Relationships: Relacion[];
+      };
+      cupos: {
+        Row: {
+          cancelado_en: string | null;
+          conductor_id: string;
+          creado_en: string;
+          destino_lat: number;
+          destino_lng: number;
+          destino_texto: string;
+          estado: EstadoCupo;
+          id: string;
+          iniciado_en: string | null;
+          precio: number;
+          puestos: number;
+          sale_en: string;
+          salida_lat: number;
+          salida_lng: number;
+          salida_texto: string;
+          terminado_en: string | null;
+          universidad_id: number;
+        };
+        Insert: {
+          conductor_id: string;
+          destino_lat: number;
+          destino_lng: number;
+          destino_texto: string;
+          precio: number;
+          puestos: number;
+          sale_en: string;
+          salida_lat: number;
+          salida_lng: number;
+          salida_texto: string;
+          universidad_id: number;
+          estado?: EstadoCupo;
+          id?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["cupos"]["Insert"]>;
+        Relationships: Relacion[];
+      };
+      puestos: {
+        Row: {
+          creado_en: string;
+          cupo_id: string;
+          decidido_en: string | null;
+          estado: EstadoPuesto;
+          estudiante_id: string;
+          id: string;
+          recogida_lat: number;
+          recogida_lng: number;
+          recogida_texto: string;
+        };
+        Insert: {
+          cupo_id: string;
+          estudiante_id: string;
+          recogida_lat: number;
+          recogida_lng: number;
+          recogida_texto: string;
+          estado?: EstadoPuesto;
+          id?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["puestos"]["Insert"]>;
         Relationships: Relacion[];
       };
       ofertas: {
@@ -187,7 +251,28 @@ export type Database = {
       };
       cambiar_disponibilidad: { Args: { p_disponible: boolean }; Returns: undefined };
       cambiar_modo: { Args: { p_modo: Rol }; Returns: undefined };
+      cancelar_cupo: { Args: { p_cupo: string }; Returns: undefined };
       cancelar_viaje: { Args: { p_viaje: string }; Returns: undefined };
+      iniciar_cupo: { Args: { p_cupo: string }; Returns: undefined };
+      pedir_puesto: {
+        Args: { p_cupo: string; p_recogida_lat: number; p_recogida_lng: number; p_recogida_texto: string };
+        Returns: string;
+      };
+      publicar_cupo: {
+        Args: {
+          p_salida_lat: number;
+          p_salida_lng: number;
+          p_salida_texto: string;
+          p_sale_en: string;
+          p_puestos: number;
+          p_precio: number;
+        };
+        Returns: string;
+      };
+      puestos_libres: { Args: { p_cupos: string[] }; Returns: { cupo_id: string; libres: number }[] };
+      responder_puesto: { Args: { p_puesto: string; p_aprobar: boolean }; Returns: undefined };
+      retirar_puesto: { Args: { p_cupo: string }; Returns: undefined };
+      terminar_cupo: { Args: { p_cupo: string }; Returns: undefined };
       elegir_rol: { Args: { p_rol: Rol }; Returns: undefined };
       iniciar_viaje: { Args: { p_viaje: string }; Returns: undefined };
       ofertar: { Args: { p_precio: number; p_viaje: string }; Returns: string };
@@ -217,7 +302,9 @@ export type Database = {
       terminar_viaje: { Args: { p_viaje: string }; Returns: undefined };
     };
     Enums: {
+      estado_cupo: "publicado" | "en_curso" | "terminado" | "cancelado";
       estado_oferta: "activa" | "retirada" | "aceptada" | "rechazada";
+      estado_puesto: "pendiente" | "aprobado" | "rechazado" | "retirado" | "cancelado";
       estado_viaje: "solicitado" | "aceptado" | "en_curso" | "terminado" | "cancelado";
       rol_usuario: "estudiante" | "conductor";
     };
