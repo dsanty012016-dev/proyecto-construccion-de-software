@@ -11,6 +11,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 4 | Mapa, ubicación y tiempo real (ofertas y seguimiento) | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 5 | Landing pública con A-Frame | Sonnet 5.5 | Medio |
 | 6 | Textos, ajustes visuales, accesibilidad | Haiku 5.5 | Bajo |
+| 4c | Cupos publicados por el conductor: hora de salida, puestos, precio por puesto y solicitudes en el trayecto que el conductor aprueba | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 4b | Billetera simulada: saldo, recargas de prueba, pago del viaje y comisión del 10 % al conductor (rama `fase-pagos`) | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 

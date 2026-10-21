@@ -35,6 +35,22 @@ solicitado ──(el estudiante acepta una oferta)──▶ aceptado ──(reco
 - Si el conductor deja de estar disponible o borra su vehículo, sus ofertas activas se retiran.
 - **Calificación:** al terminar, cada uno califica al otro una vez (1 a 5 estrellas, comentario opcional de hasta 300 caracteres).
 
+## Cupos publicados por el conductor (fase 4c, por construir)
+La otra forma de viajar: el conductor publica su recorrido y los estudiantes piden subirse en un punto del camino.
+
+**Decidido por el equipo**
+- El conductor publica un **cupo**: punto de salida, **hora de salida**, **número de puestos** y **precio fijo por puesto**. El destino es la universidad.
+- Un estudiante pide subirse indicando su **punto de recogida** en el mapa. El **conductor aprueba o rechaza** cada solicitud (ve qué tan lejos queda de su ruta).
+- Cada estudiante aprobado ocupa un puesto y paga el precio del puesto; la comisión del 10 % se le descuenta al conductor por cada estudiante.
+- Esto **cambia** la regla anterior de "viajes de una persona": en un cupo pueden ir varios estudiantes.
+
+**Provisional (propuesto, falta confirmar)**
+- Puestos: moto 1 (la placa ABC12D lo dice); carro de 1 a 4.
+- Hora de salida: desde ahora hasta 7 días adelante. Las solicitudes se cierran a la hora de salida.
+- Nadie tiene a la vez un viaje pedido activo y un puesto aprobado en un cupo.
+- Cancelar: el estudiante puede retirar su solicitud o su puesto antes de que el cupo salga; si el conductor cancela el cupo, se cancelan todos los puestos. Sin penalización (igual que hoy).
+- No hay límite fijo de desvío: el conductor decide al aprobar, viendo la distancia a su ruta.
+
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |
 |---|---|---|
