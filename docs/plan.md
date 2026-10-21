@@ -17,6 +17,8 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 - Fase 0: lista (rama `fase-0-base`).
 - Fase 1: lista (rama `fase-1-reglas`). `viaje.ts` con 25 pruebas; 5 migraciones con 85 comprobaciones de RLS y RPC que GitHub corre en cada subida. Falta aplicarlas en un proyecto de Supabase real.
 
+- Fase 2: registro, entrar, recuperar contraseña y elegir rol con correo y contraseña (rama `fase-2-auth`). Migraciones aplicadas en el proyecto Unigo de Supabase. Configuración del panel en `docs/supabase-auth.md`.
+
 ## Decisiones tomadas
 - **Una sola app Next.js** (sitio público + app PWA + Supabase), no web y API separadas. Si luego se quiere app nativa, `app/api/v1/` y las reglas en la base de datos lo permiten sin rehacer.
 - **Mapa:** MapLibre con estilo oscuro (gratis). El cálculo de rutas necesita un servicio aparte; se decide en la fase 4.

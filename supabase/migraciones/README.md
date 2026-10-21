@@ -9,6 +9,7 @@ Todo cambio en la base de datos (tablas, políticas RLS, funciones) se escribe a
 | `003-vehiculos.sql` | Vehículos y `cambiar_disponibilidad` |
 | `004-viajes.sql` | Viajes, ofertas y sus funciones (`solicitar_viaje`, `ofertar`, `retirar_oferta`, `aceptar_oferta`, `iniciar_viaje`, `terminar_viaje`, `cancelar_viaje`) |
 | `005-calificaciones.sql` | Calificaciones, `calificar` y `perfiles_publicos` |
+| `006-cerrar-rls-auto-enable.sql` | Quita el permiso público a una función que crea Supabase |
 
 ## Reglas
 - Nunca editar un script ya ejecutado en Supabase: se crea uno nuevo que lo corrija.
