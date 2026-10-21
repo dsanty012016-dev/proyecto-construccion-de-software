@@ -352,6 +352,130 @@ select prueba.falla(format('insert into public.ofertas (viaje_id, conductor_id, 
 set role authenticated;
 
 -- ---------------------------------------------------------------------------
+-- 8c. Cupos publicados por el conductor (010)
+-- ---------------------------------------------------------------------------
+\echo '== Cupos'
+
+select prueba.como(:'eva');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 6000)$$, 'Registra tu vehículo', 'sin vehículo no publica cupo');
+insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (:'eva', 'EVA123', 'Mazda', '2', 'Rojo');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '5 minutes', 2, 6000)$$, 'entre 15 minutos y 7 días', 'la salida se publica con anticipación');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '8 days', 2, 6000)$$, 'entre 15 minutos y 7 días', 'no más de 7 días adelante');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 5, 6000)$$, 'de 1 a 4 puestos', 'en carro máximo 4 puestos');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 500)$$, 'entre $1.000', 'el precio tiene límites');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, ' ', now() + interval '1 day', 2, 6000)$$, 'Revisa el punto de salida', 'la salida necesita texto');
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 6000) as cupo_eva \gset
+reset role;
+select prueba.ok((select estado = 'publicado' and destino_lat is not null and destino_texto like 'Universidad Santo Tomás%' from public.cupos where id = :'cupo_eva'), 'el cupo va a la sede, que pone la base');
+set role authenticated;
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '2 days', 2, 6000)$$, 'Ya tienes un cupo', 'un cupo activo a la vez');
+select prueba.falla($$select public.cambiar_modo('estudiante')$$, 'cupo antes de cambiar', 'con cupo activo no cambia de modo');
+select prueba.falla($$insert into public.cupos (conductor_id, universidad_id, salida_lat, salida_lng, salida_texto, destino_lat, destino_lng, destino_texto, sale_en, puestos, precio) values (auth.uid(), 1, 1, 1, 'a', 2, 2, 'b', now() + interval '1 day', 1, 5000)$$, 'permission denied', 'no se crean cupos a mano');
+
+select prueba.como(:'diana');
+select public.cambiar_modo('conductor');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 6000)$$, 'En moto solo', 'en moto solo 1 puesto');
+select prueba.ok((select count(*) = 0 from public.cupos), 'otra conductora no ve cupos ajenos');
+
+select prueba.como(:'carlos');
+select prueba.ok((select count(*) = 0 from public.cupos), 'un conductor no ve cupos de otros');
+
+select prueba.como(:'hugo');
+select prueba.ok((select count(*) = 0 from public.cupos), 'otra universidad no ve los cupos');
+
+-- Estudiantes piden puesto.
+select prueba.como(:'ana');
+select prueba.ok((select count(*) = 1 from public.cupos), 'el estudiante ve los cupos publicados de su universidad');
+select prueba.ok((select count(*) = 1 from public.vehiculos where conductor_id = :'eva'), 'y el vehículo de quien publica');
+select prueba.ok((select count(*) = 0 from public.perfiles where id = :'eva'), 'pero no el teléfono del conductor');
+select public.pedir_puesto(:'cupo_eva', 4.14, -73.63, 'Cra 30 #10') as puesto_ana \gset
+select prueba.falla(format('select public.pedir_puesto(%L, 4.14, -73.63, %L)', :'cupo_eva', 'x'), 'Ya pediste puesto en este cupo', 'no pide dos veces');
+select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'X', 4.08, -73.58, 'U')$$, 'Ya pediste puesto en un cupo', 'con puesto pedido no pide viaje');
+select prueba.falla($$select public.cambiar_modo('conductor')$$, 'cupo antes de cambiar', 'con puesto pedido no cambia de modo');
+
+select prueba.como(:'gabo');
+select public.pedir_puesto(:'cupo_eva', 4.13, -73.62, 'Calle 10') as puesto_gabo \gset
+select prueba.como(:'beto');
+select public.pedir_puesto(:'cupo_eva', 4.13, -73.62, 'Calle 11') as puesto_beto \gset
+select prueba.ok((select count(*) = 1 from public.puestos), 'cada estudiante ve solo su solicitud');
+select prueba.ok((select libres = 2 from public.puestos_libres(array[:'cupo_eva']::uuid[])), 've cuántos puestos quedan libres');
+
+-- El conductor aprueba hasta llenar los puestos.
+select prueba.como(:'eva');
+select prueba.ok((select count(*) = 3 from public.puestos), 'el conductor ve las solicitudes de su cupo');
+select prueba.falla(format('select public.pedir_puesto(%L, 4.14, -73.63, %L)', :'cupo_eva', 'x'), 'modo estudiante', 'el conductor no pide puesto');
+select public.responder_puesto(:'puesto_ana', true);
+select public.responder_puesto(:'puesto_gabo', true);
+select prueba.falla(format('select public.responder_puesto(%L, true)', :'puesto_beto'), 'Ya no quedan puestos', 'no aprueba más de los puestos ofrecidos');
+select public.responder_puesto(:'puesto_beto', false);
+select prueba.falla(format('select public.responder_puesto(%L, true)', :'puesto_ana'), 'ya no está pendiente', 'no responde dos veces');
+select prueba.ok((select count(*) = 1 from public.perfiles where id = :'ana'), 'el conductor ve el perfil de quien aprobó');
+select prueba.ok((select count(*) = 0 from public.perfiles where id = :'beto'), 'pero no el de quien rechazó');
+select prueba.ok((select libres = 0 from public.puestos_libres(array[:'cupo_eva']::uuid[])), 'con los puestos llenos quedan 0 libres');
+select prueba.como(:'carlos');
+select prueba.ok((select count(*) = 0 from public.puestos_libres(array[:'cupo_eva']::uuid[])), 'quien no ve el cupo no ve sus puestos libres');
+select prueba.como(:'eva');
+
+select prueba.como(:'beto');
+select prueba.falla(format('select public.pedir_puesto(%L, 4.13, -73.62, %L)', :'cupo_eva', 'y'), 'rechazó', 'un rechazado no vuelve a pedir en ese cupo');
+select prueba.ok((select count(*) = 1 from public.cupos where id = :'cupo_eva'), 'el rechazado sigue viendo el cupo donde pidió');
+
+select prueba.como(:'carlos');
+select prueba.falla(format('select public.responder_puesto(%L, true)', :'puesto_beto'), 'no existe', 'otro conductor no responde solicitudes ajenas');
+select prueba.falla(format('select public.cancelar_cupo(%L)', :'cupo_eva'), 'No puedes cancelar', 'otro conductor no cancela el cupo');
+
+select prueba.como(:'ana');
+select prueba.ok((select count(*) = 1 from public.perfiles where id = :'eva'), 'aprobada, ve el perfil completo del conductor');
+select public.retirar_puesto(:'cupo_eva');
+select prueba.ok((select estado = 'retirado' from public.puestos where id = :'puesto_ana'), 'el estudiante retira su puesto');
+select public.pedir_puesto(:'cupo_eva', 4.141, -73.631, 'Cra 31') as puesto_ana_otra_vez \gset
+select prueba.ok((select estado = 'pendiente' and recogida_texto = 'Cra 31' from public.puestos where id = :'puesto_ana'), 'y puede volver a pedirlo desde otro punto');
+
+-- Salir y llegar.
+select prueba.como(:'eva');
+select public.iniciar_cupo(:'cupo_eva');
+reset role;
+select prueba.ok((select estado = 'en_curso' from public.cupos where id = :'cupo_eva'), 'el conductor inicia el cupo');
+select prueba.ok((select estado = 'rechazado' from public.puestos where id = :'puesto_ana'), 'al salir, las solicitudes pendientes quedan rechazadas');
+set role authenticated;
+select prueba.como(:'gabo');
+select prueba.falla(format('select public.retirar_puesto(%L)', :'cupo_eva'), 'No tienes una solicitud activa', 'ya en camino no se retira');
+select prueba.como(:'eva');
+select public.terminar_cupo(:'cupo_eva');
+select prueba.ok((select estado = 'terminado' from public.cupos where id = :'cupo_eva'), 'el conductor termina el cupo');
+
+-- Cancelar un cupo cancela sus puestos.
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 1, 5000) as cupo_eva_2 \gset
+select prueba.falla(format('select public.iniciar_cupo(%L)', :'cupo_eva_2'), 'Aún no tienes estudiantes aprobados', 'no sale sin estudiantes aprobados');
+select prueba.como(:'ana');
+select public.pedir_puesto(:'cupo_eva_2', 4.14, -73.63, 'Cra 30') as puesto_ana_2 \gset
+select prueba.como(:'eva');
+select public.cancelar_cupo(:'cupo_eva_2');
+reset role;
+select prueba.ok((select estado = 'cancelado' from public.puestos where id = :'puesto_ana_2'), 'al cancelar el cupo se cancelan los puestos');
+set role authenticated;
+
+-- Con un cupo publicado no se oferta en viajes por pedido.
+select public.cambiar_disponibilidad(true);
+select prueba.como(:'ana');
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Centro', 4.08, -73.58, 'USTA Villavicencio') as viaje_ana_9 \gset
+select prueba.como(:'eva');
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 1, 5000) as cupo_eva_3 \gset
+select prueba.falla(format('select public.ofertar(%L, 5000)', :'viaje_ana_9'), 'cupo publicado', 'con cupo publicado no oferta en otros viajes');
+select public.cancelar_cupo(:'cupo_eva_3');
+select public.ofertar(:'viaje_ana_9', 5000) as oferta_eva_9 \gset
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 1, 5000)$$, 'Retira tus ofertas', 'con ofertas activas no publica cupo');
+select prueba.como(:'ana');
+select prueba.falla(format('select public.pedir_puesto(%L, 4.14, -73.63, %L)', :'cupo_eva_3', 'x'), 'ya no está disponible', 'no se pide puesto en un cupo cancelado');
+select public.cancelar_viaje(:'viaje_ana_9');
+
+select prueba.ok(
+  (select count(*) = 2 from pg_publication_tables
+   where pubname = 'supabase_realtime' and schemaname = 'public' and tablename in ('cupos', 'puestos')),
+  'cupos y puestos están en tiempo real'
+);
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'
@@ -361,6 +485,7 @@ set role anon;
 
 select prueba.ok((select count(*) = 2 from public.universidades), 'sin sesión se ven las universidades');
 select prueba.falla($$select * from public.viajes$$, 'permission denied', 'sin sesión no se ven viajes');
+select prueba.falla($$select * from public.cupos$$, 'permission denied', 'sin sesión no se ven cupos');
 select prueba.ok((select count(*) = 0 from public.perfiles), 'sin sesión no se ven perfiles');
 select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'a', 4.08, -73.58, 'b')$$, 'permission denied', 'sin sesión no se llaman las funciones');
 select prueba.falla($$select privado.mi_perfil()$$, 'permission denied', 'sin sesión no se usa el esquema privado');
