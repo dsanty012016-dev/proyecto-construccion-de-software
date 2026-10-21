@@ -10,6 +10,7 @@ Todo cambio en la base de datos (tablas, políticas RLS, funciones) se escribe a
 | `004-viajes.sql` | Viajes, ofertas y sus funciones (`solicitar_viaje`, `ofertar`, `retirar_oferta`, `aceptar_oferta`, `iniciar_viaje`, `terminar_viaje`, `cancelar_viaje`) |
 | `005-calificaciones.sql` | Calificaciones, `calificar` y `perfiles_publicos` |
 | `006-cerrar-rls-auto-enable.sql` | Quita el permiso público a una función que crea Supabase |
+| `007-ubicacion-sede.sql` | Coordenadas de la sede de la Santo Tomás (destino de los viajes) |
 
 ## Reglas
 - Nunca editar un script ya ejecutado en Supabase: se crea uno nuevo que lo corrija.
