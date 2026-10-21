@@ -14,6 +14,10 @@ Si cambias una regla, cámbiala en los dos y en sus pruebas.
 - **Roles:** cada cuenta es **estudiante** o **conductor**. Se elige al registrarse; quien entra con Google lo elige después, una sola vez.
 - **Precio:** lo pone el **conductor**. Los conductores disponibles ofertan su precio en una solicitud y el estudiante escoge una oferta (como InDrive). Límite técnico entre $1.000 y $100.000 para atajar errores de digitación (no es una tarifa).
 - **Viajes:** de **una sola persona** (un estudiante por viaje).
+- **Pagos:** solo **digitales**, sin efectivo. Por ahora una **billetera simulada** (saldo y recargas de prueba); la pasarela real (Wompi, Mercado Pago o ePayco) llega después sin cambiar la lógica.
+- **Comisión:** UniGo cobra el **10 % del precio de la oferta al conductor**. El estudiante paga el precio ofertado; el conductor recibe el 90 % (oferta de $6.500 → recibe $5.850).
+- **Teléfono:** estudiante y conductor se ven el celular solo mientras el viaje está aceptado o en curso.
+- **Compartir viaje:** el estudiante podrá enviar un enlace para seguir su viaje; se hace en la fase 4 (necesita ubicación en tiempo real).
 
 ## Cómo funciona un viaje
 ```
@@ -34,7 +38,6 @@ solicitado ──(el estudiante acepta una oferta)──▶ aceptado ──(reco
 |---|---|---|
 | 1 | ¿Solo de ida a la universidad o también de regreso? | El viaje guarda origen y destino libres; no se obliga a que uno sea la universidad. |
 | 2 | Cancelaciones: ¿quién, cuándo y con qué penalización? | El estudiante cancela mientras busca conductor; ya aceptado, cancela cualquiera de los dos; en curso nadie. **Sin penalización.** |
-| 3 | Wallet y pagos: ¿dinero real o simulado? (recomendado: simulado) | Todavía no hay tablas de pagos; el viaje solo guarda el precio acordado. |
 | 4 | "IA para la mejor ruta": ¿modelo de IA o algoritmo? | No aplica con viajes de una persona; queda para cuando haya viajes compartidos. |
 | 5 | ¿Las solicitudes vencen si nadie oferta? | No vencen; el estudiante las cancela. |
 
