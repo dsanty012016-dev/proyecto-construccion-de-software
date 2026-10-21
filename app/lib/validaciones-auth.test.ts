@@ -96,6 +96,15 @@ describe("rutas", () => {
     expect(redireccionPara("/inicio", true)).toBeNull();
   });
 
+  it("las pantallas de estudiante, conductor, viajes y perfil también piden sesión", () => {
+    expect(redireccionPara("/estudiante", false)).toBe("/entrar?siguiente=%2Festudiante");
+    expect(redireccionPara("/estudiante/pedir", false)).toBe("/entrar?siguiente=%2Festudiante%2Fpedir");
+    expect(redireccionPara("/conductor/viaje", false)).toBe("/entrar?siguiente=%2Fconductor%2Fviaje");
+    expect(redireccionPara("/viajes", false)).toBe("/entrar?siguiente=%2Fviajes");
+    expect(redireccionPara("/perfil", false)).toBe("/entrar?siguiente=%2Fperfil");
+    expect(redireccionPara("/estudiante", true)).toBeNull();
+  });
+
   it("no confunde rutas que solo empiezan parecido", () => {
     expect(redireccionPara("/iniciosesion", false)).toBeNull();
   });

@@ -2,7 +2,7 @@
 // proxy (proxy.ts) en cada petición. Es una función pura para poder probarla.
 
 /** Zona privada: sin sesión, se manda a /entrar. */
-const PRIVADAS = ["/inicio", "/elegir-rol", "/nueva-clave"];
+const PRIVADAS = ["/inicio", "/elegir-rol", "/nueva-clave", "/estudiante", "/conductor", "/viajes", "/perfil"];
 
 /** Pantallas de acceso: con sesión ya no tienen sentido, se manda a /inicio. */
 const SOLO_SIN_SESION = ["/entrar", "/registro", "/recuperar"];
