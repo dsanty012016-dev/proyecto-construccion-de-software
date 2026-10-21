@@ -1,0 +1,316 @@
+-- Pruebas de las migraciones: registro, RLS y funciones RPC de los viajes.
+-- Se corren con supabase/pruebas/correr.sh sobre un Postgres vacío, después de
+-- 00-supabase-simulado.sql y de supabase/migraciones/*.sql.
+-- Cualquier "FALLA" detiene el script con error.
+
+\set ON_ERROR_STOP on
+\set QUIET on
+set client_min_messages = notice;
+
+-- ---------------------------------------------------------------------------
+-- Ayudas
+-- ---------------------------------------------------------------------------
+create schema prueba;
+grant usage on schema prueba to anon, authenticated;
+
+create function prueba.ok(condicion boolean, descripcion text)
+returns void language plpgsql as $$
+begin
+  if condicion is not true then
+    raise exception 'FALLA: %', descripcion;
+  end if;
+  raise notice 'ok: %', descripcion;
+end;
+$$;
+
+-- Ejecuta una sentencia que DEBE fallar con un mensaje que contenga "mensaje".
+create function prueba.falla(sentencia text, mensaje text, descripcion text)
+returns void language plpgsql as $$
+begin
+  begin
+    execute sentencia;
+  exception when others then
+    if sqlerrm ilike '%' || mensaje || '%' then
+      raise notice 'ok: %', descripcion;
+      return;
+    end if;
+    raise exception 'FALLA: % (dio otro error: %)', descripcion, sqlerrm;
+  end;
+  raise exception 'FALLA: % (no dio error)', descripcion;
+end;
+$$;
+
+-- Cambia la persona que "inició sesión".
+create function prueba.como(p_id uuid)
+returns void language sql as $$
+  select set_config('request.jwt.claim.sub', coalesce(p_id::text, ''), false);
+$$;
+
+grant execute on all functions in schema prueba to anon, authenticated;
+
+\set ana   '00000000-0000-0000-0000-0000000000a1'
+\set beto  '00000000-0000-0000-0000-0000000000b2'
+\set carlos '00000000-0000-0000-0000-0000000000c3'
+\set diana '00000000-0000-0000-0000-0000000000d4'
+\set eva   '00000000-0000-0000-0000-0000000000e5'
+\set gabo  '00000000-0000-0000-0000-0000000000f6'
+\set hugo  '00000000-0000-0000-0000-0000000000a7'
+
+-- ---------------------------------------------------------------------------
+-- 1. Registro: solo correos institucionales
+-- ---------------------------------------------------------------------------
+\echo '== Registro'
+
+insert into auth.users (id, email, raw_user_meta_data) values
+  (:'ana', 'ana@ustavillavo.edu.co', '{"nombre":"Ana Rojas","telefono":"+573001112233","rol":"estudiante"}'),
+  (:'beto', 'BETO@UstaVillavo.edu.co', '{"nombre":"Beto Díaz","rol":"estudiante"}'),
+  (:'carlos', 'carlos@ustavillavo.edu.co', '{"nombre":"Carlos Pérez","telefono":"+57 300 444 5566","rol":"conductor"}'),
+  (:'diana', 'diana@ustavillavo.edu.co', '{"nombre":"Diana Mora","rol":"conductor"}'),
+  (:'eva', 'eva@ustavillavo.edu.co', '{"nombre":"Eva Ruiz","rol":"conductor"}'),
+  -- Entra con Google: trae full_name y no trae rol.
+  (:'gabo', 'gabo@ustavillavo.edu.co', '{"full_name":"Gabo Google"}');
+
+-- Otra universidad, para comprobar que no se mezclan.
+insert into public.universidades (nombre, ciudad, dominio_correo) values ('Universidad de Prueba', 'Villavicencio', 'prueba.edu.co');
+insert into auth.users (id, email, raw_user_meta_data) values
+  (:'hugo', 'hugo@prueba.edu.co', '{"nombre":"Hugo Otra","rol":"conductor"}');
+
+select prueba.ok((select count(*) = 7 from public.perfiles), 'se crea un perfil por cada registro válido');
+select prueba.ok((select telefono = '+573004445566' from public.perfiles where id = :'carlos'), 'el teléfono se guarda sin espacios');
+select prueba.ok((select nombre = 'Gabo Google' and rol is null from public.perfiles where id = :'gabo'), 'con Google el nombre sale de full_name y el rol queda pendiente');
+
+select prueba.falla($$insert into auth.users (email) values ('alguien@gmail.com')$$, 'correo institucional', 'rechaza correos de otros dominios');
+select prueba.falla($$insert into auth.users (email) values ('x@ustavillavo.edu.co.falso.com')$$, 'correo institucional', 'rechaza dominios que solo empiezan igual');
+select prueba.falla($$insert into auth.users (email) values ('x@otra.com@ustavillavo.edu.co')$$, 'correo institucional', 'rechaza correos con dos @ (dominio al final)');
+select prueba.falla($$insert into auth.users (email) values ('x@ustavillavo.edu.co@otro.com')$$, 'correo institucional', 'rechaza correos con dos @ (dominio en medio)');
+select prueba.falla($$insert into auth.users (email) values ('@ustavillavo.edu.co')$$, 'correo institucional', 'rechaza correos sin usuario');
+select prueba.falla($$insert into auth.users (email, raw_user_meta_data) values ('tel@ustavillavo.edu.co', '{"telefono":"3001234"}')$$, 'teléfono', 'rechaza teléfonos mal escritos');
+select prueba.falla(format('update auth.users set email = %L where id = %L', 'ana@gmail.com', :'ana'), 'correo institucional', 'no deja cambiar el correo a uno no institucional');
+
+-- ---------------------------------------------------------------------------
+-- 2. Perfiles
+-- ---------------------------------------------------------------------------
+\echo '== Perfiles'
+set role authenticated;
+
+select prueba.como(:'ana');
+select prueba.ok((select count(*) = 1 from public.perfiles), 'cada quien ve solo su perfil');
+select prueba.falla($$update public.perfiles set rol = 'conductor'$$, 'permission denied', 'no se puede cambiar el rol a mano');
+select prueba.falla($$update public.perfiles set disponible = true$$, 'permission denied', 'no se puede cambiar la disponibilidad a mano');
+select prueba.falla($$insert into public.perfiles (id, universidad_id, nombre) values (gen_random_uuid(), 1, 'Falso')$$, 'permission denied', 'no se pueden crear perfiles a mano');
+update public.perfiles set nombre = 'Ana María Rojas';
+select prueba.ok((select nombre = 'Ana María Rojas' from public.perfiles where id = :'ana'), 'se puede editar el propio nombre');
+update public.perfiles set nombre = 'Hackeado' where id = :'beto';
+reset role;
+select prueba.ok((select nombre = 'Beto Díaz' from public.perfiles where id = :'beto'), 'no se puede editar el perfil de otro');
+set role authenticated;
+
+select prueba.como(:'gabo');
+select public.elegir_rol('estudiante');
+select prueba.ok((select rol = 'estudiante' from public.perfiles), 'quien entró con Google elige su rol');
+select prueba.falla($$select public.elegir_rol('conductor')$$, 'ya está definido', 'el rol no se puede cambiar después');
+
+-- ---------------------------------------------------------------------------
+-- 3. Vehículos y disponibilidad
+-- ---------------------------------------------------------------------------
+\echo '== Vehículos'
+
+select prueba.como(:'ana');
+select prueba.falla(format('insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (%L, %L, %L, %L, %L)', :'ana', 'AAA111', 'Kia', 'Picanto', 'Rojo'), 'row-level security', 'un estudiante no registra vehículo');
+select prueba.falla($$select public.cambiar_disponibilidad(true)$$, 'Solo los conductores', 'un estudiante no se pone disponible');
+
+select prueba.como(:'carlos');
+insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (:'carlos', 'ABC123', 'Chevrolet', 'Spark', 'Gris');
+select prueba.falla(format('insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (%L, %L, %L, %L, %L)', :'diana', 'ZZZ999', 'Kia', 'Rio', 'Azul'), 'row-level security', 'no se registra un vehículo a nombre de otro');
+select prueba.falla($$update public.vehiculos set placa = 'abc 123'$$, 'check', 'la placa debe tener el formato colombiano');
+select public.cambiar_disponibilidad(true);
+
+select prueba.como(:'diana');
+insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (:'diana', 'XYZ12D', 'Yamaha', 'NMAX', 'Negro');
+select public.cambiar_disponibilidad(true);
+select prueba.ok((select count(*) = 1 from public.vehiculos), 'el conductor ve solo su vehículo');
+
+select prueba.como(:'eva');
+select prueba.falla($$select public.cambiar_disponibilidad(true)$$, 'Registra tu vehículo', 'sin vehículo no se pone disponible');
+
+select prueba.como(:'hugo');
+insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (:'hugo', 'HUG001', 'Renault', 'Logan', 'Blanco');
+select public.cambiar_disponibilidad(true);
+
+-- ---------------------------------------------------------------------------
+-- 4. Pedir viaje
+-- ---------------------------------------------------------------------------
+\echo '== Pedir viaje'
+
+select prueba.como(:'ana');
+select public.solicitar_viaje(4.142, -73.626, ' Barrio La Esperanza ', 4.08, -73.58, 'USTA Villavicencio') as viaje_ana \gset
+select prueba.ok((select estado = 'solicitado' and origen_texto = 'Barrio La Esperanza' from public.viajes where id = :'viaje_ana'), 'el viaje queda solicitado y sin espacios sobrantes');
+select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'Otra casa', 4.08, -73.58, 'USTA')$$, 'Ya tienes un viaje activo', 'un estudiante no tiene dos viajes activos');
+select prueba.falla($$insert into public.viajes (estudiante_id, universidad_id, origen_lat, origen_lng, origen_texto, destino_lat, destino_lng, destino_texto) select id, 1, 1, 1, 'a', 2, 2, 'b' from public.perfiles$$, 'permission denied', 'no se insertan viajes a mano');
+
+select prueba.como(:'beto');
+select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'Casa', 4.1, -73.6, 'Casa')$$, 'Revisa el origen', 'origen y destino no pueden ser el mismo punto');
+select prueba.falla($$select public.solicitar_viaje(95, -73.6, 'Casa', 4.08, -73.58, 'USTA')$$, 'Revisa el origen', 'coordenadas fuera de rango');
+select prueba.ok((select count(*) = 0 from public.viajes), 'un estudiante no ve los viajes de otros');
+select public.solicitar_viaje(4.15, -73.64, 'Barrio El Buque', 4.08, -73.58, 'USTA Villavicencio') as viaje_beto \gset
+
+select prueba.como(:'carlos');
+select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'Casa', 4.08, -73.58, 'USTA')$$, 'Solo los estudiantes', 'un conductor no pide viajes');
+select prueba.ok((select count(*) = 2 from public.viajes), 'un conductor disponible ve las solicitudes');
+
+select prueba.como(:'eva');
+select prueba.ok((select count(*) = 0 from public.viajes), 'un conductor no disponible no ve solicitudes');
+
+select prueba.como(:'hugo');
+select prueba.ok((select count(*) = 0 from public.viajes), 'un conductor de otra universidad no ve las solicitudes');
+select prueba.falla(format('select public.ofertar(%L, 7000)', :'viaje_ana'), 'ya no está disponible', 'ni puede ofertar en ellas');
+
+-- ---------------------------------------------------------------------------
+-- 5. Ofertas
+-- ---------------------------------------------------------------------------
+\echo '== Ofertas'
+
+select prueba.como(:'carlos');
+select public.ofertar(:'viaje_ana', 8000) as oferta_carlos \gset
+select public.ofertar(:'viaje_ana', 7500) as oferta_carlos_2 \gset
+select prueba.ok(:'oferta_carlos' = :'oferta_carlos_2', 'volver a ofertar actualiza la misma oferta');
+select prueba.ok((select precio = 7500 from public.ofertas where id = :'oferta_carlos'), 'el precio nuevo queda guardado');
+select prueba.falla(format('select public.ofertar(%L, 500)', :'viaje_ana'), 'precio', 'precio por debajo del mínimo');
+select prueba.falla(format('select public.ofertar(%L, 150000)', :'viaje_ana'), 'precio', 'precio por encima del máximo');
+select public.ofertar(:'viaje_beto', 9000) as oferta_carlos_beto \gset
+
+select prueba.como(:'diana');
+select public.ofertar(:'viaje_ana', 7000) as oferta_diana \gset
+select prueba.ok((select count(*) = 1 from public.ofertas), 'un conductor no ve las ofertas de otros conductores');
+
+select prueba.como(:'eva');
+select prueba.falla(format('select public.ofertar(%L, 7000)', :'viaje_ana'), 'Ponte disponible', 'un conductor no disponible no oferta');
+
+select prueba.como(:'ana');
+select prueba.falla(format('select public.ofertar(%L, 7000)', :'viaje_ana'), 'Ponte disponible', 'un estudiante no oferta');
+select prueba.ok((select count(*) = 2 from public.ofertas), 'el estudiante ve las ofertas de su viaje');
+select prueba.ok((select count(*) = 2 from public.vehiculos), 'el estudiante ve los vehículos de quienes le ofertan');
+select prueba.ok((select count(*) = 1 from public.perfiles), 'antes de aceptar no ve el perfil completo (teléfono) del conductor');
+select prueba.ok((select count(*) = 2 from public.perfiles_publicos(array[:'carlos', :'diana']::uuid[])), 'sí ve nombre y reputación de quienes le ofertan');
+select prueba.ok((select count(*) = 0 from public.perfiles_publicos(array[:'hugo']::uuid[])), 'no ve perfiles públicos de otra universidad');
+
+select prueba.como(:'beto');
+select prueba.ok((select count(*) = 1 from public.ofertas), 'otro estudiante solo ve las ofertas de su propio viaje');
+select prueba.ok((select count(*) = 1 from public.vehiculos), 'y solo los vehículos de quien le ofertó');
+select prueba.falla(format('select public.aceptar_oferta(%L)', :'oferta_diana'), 'no existe', 'no se acepta una oferta de un viaje ajeno');
+
+-- ---------------------------------------------------------------------------
+-- 6. Aceptar
+-- ---------------------------------------------------------------------------
+\echo '== Aceptar'
+
+select prueba.como(:'ana');
+select public.aceptar_oferta(:'oferta_carlos');
+reset role;
+select prueba.ok((select estado = 'aceptado' and conductor_id = :'carlos' and precio = 7500 from public.viajes where id = :'viaje_ana'), 'aceptar asigna conductor y precio');
+select prueba.ok((select estado = 'rechazada' from public.ofertas where id = :'oferta_diana'), 'las demás ofertas del viaje quedan rechazadas');
+select prueba.ok((select estado = 'retirada' from public.ofertas where id = :'oferta_carlos_beto'), 'las ofertas del conductor en otros viajes se retiran');
+set role authenticated;
+
+select prueba.como(:'beto');
+select prueba.falla(format('select public.aceptar_oferta(%L)', :'oferta_carlos_beto'), 'retiró', 'no se acepta una oferta retirada');
+
+select prueba.como(:'carlos');
+select prueba.falla(format('select public.ofertar(%L, 9000)', :'viaje_beto'), 'Termina tu viaje actual', 'un conductor con viaje no oferta en otro');
+select prueba.ok((select count(*) = 1 from public.viajes where estado = 'solicitado'), 'sigue viendo solicitudes, pero no puede ofertar');
+select prueba.ok((select telefono = '+573001112233' from public.perfiles where id = :'ana'), 'el conductor ve el teléfono del estudiante durante el viaje');
+
+select prueba.como(:'ana');
+select prueba.ok((select count(*) = 2 from public.perfiles), 'el estudiante ve el perfil completo de su conductor');
+select prueba.ok((select count(*) = 1 from public.vehiculos), 'y solo el vehículo de su conductor');
+select prueba.falla(format('select public.aceptar_oferta(%L)', :'oferta_diana'), 'ya no está buscando', 'no se acepta otra oferta después');
+
+select prueba.como(:'diana');
+select prueba.ok((select count(*) = 0 from public.perfiles where id = :'ana'), 'el conductor rechazado no ve el perfil del estudiante');
+
+-- ---------------------------------------------------------------------------
+-- 7. Iniciar, terminar y calificar
+-- ---------------------------------------------------------------------------
+\echo '== Iniciar, terminar, calificar'
+
+select prueba.como(:'diana');
+select prueba.falla(format('select public.iniciar_viaje(%L)', :'viaje_ana'), 'No puedes iniciar', 'otro conductor no inicia el viaje');
+select prueba.falla(format('select public.cancelar_viaje(%L)', :'viaje_ana'), 'No puedes cancelar', 'otro conductor no cancela el viaje');
+
+select prueba.como(:'carlos');
+select prueba.falla(format('select public.terminar_viaje(%L)', :'viaje_ana'), 'No puedes terminar', 'no se termina sin iniciar');
+select public.iniciar_viaje(:'viaje_ana');
+
+select prueba.como(:'ana');
+select prueba.falla(format('select public.cancelar_viaje(%L)', :'viaje_ana'), 'No puedes cancelar', 'en curso ya no se cancela');
+select prueba.falla(format('select public.calificar(%L, 5)', :'viaje_ana'), 'terminados', 'no se califica antes de terminar');
+
+select prueba.como(:'carlos');
+select public.terminar_viaje(:'viaje_ana');
+
+select prueba.como(:'ana');
+select public.calificar(:'viaje_ana', 5, '  Muy puntual  ');
+select prueba.falla(format('select public.calificar(%L, 4)', :'viaje_ana'), 'Ya calificaste', 'se califica una sola vez');
+select prueba.falla(format('select public.calificar(%L, 6)', :'viaje_ana'), '1 a 5', 'las estrellas van de 1 a 5');
+select prueba.ok((select count(*) = 1 from public.perfiles), 'terminado el viaje, ya no ve el perfil completo del conductor');
+select prueba.ok((select calificacion = 5.0 and viajes_terminados = 1 from public.perfiles_publicos(array[:'carlos']::uuid[])), 'el promedio y los viajes del conductor se actualizan');
+
+select prueba.como(:'beto');
+select prueba.falla(format('select public.calificar(%L, 1)', :'viaje_ana'), 'No puedes calificar', 'nadie ajeno califica el viaje');
+
+select prueba.como(:'carlos');
+select public.calificar(:'viaje_ana', 4);
+select prueba.ok((select count(*) = 2 from public.calificaciones), 'el conductor ve la que hizo y la que recibió');
+select prueba.ok((select comentario = 'Muy puntual' from public.calificaciones where autor_id = :'ana'), 'el comentario se guarda sin espacios sobrantes');
+
+-- ---------------------------------------------------------------------------
+-- 8. Cancelar y disponibilidad
+-- ---------------------------------------------------------------------------
+\echo '== Cancelar y disponibilidad'
+
+select prueba.como(:'diana');
+select public.ofertar(:'viaje_beto', 6000) as oferta_diana_beto \gset
+select prueba.falla(format('select public.cancelar_viaje(%L)', :'viaje_beto'), 'No puedes cancelar', 'quien solo ofertó no cancela el viaje');
+select public.cambiar_disponibilidad(false);
+select prueba.ok((select estado = 'retirada' from public.ofertas where id = :'oferta_diana_beto'), 'al dejar de estar disponible se retiran sus ofertas');
+select prueba.ok((select count(*) = 0 from public.viajes where estado = 'solicitado'), 'y deja de ver solicitudes');
+
+select prueba.como(:'beto');
+select public.cancelar_viaje(:'viaje_beto');
+select prueba.ok((select estado = 'cancelado' and cancelado_por = :'beto' from public.viajes where id = :'viaje_beto'), 'el estudiante cancela su solicitud');
+select public.solicitar_viaje(4.15, -73.64, 'Barrio El Buque', 4.08, -73.58, 'USTA Villavicencio') as viaje_beto_2 \gset
+
+select prueba.como(:'carlos');
+select public.ofertar(:'viaje_beto_2', 6500) as oferta_carlos_beto_2 \gset
+select prueba.como(:'beto');
+select public.aceptar_oferta(:'oferta_carlos_beto_2');
+select prueba.como(:'carlos');
+select public.cancelar_viaje(:'viaje_beto_2');
+select prueba.ok((select estado = 'cancelado' and cancelado_por = :'carlos' from public.viajes where id = :'viaje_beto_2'), 'el conductor asignado puede cancelar un viaje aceptado');
+
+-- Borrar el vehículo apaga la disponibilidad.
+delete from public.vehiculos;
+reset role;
+select prueba.ok((select not disponible from public.perfiles where id = :'carlos'), 'sin vehículo, el conductor deja de estar disponible');
+set role authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 9. Sin sesión (anon)
+-- ---------------------------------------------------------------------------
+\echo '== Sin sesión'
+reset role;
+select prueba.como(null);
+set role anon;
+
+select prueba.ok((select count(*) = 2 from public.universidades), 'sin sesión se ven las universidades');
+select prueba.falla($$select * from public.viajes$$, 'permission denied', 'sin sesión no se ven viajes');
+select prueba.ok((select count(*) = 0 from public.perfiles), 'sin sesión no se ven perfiles');
+select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'a', 4.08, -73.58, 'b')$$, 'permission denied', 'sin sesión no se llaman las funciones');
+select prueba.falla($$select privado.mi_perfil()$$, 'permission denied', 'sin sesión no se usa el esquema privado');
+
+reset role;
+set role authenticated;
+select prueba.falla($$select privado.universidad_por_correo('a@ustavillavo.edu.co')$$, 'permission denied', 'las funciones internas del registro no se llaman desde la app');
+reset role;
+
+\echo '== Todas las pruebas pasaron'

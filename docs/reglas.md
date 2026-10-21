@@ -1,29 +1,43 @@
-# Reglas del viaje (borrador)
+# Reglas del viaje
 
-Estado: **incompleto**. Lo marcado con ❓ lo tiene que decidir el equipo; hasta entonces la fase 1 (modelo de datos y `viaje.ts`) no empieza.
+Las reglas viven en dos lugares que deben coincidir:
+- `app/lib/viaje.ts`: funciones puras para la pantalla, probadas con `npm test`.
+- `supabase/migraciones/004-viajes.sql`: funciones RPC que de verdad las hacen cumplir, probadas con `supabase/pruebas/`.
 
-## Lo que ya sabemos
-Sacado de los mockups (`docs/diseno/`) y de la landing original (`docs/landing-original/`).
+Si cambias una regla, cámbiala en los dos y en sus pruebas.
 
+## Decidido por el equipo
 - **Ciudad:** Villavicencio, Colombia.
-- **Roles:** estudiante y conductor. El registro pide nombre, correo institucional, teléfono (+57), tipo de usuario, contraseña y aceptar términos.
-- **Acceso:** correo y contraseña, o Google. Recuperar contraseña envía un **enlace** al correo.
-- **Estudiante:** ve un mapa con la ruta y tiempos (por ejemplo "8 min · 2,4 km"); accesos a *Solicitar viaje*, *Mis viajes*, *Favoritos* y *Pago*.
-- **Conductor:** interruptor "Estás disponible" para recibir solicitudes; estadísticas (viajes, calificación, % de aceptación); ingresos por día de la semana; *Mis viajes* y *Vehículo*.
-- **Navegación:** barra inferior con Inicio, Viajes, Wallet y Perfil, igual para los dos roles.
-- **Viajes compartidos:** la landing dice que la IA optimiza la ruta "cuando el conductor tiene varias personas por recoger a la vez".
+- **Universidad:** por ahora solo la **Universidad Santo Tomás, seccional Villavicencio**. El modelo admite más universidades (tabla `universidades`), y nadie ve viajes ni perfiles de otra universidad.
+- **Correo:** solo se registran correos **@ustavillavo.edu.co**. Lo bloquea la base de datos (trigger al crear la cuenta), tanto con contraseña como con Google, y también al cambiar el correo.
+- **Conductor:** también es estudiante de la universidad (mismo filtro de correo). Debe registrar su vehículo (placa colombiana) para ponerse disponible.
+- **Roles:** cada cuenta es **estudiante** o **conductor**. Se elige al registrarse; quien entra con Google lo elige después, una sola vez.
+- **Precio:** lo pone el **conductor**. Los conductores disponibles ofertan su precio en una solicitud y el estudiante escoge una oferta (como InDrive). Límite técnico entre $1.000 y $100.000 para atajar errores de digitación (no es una tarifa).
+- **Viajes:** de **una sola persona** (un estudiante por viaje).
 
-## Preguntas abiertas
-| # | Pregunta | Por qué importa |
+## Cómo funciona un viaje
+```
+solicitado ──(el estudiante acepta una oferta)──▶ aceptado ──(recoge)──▶ en_curso ──(llega)──▶ terminado
+     └──────────────(cancelar)──────────────┴──▶ cancelado
+```
+- **solicitado:** el estudiante pidió el viaje. Si tiene ofertas activas, la pantalla dice "Con ofertas".
+- Un conductor tiene **una oferta por viaje**; si vuelve a ofertar se actualiza el precio. Puede retirarla.
+- Al aceptar una oferta, las demás del viaje quedan rechazadas, y las ofertas de ese conductor en **otros** viajes se retiran (solo lleva un viaje a la vez).
+- **aceptado** ("Conductor en camino"): cada uno ve el perfil completo del otro, con teléfono, hasta que el viaje termina.
+- Solo el conductor asignado inicia (**en_curso**) y termina (**terminado**) el viaje.
+- Un estudiante tiene a lo sumo **un viaje activo**; un conductor, a lo sumo **uno aceptado o en curso**.
+- Si el conductor deja de estar disponible o borra su vehículo, sus ofertas activas se retiran.
+- **Calificación:** al terminar, cada uno califica al otro una vez (1 a 5 estrellas, comentario opcional de hasta 300 caracteres).
+
+## Provisional (falta que el equipo decida)
+| # | Pregunta | Cómo quedó mientras tanto |
 |---|---|---|
-| 1 | ❓ ¿El conductor también debe ser estudiante de la universidad? ¿Cómo se verifica? | Define el registro y las políticas de seguridad |
-| 2 | ❓ ¿Quién fija el precio? (el estudiante propone y el conductor contraoferta, como InDrive; tarifa fija; o el costo se divide entre quienes comparten) | Es el corazón del estado del viaje |
-| 3 | ❓ ¿Un viaje es de una persona o se comparte entre varias? ¿Cuántas recogidas máximo? | Cambia el modelo de datos |
-| 4 | ❓ ¿Qué universidades de Villavicencio entran? ¿Solo de ida a la universidad o también de regreso? | Destinos y correos permitidos |
-| 5 | ❓ ¿Dominios de correo institucional aceptados? | Filtro de registro y de Google |
-| 6 | ❓ Wallet y pagos: ¿dinero real o simulado? (recomendado: simulado) | Alcance y riesgo legal |
-| 7 | ❓ "IA para la mejor ruta": ¿modelo de IA real o un algoritmo que ordene las recogidas? (recomendado: algoritmo) | Alcance y explicación en la presentación |
-| 8 | ❓ ¿Qué pasa si un conductor o estudiante cancela? ¿Hay penalización? | Estados del viaje |
+| 1 | ¿Solo de ida a la universidad o también de regreso? | El viaje guarda origen y destino libres; no se obliga a que uno sea la universidad. |
+| 2 | Cancelaciones: ¿quién, cuándo y con qué penalización? | El estudiante cancela mientras busca conductor; ya aceptado, cancela cualquiera de los dos; en curso nadie. **Sin penalización.** |
+| 3 | Wallet y pagos: ¿dinero real o simulado? (recomendado: simulado) | Todavía no hay tablas de pagos; el viaje solo guarda el precio acordado. |
+| 4 | "IA para la mejor ruta": ¿modelo de IA o algoritmo? | No aplica con viajes de una persona; queda para cuando haya viajes compartidos. |
+| 5 | ¿Las solicitudes vencen si nadie oferta? | No vencen; el estudiante las cancela. |
 
-## Estados del viaje (propuesta, a validar con las respuestas)
-`solicitado → con ofertas → aceptado → conductor en camino → en curso → terminado`, con `cancelado` posible antes de `en curso`. La lógica irá en `app/lib/viaje.ts` como funciones puras con pruebas.
+## Pendiente para otras fases
+- Ubicación exacta de la sede (columnas `lat` y `lng` de `universidades`): se llena en la fase 4 con el mapa.
+- Supabase devuelve un error genérico ("Database error saving new user") cuando el trigger rechaza un correo. Por eso el formulario de registro (fase 2) también valida el dominio para mostrar un mensaje claro.
