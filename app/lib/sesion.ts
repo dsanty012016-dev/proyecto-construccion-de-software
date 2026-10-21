@@ -12,9 +12,27 @@ export async function perfilActual() {
   // RLS: cada quien solo puede leer su propio perfil.
   const { data: perfil } = await supabase
     .from("perfiles")
-    .select("id, nombre, rol, telefono, disponible")
+    .select("id, nombre, rol, telefono, disponible, universidad_id")
     .eq("id", data.user.id)
     .single();
 
   return { usuario: data.user, perfil };
+}
+
+/** Ruta de inicio de cada rol (null si todavía no eligió). */
+export function inicioDeRol(rol: "estudiante" | "conductor" | null | undefined) {
+  if (rol === "estudiante") return "/estudiante";
+  if (rol === "conductor") return "/conductor";
+  return "/elegir-rol";
+}
+
+/**
+ * Para las zonas de un solo rol: si la persona es de otro rol (o no tiene),
+ * se le manda a su inicio. La seguridad de verdad está en RLS y en las
+ * funciones de la base; esto solo evita mostrar pantallas que no le sirven.
+ */
+export async function exigirRol(rol: "estudiante" | "conductor") {
+  const sesion = await perfilActual();
+  if (!sesion.perfil || sesion.perfil.rol !== rol) redirect(inicioDeRol(sesion.perfil?.rol));
+  return { usuario: sesion.usuario, perfil: sesion.perfil };
 }

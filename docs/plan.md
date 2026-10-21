@@ -7,10 +7,11 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 0 | Base: Next, tokens de color, fuentes, logos, PWA, `AGENTS.md`, CI | Sonnet 5.5 | Medio |
 | 1 | Modelo de datos, SQL con RLS, `viaje.ts` y sus pruebas | Opus 5.5 | Alto |
 | 2 | Registro, login, Google restringido al dominio, roles | Sonnet 5.5 (seguridad revisada con Opus) | Medio |
-| 3 | Pantallas de estudiante y conductor según los mockups | Sonnet 5.5 | Medio |
+| 3 | Pantallas de estudiante y conductor según el diseño nuevo (lienzo "UniGo · Pantallas fase 3") | Sonnet 5.5 | Medio |
 | 4 | Mapa, ubicación y tiempo real (ofertas y seguimiento) | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 5 | Landing pública con A-Frame | Sonnet 5.5 | Medio |
 | 6 | Textos, ajustes visuales, accesibilidad | Haiku 5.5 | Bajo |
+| 4b | Billetera simulada: saldo, recargas de prueba, pago del viaje y comisión del 10 % al conductor (rama `fase-pagos`) | Opus diseña, Sonnet implementa | Alto, luego medio |
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
 ## Avance

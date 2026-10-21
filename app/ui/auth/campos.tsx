@@ -100,12 +100,12 @@ export function CampoClave({ etiqueta, error, icono, className, ...resto }: Prop
   );
 }
 
-export function BotonEnviar({ children, enviando }: { children: React.ReactNode; enviando: string }) {
+export function BotonEnviar({ children, enviando, deshabilitado }: { children: React.ReactNode; enviando: string; deshabilitado?: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || deshabilitado}
       className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-semibold text-texto transition-colors hover:bg-primario/85 disabled:opacity-70"
     >
       {pending ? enviando : children}
