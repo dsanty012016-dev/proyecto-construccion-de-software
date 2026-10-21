@@ -13,6 +13,8 @@ Definidos una sola vez en `app/globals.css`. Contrastes calculados (WCAG): el te
 | `secundario` | `#60A5FA` | Texto azul, enlaces, líneas de ruta, estados seleccionados | 7,4:1 |
 | `texto` | `#F8FAFC` | Títulos, texto principal, nombres de lugares | 17,9:1 |
 | `texto-suave` | `#94A3B8` | Descripciones, información secundaria, iconos secundarios | 7,3:1 |
+| `linea` | `#26344F` | Bordes finos y separadores sobre fondo oscuro (no es texto) | — |
+| `tinta-suave` | `#475569` | Texto secundario sobre fondos claros (bloque blanco del sitio) | 7,2:1 sobre `texto` |
 
 Texto blanco sobre un botón `primario`: 4,9:1 (cumple).
 
