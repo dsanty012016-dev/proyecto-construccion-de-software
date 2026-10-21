@@ -59,7 +59,8 @@ describe("registro", () => {
 
   it("exige elegir rol y aceptar los términos", () => {
     expect(erroresDe({ ...registroValido, rol: "admin" }).rol).toMatch(/estudiante o conductor/);
-    const { terminos: _sinTerminos, ...sinTerminos } = registroValido;
+    const sinTerminos: Record<string, string> = { ...registroValido };
+    delete sinTerminos.terminos;
     expect(erroresDe(sinTerminos).terminos).toMatch(/términos/);
   });
 });

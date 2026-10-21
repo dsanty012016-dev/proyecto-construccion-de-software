@@ -22,8 +22,10 @@ import {
 const MENSAJE_GENERICO = "No pudimos completar la acción. Intenta de nuevo en un momento.";
 
 function sinClaves(datos: Record<string, string>) {
-  const { clave: _c, confirmacion: _cc, ...resto } = datos;
-  return resto;
+  const copia = { ...datos };
+  delete copia.clave;
+  delete copia.confirmacion;
+  return copia;
 }
 
 /** Dirección del sitio (http://localhost:3000 o la de Vercel) para los enlaces de los correos. */
