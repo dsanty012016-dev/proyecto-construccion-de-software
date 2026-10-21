@@ -9,6 +9,7 @@ import { calificacionTexto, etiquetaEstado, fechaCorta, hace, nombreCorto, pesos
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
+import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { InterruptorDisponible } from "@/app/ui/conductor/interruptor-disponible";
@@ -55,6 +56,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       </header>
 
       {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
+      <EstadoCuenta personaId={usuario.id} />
 
       {!verificado && (
         <section aria-labelledby="titulo-verificar" className="space-y-3 rounded-2xl border border-secundario/50 p-5">

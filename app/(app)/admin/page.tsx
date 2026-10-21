@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { reportesRecientes } from "@/app/lib/consultas-billetera";
 import { conductoresPorRevisar } from "@/app/lib/consultas-verificacion";
 import { nombreDocumento } from "@/app/lib/documentos";
 import { fechaCorta } from "@/app/lib/formato";
@@ -13,13 +14,13 @@ export const metadata: Metadata = { title: "Administración" };
 // se abren con enlaces firmados que vencen en 5 minutos (recarga para otros).
 export default async function PaginaAdmin() {
   const { usuario } = await exigirAdmin();
-  const conductores = await conductoresPorRevisar();
+  const [conductores, reportes] = await Promise.all([conductoresPorRevisar(), reportesRecientes()]);
   const deOtros = conductores.filter((c) => c.conductorId !== usuario.id);
   const tengoPropios = deOtros.length !== conductores.length;
 
   return (
     <main className="space-y-5 px-5 pt-6">
-      <EncabezadoPantalla titulo="Revisar conductores" texto="Documentos pendientes de aprobación." volverA="/perfil" />
+      <EncabezadoPantalla titulo="Revisar conductores" texto="Documentos pendientes y reportes." volverA="/perfil" />
       {tengoPropios && <Aviso tipo="info">Tus propios documentos los revisa otro administrador.</Aviso>}
 
       {deOtros.length === 0 ? (
@@ -59,6 +60,27 @@ export default async function PaginaAdmin() {
           ))}
         </ul>
       )}
+
+      <section aria-labelledby="titulo-reportes" className="space-y-3">
+        <h2 id="titulo-reportes" className="text-lg">
+          Reportes de mal comportamiento
+        </h2>
+        {reportes.length === 0 ? (
+          <p className="text-sm text-texto-suave">No hay reportes.</p>
+        ) : (
+          <ul className="space-y-3">
+            {reportes.map((r) => (
+              <li key={r.id} className="space-y-1 rounded-2xl bg-superficie p-4">
+                <p className="text-sm">
+                  <span className="font-semibold">{r.autor}</span> reportó a <span className="font-semibold">{r.sobre}</span>
+                </p>
+                <p className="text-sm break-words">“{r.motivo}”</p>
+                <p className="text-xs text-texto-suave">{fechaCorta(r.creadoEn)}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }

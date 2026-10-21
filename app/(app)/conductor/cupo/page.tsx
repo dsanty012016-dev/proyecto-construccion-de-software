@@ -50,6 +50,7 @@ export default async function PaginaCupoConductor() {
   const destino = { lat: cupo.destino_lat, lng: cupo.destino_lng };
   const paradas = [...aprobados, ...pendientes].map((s) => ({ lat: s.puesto.recogida_lat, lng: s.puesto.recogida_lng }));
   const publicado = cupo.estado === "publicado";
+  const hayPagos = aprobados.some((s) => s.puesto.pagado > 0);
 
   return (
     <main className="space-y-5 px-5 pt-6">
@@ -65,7 +66,7 @@ export default async function PaginaCupoConductor() {
         </div>
         <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} />
         <p className="text-sm text-texto-suave">
-          {pesos(cupo.precio)} por puesto · recibes {pesos(gananciaConductor(cupo.precio))} por cada estudiante
+          {pesos(cupo.precio)} por puesto · recibes {pesos(gananciaConductor(cupo.precio))} por cada estudiante que pague, al llegar
         </p>
       </section>
 
@@ -111,6 +112,9 @@ export default async function PaginaCupoConductor() {
             {aprobados.map((solicitud) => (
               <li key={solicitud.puesto.id} className="space-y-3 rounded-2xl bg-superficie p-4">
                 <Persona solicitud={solicitud} salida={salida} destino={destino} />
+                <p className={`text-sm font-semibold ${solicitud.puesto.pagado > 0 ? "text-secundario" : "text-texto-suave"}`}>
+                  {solicitud.puesto.pagado > 0 ? `Pagó ${pesos(solicitud.puesto.pagado)}` : "Aún no ha pagado (tiene hasta 10 minutos antes de salir)"}
+                </p>
                 {solicitud.telefono && (
                   <a
                     href={`tel:${solicitud.telefono}`}
@@ -128,10 +132,14 @@ export default async function PaginaCupoConductor() {
 
       {publicado ? (
         <>
-          <BotonAccion accion={iniciarCupo} campos={{ cupo: cupo.id }} enviando="Saliendo…" confirmar="¿Sales ahora? Las solicitudes que sigan pendientes quedarán rechazadas.">
+          <BotonAccion accion={iniciarCupo} campos={{ cupo: cupo.id }} enviando="Saliendo…" confirmar="¿Sales ahora? Solo van quienes pagaron; los que no, pierden el puesto y las solicitudes pendientes quedan rechazadas.">
             Salir ahora · Iniciar cupo
           </BotonAccion>
-          <BotonAccion accion={cancelarCupo} campos={{ cupo: cupo.id }} estilo="peligro" confirmar="¿Cancelar el cupo? Se cancelarán todos los puestos.">
+          <BotonAccion accion={cancelarCupo} campos={{ cupo: cupo.id }} estilo="peligro" confirmar={
+              hayPagos
+                ? "¿Cancelar el cupo? Los estudiantes recuperan todo su dinero y tú sumas 1 strike."
+                : "¿Cancelar el cupo? Se cancelarán todas las solicitudes."
+            }>
             Cancelar cupo
           </BotonAccion>
         </>

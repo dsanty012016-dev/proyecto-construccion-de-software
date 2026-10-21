@@ -95,6 +95,10 @@ from public.perfiles p
 cross join unnest(enum_range(null::public.tipo_documento)) as t(tipo)
 where p.id in (:'carlos', :'diana', :'eva', :'hugo');
 
+-- Saldo de prueba para todos (012): así las secciones anteriores a la
+-- billetera prueban sus reglas sin recargar. La billetera se prueba en 8e.
+insert into public.billeteras (persona_id, saldo) select id, 200000 from public.perfiles;
+
 -- ---------------------------------------------------------------------------
 -- 2. Perfiles
 -- ---------------------------------------------------------------------------
@@ -439,7 +443,9 @@ select prueba.ok((select estado = 'retirado' from public.puestos where id = :'pu
 select public.pedir_puesto(:'cupo_eva', 4.141, -73.631, 'Cra 31') as puesto_ana_otra_vez \gset
 select prueba.ok((select estado = 'pendiente' and recogida_texto = 'Cra 31' from public.puestos where id = :'puesto_ana'), 'y puede volver a pedirlo desde otro punto');
 
--- Salir y llegar.
+-- Salir y llegar (desde 012 hace falta al menos un puesto pagado).
+select prueba.como(:'gabo');
+select public.pagar_puesto(:'cupo_eva');
 select prueba.como(:'eva');
 select public.iniciar_cupo(:'cupo_eva');
 reset role;
@@ -454,7 +460,7 @@ select prueba.ok((select estado = 'terminado' from public.cupos where id = :'cup
 
 -- Cancelar un cupo cancela sus puestos.
 select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 1, 5000) as cupo_eva_2 \gset
-select prueba.falla(format('select public.iniciar_cupo(%L)', :'cupo_eva_2'), 'Aún no tienes estudiantes aprobados', 'no sale sin estudiantes aprobados');
+select prueba.falla(format('select public.iniciar_cupo(%L)', :'cupo_eva_2'), 'Aún no tienes estudiantes', 'no sale sin estudiantes con el puesto pagado');
 select prueba.como(:'ana');
 select public.pedir_puesto(:'cupo_eva_2', 4.14, -73.63, 'Cra 30') as puesto_ana_2 \gset
 select prueba.como(:'eva');
@@ -548,6 +554,224 @@ update public.perfiles set es_admin = true where id = :'ivan';
 set role authenticated;
 select prueba.como(:'ivan');
 select prueba.falla(format('select public.revisar_documento(%L, true)', :'doc_tarjeta'), 'propios', 'nadie revisa sus propios documentos');
+
+-- ---------------------------------------------------------------------------
+-- 8e. Billetera, cancelaciones con cobro y strikes (012)
+-- ---------------------------------------------------------------------------
+\echo '== Billetera y strikes'
+
+reset role;
+\set jose '00000000-0000-0000-0000-0000000000c9'
+\set kike '00000000-0000-0000-0000-0000000000d1'
+insert into auth.users (id, email, raw_user_meta_data) values
+  (:'jose', 'jose@ustavillavo.edu.co', '{"nombre":"José Peña","rol":"estudiante"}'),
+  (:'kike', 'kike@ustavillavo.edu.co', '{"nombre":"Kike Lara","telefono":"+573001231234","rol":"conductor"}');
+insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (:'kike', 'KIK123', 'Renault', 'Sandero', 'Gris');
+insert into public.documentos_conductor (conductor_id, tipo, ruta, estado, autorizado_en)
+select :'kike', t.tipo, :'kike' || '/' || t.tipo || '.jpg', 'aprobado', now()
+from unnest(enum_range(null::public.tipo_documento)) as t(tipo);
+set role authenticated;
+
+-- Recargas
+select prueba.como(:'jose');
+select prueba.falla($$select public.recargar(1999)$$, 'entre $2.000', 'la recarga mínima es $2.000');
+select prueba.falla($$select public.recargar(500001)$$, 'entre $2.000', 'la recarga tiene un máximo');
+select public.recargar(20000);
+select prueba.ok((select saldo = 20000 from public.billeteras), 'la recarga suma al saldo');
+select prueba.ok((select count(*) = 1 and min(monto) = 20000 and min(saldo_despues) = 20000 from public.movimientos), 'y queda en los movimientos');
+select prueba.falla($$update public.billeteras set saldo = 999999$$, 'permission denied', 'nadie cambia su saldo a mano');
+select prueba.falla($$insert into public.movimientos (persona_id, tipo, monto, saldo_despues, descripcion) values (auth.uid(), 'recarga', 5, 5, 'x')$$, 'permission denied', 'nadie inventa movimientos');
+
+select prueba.como(:'kike');
+select public.cambiar_disponibilidad(true);
+select prueba.ok((select count(*) = 0 from public.billeteras), 'cada quien ve solo su billetera');
+
+-- A. Pago al aceptar y cobro al terminar
+select prueba.como(:'jose');
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_a \gset
+select prueba.como(:'kike');
+select public.ofertar(:'viaje_a', 30000);
+select prueba.como(:'jose');
+select id as oferta_a from public.ofertas where viaje_id = :'viaje_a' \gset
+select prueba.falla(format('select public.aceptar_oferta(%L)', :'oferta_a'), 'Saldo insuficiente', 'sin saldo suficiente no acepta');
+select prueba.como(:'kike');
+select public.ofertar(:'viaje_a', 8000);
+select prueba.como(:'jose');
+select public.aceptar_oferta(:'oferta_a');
+select prueba.ok((select saldo = 12000 from public.billeteras), 'al aceptar se paga el viaje');
+select prueba.ok((select pago_retenido = 8000 from public.viajes where id = :'viaje_a'), 'y el dinero queda retenido en el viaje');
+select prueba.como(:'kike');
+select public.iniciar_viaje(:'viaje_a');
+select public.terminar_viaje(:'viaje_a');
+select prueba.ok((select saldo = 7200 from public.billeteras), 'al terminar el conductor recibe el 90 %');
+reset role;
+select prueba.ok((select sum(monto) = 800 from public.comisiones where viaje_id = :'viaje_a'), 'y UniGo el 10 %');
+select prueba.ok((select pago_retenido = 0 from public.viajes where id = :'viaje_a'), 'y el viaje ya no retiene dinero');
+set role authenticated;
+
+-- B. El estudiante cancela con el conductor en camino: 20 % y un strike
+select prueba.como(:'jose');
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_b \gset
+select prueba.como(:'kike');
+select public.ofertar(:'viaje_b', 5000) as oferta_b \gset
+select prueba.como(:'jose');
+select public.aceptar_oferta(:'oferta_b');
+select public.cancelar_viaje(:'viaje_b');
+select prueba.ok((select saldo = 11000 from public.billeteras), 'cancelar con el conductor en camino cuesta el 20 %');
+select prueba.ok((select count(*) = 1 from public.strikes where vigente), 'y suma un strike');
+select prueba.como(:'kike');
+select prueba.ok((select saldo = 8100 from public.billeteras), 'el conductor recibe ese 20 % menos la comisión');
+
+-- C. Cancelar reportando mal comportamiento: sin cobro ni strike
+select prueba.como(:'jose');
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_c \gset
+select prueba.como(:'kike');
+select public.ofertar(:'viaje_c', 5000) as oferta_c \gset
+select prueba.como(:'jose');
+select public.aceptar_oferta(:'oferta_c');
+select prueba.falla(format('select public.cancelar_viaje(%L, %L)', :'viaje_c', 'x'), 'Cuéntanos qué pasó', 'el reporte necesita unas palabras');
+select public.cancelar_viaje(:'viaje_c', 'Me escribió cosas raras por mensaje');
+select prueba.ok((select saldo = 11000 from public.billeteras), 'con reporte se devuelve todo');
+select prueba.ok((select count(*) = 1 from public.strikes where vigente), 'y no suma strike');
+select prueba.ok((select count(*) = 1 from public.reportes), 'el reporte queda guardado');
+select prueba.como(:'kike');
+select prueba.ok((select count(*) = 0 from public.reportes), 'el conductor reportado no ve el reporte');
+select prueba.como(:'gabo');
+select prueba.ok((select count(*) = 1 from public.reportes where viaje_id = :'viaje_c'), 'un administrador sí lo ve');
+
+-- D. El conductor cancela: devolución completa y strike para él
+select prueba.como(:'jose');
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_d \gset
+select prueba.como(:'kike');
+select public.ofertar(:'viaje_d', 5000) as oferta_d \gset
+select prueba.como(:'jose');
+select public.aceptar_oferta(:'oferta_d');
+select prueba.como(:'kike');
+select public.cancelar_viaje(:'viaje_d');
+select prueba.ok((select count(*) = 1 from public.strikes where vigente), 'el conductor que cancela suma un strike');
+select prueba.como(:'jose');
+select prueba.ok((select saldo = 11000 from public.billeteras), 'y el estudiante recupera todo');
+
+-- F1. Cupo: pagar, dejarlo a tiempo (todo de vuelta) y cancelación del conductor
+select prueba.como(:'kike');
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 6000) as cupo_f1 \gset
+select prueba.como(:'jose');
+select public.pedir_puesto(:'cupo_f1', 4.14, -73.63, 'Cra 30') as puesto_f1 \gset
+select prueba.falla(format('select public.pagar_puesto(%L)', :'cupo_f1'), 'puesto aprobado', 'no paga antes de que lo aprueben');
+select prueba.como(:'kike');
+select public.responder_puesto(:'puesto_f1', true);
+select prueba.como(:'jose');
+select public.pagar_puesto(:'cupo_f1');
+select prueba.ok((select saldo = 5000 from public.billeteras), 'el estudiante paga su puesto');
+select prueba.falla(format('select public.pagar_puesto(%L)', :'cupo_f1'), 'Ya pagaste', 'no paga dos veces');
+select public.retirar_puesto(:'cupo_f1');
+select prueba.ok((select saldo = 11000 from public.billeteras), 'si deja el puesto con tiempo recupera todo');
+select prueba.ok((select count(*) = 1 from public.strikes where vigente), 'y no suma strike');
+select public.pedir_puesto(:'cupo_f1', 4.14, -73.63, 'Cra 30');
+select prueba.como(:'kike');
+select public.responder_puesto(:'puesto_f1', true);
+select prueba.como(:'jose');
+select public.pagar_puesto(:'cupo_f1');
+select prueba.como(:'kike');
+select public.cancelar_cupo(:'cupo_f1');
+select prueba.ok((select count(*) = 2 from public.strikes where vigente), 'cancelar un cupo con puestos pagados suma strike al conductor');
+select prueba.como(:'jose');
+select prueba.ok((select saldo = 11000 from public.billeteras), 'y los estudiantes recuperan todo');
+
+-- F2. Dejar el puesto a menos de 40 minutos: 30 % y un strike
+select prueba.como(:'kike');
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '30 minutes', 2, 6000) as cupo_f2 \gset
+select prueba.como(:'jose');
+select public.pedir_puesto(:'cupo_f2', 4.14, -73.63, 'Cra 30') as puesto_f2 \gset
+select prueba.como(:'kike');
+select public.responder_puesto(:'puesto_f2', true);
+select prueba.como(:'jose');
+select public.pagar_puesto(:'cupo_f2');
+select public.retirar_puesto(:'cupo_f2');
+select prueba.ok((select saldo = 9200 from public.billeteras), 'dejar el puesto tarde cuesta el 30 %');
+select prueba.ok((select count(*) = 2 from public.strikes where vigente), 'y suma un strike');
+select prueba.como(:'kike');
+select prueba.ok((select saldo = 9720 from public.billeteras), 'el conductor recibe ese 30 % menos la comisión');
+select public.cancelar_cupo(:'cupo_f2');
+select prueba.ok((select count(*) = 2 from public.strikes where vigente), 'cancelar un cupo sin pagos no suma strike');
+
+-- F3. Salir con puestos pagados, liberar a quien no pagó y cobrar al llegar
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 6000) as cupo_f3 \gset
+select prueba.como(:'jose');
+select public.pedir_puesto(:'cupo_f3', 4.14, -73.63, 'Cra 30') as puesto_f3 \gset
+select prueba.como(:'gabo');
+select public.pedir_puesto(:'cupo_f3', 4.13, -73.62, 'Calle 9') as puesto_gabo_f3 \gset
+select prueba.como(:'kike');
+select public.responder_puesto(:'puesto_f3', true);
+select public.responder_puesto(:'puesto_gabo_f3', true);
+select prueba.como(:'jose');
+select public.pagar_puesto(:'cupo_f3');
+select prueba.como(:'kike');
+select public.iniciar_cupo(:'cupo_f3');
+reset role;
+select prueba.ok((select estado = 'sin_pago' from public.puestos where id = :'puesto_gabo_f3'), 'al salir, quien no pagó pierde el puesto');
+set role authenticated;
+select public.terminar_cupo(:'cupo_f3');
+select prueba.ok((select saldo = 15120 from public.billeteras), 'al llegar el conductor cobra el 90 % de cada puesto pagado');
+
+-- Límite de pago: 10 minutos antes de la salida
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 1, 6000) as cupo_f4 \gset
+select prueba.como(:'gabo');
+select public.pedir_puesto(:'cupo_f4', 4.13, -73.62, 'Calle 9') as puesto_gabo_f4 \gset
+select prueba.como(:'kike');
+select public.responder_puesto(:'puesto_gabo_f4', true);
+reset role;
+update public.cupos set sale_en = now() + interval '5 minutes' where id = :'cupo_f4';
+set role authenticated;
+select prueba.como(:'gabo');
+select prueba.falla(format('select public.pagar_puesto(%L)', :'cupo_f4'), 'límite para pagar', 'no se paga a menos de 10 minutos de la salida');
+select prueba.ok((select libres = 1 from public.puestos_libres(array[:'cupo_f4']::uuid[])), 'y el puesto sin pagar ya no cuenta como ocupado');
+select prueba.como(:'kike');
+select public.cancelar_cupo(:'cupo_f4');
+
+-- E. Tres strikes: suspensión
+select prueba.como(:'jose');
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_e \gset
+select prueba.como(:'kike');
+select public.ofertar(:'viaje_e', 3000) as oferta_e \gset
+select prueba.como(:'jose');
+select public.aceptar_oferta(:'oferta_e');
+select public.cancelar_viaje(:'viaje_e');
+select prueba.ok((select count(*) = 1 and min(nivel) = 1 and max(hasta - desde) = interval '3 days' from public.suspensiones), 'con 3 strikes queda suspendido 3 días');
+select prueba.ok((select count(*) = 0 from public.strikes where vigente), 'y los strikes vuelven a cero');
+select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'X', 4.08, -73.58, 'U')$$, 'suspendida', 'suspendido no pide viajes');
+select prueba.falla(format('select public.pedir_puesto(%L, 4.1, -73.6, %L)', :'cupo_f4', 'x'), 'suspendida', 'ni pide puestos');
+
+-- Cada peso cuadra: lo que José recargó = su saldo + lo que ganó Kike + comisiones de sus viajes y puestos.
+-- (Sin RLS: José no puede ver el saldo de Kike ni las comisiones.)
+reset role;
+select prueba.ok((
+  select (select sum(monto) from public.movimientos where persona_id = :'jose' and tipo = 'recarga')
+       = (select saldo from public.billeteras where persona_id = :'jose')
+       + (select saldo from public.billeteras where persona_id = :'kike')
+       + (select coalesce(sum(c.monto), 0) from public.comisiones c
+          where c.viaje_id in (select id from public.viajes where estudiante_id = :'jose')
+             or c.puesto_id in (select id from public.puestos where estudiante_id = :'jose'))
+), 'el dinero cuadra: nada se crea ni se pierde');
+select prueba.ok((select bool_and(m.saldo_despues = b.saldo) from public.billeteras b
+                  join lateral (select saldo_despues from public.movimientos where persona_id = b.persona_id order by creado_en desc, id limit 1) m on true
+                  where b.persona_id in (:'jose', :'kike')), 'el último movimiento coincide con el saldo');
+
+-- Suspensiones escalonadas: 3, 7, 15 y 30 días
+select privado.dar_strike(:'kike', 'prueba');
+select prueba.ok((select max(hasta - desde) = interval '3 days' from public.suspensiones where persona_id = :'kike'), 'primera suspensión: 3 días');
+select privado.dar_strike(:'kike', 'prueba'), privado.dar_strike(:'kike', 'prueba'), privado.dar_strike(:'kike', 'prueba');
+select prueba.ok((select max(hasta - desde) = interval '7 days' and max(nivel) = 2 from public.suspensiones where persona_id = :'kike'), 'segunda suspensión: 7 días');
+select privado.dar_strike(:'kike', 'prueba'), privado.dar_strike(:'kike', 'prueba'), privado.dar_strike(:'kike', 'prueba');
+select privado.dar_strike(:'kike', 'prueba'), privado.dar_strike(:'kike', 'prueba'), privado.dar_strike(:'kike', 'prueba');
+select privado.dar_strike(:'kike', 'prueba'), privado.dar_strike(:'kike', 'prueba'), privado.dar_strike(:'kike', 'prueba');
+select prueba.ok((select array_agg(extract(day from hasta - desde)::int order by nivel) = array[3, 7, 15, 30, 30] from public.suspensiones where persona_id = :'kike'), 'luego 15 y de ahí en adelante 30 días');
+select prueba.ok((select not disponible from public.perfiles where id = :'kike'), 'suspendido deja de estar disponible');
+set role authenticated;
+select prueba.como(:'kike');
+select prueba.falla($$select public.cambiar_disponibilidad(true)$$, 'suspendida', 'suspendido no se pone disponible');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 1, 5000)$$, 'suspendida', 'ni publica cupos');
+select prueba.falla($$select privado.dar_strike(auth.uid(), 'x')$$, 'permission denied', 'nadie se pone strikes a mano');
 
 -- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)

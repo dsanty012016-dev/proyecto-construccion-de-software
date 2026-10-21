@@ -126,6 +126,8 @@ export interface CupoParaEstudiante extends CupoDisponible {
   miPuesto: FilaPuesto | null;
   /** Solo con el puesto aprobado y el cupo activo. */
   telefonoConductor: string | null;
+  /** Hora de la consulta, para calcular límites de pago y cobros en pantalla. */
+  ahora: number;
 }
 
 export async function cupoParaEstudiante(cupoId: string, estudianteId: string): Promise<CupoParaEstudiante | null> {
@@ -146,6 +148,7 @@ export async function cupoParaEstudiante(cupoId: string, estudianteId: string): 
     libres: libres.get(cupo.id) ?? 0,
     miPuesto: miPuesto.data ?? null,
     telefonoConductor: telefonos.get(cupo.conductor_id) ?? null,
+    ahora: Date.now(),
   };
 }
 

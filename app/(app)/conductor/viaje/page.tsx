@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { cancelarViaje, iniciarViaje, terminarViaje } from "@/app/lib/acciones-viaje";
+import { iniciarViaje, terminarViaje } from "@/app/lib/acciones-viaje";
 import { gananciaConductor } from "@/app/lib/comision";
 import { viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
 import { nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
+import { CancelarViaje } from "@/app/ui/comun/cancelar-viaje";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoTelefono, IconoUbicacion } from "@/app/ui/comun/iconos-app";
@@ -69,7 +70,7 @@ export default async function PaginaViajeConductor() {
       {viaje.precio !== null && (
         <section aria-label="Pago" className="flex items-center justify-between gap-3 rounded-2xl bg-superficie p-4">
           <div>
-            <p className="text-sm text-texto-suave">Recibes en tu billetera</p>
+            <p className="text-sm text-texto-suave">Recibes al terminar el viaje</p>
             <p className="text-xs text-texto-suave">Oferta {pesos(viaje.precio)} menos el 10 % de UniGo</p>
           </div>
           <p className="font-titulo text-xl font-bold">{pesos(gananciaConductor(viaje.precio))}</p>
@@ -85,9 +86,7 @@ export default async function PaginaViajeConductor() {
           <BotonAccion accion={iniciarViaje} campos={{ viaje: viaje.id }} enviando="Iniciando…">
             {nombre === "el estudiante" ? "Ya se subió · Iniciar viaje" : `${nombre} se subió · Iniciar viaje`}
           </BotonAccion>
-          <BotonAccion accion={cancelarViaje} campos={{ viaje: viaje.id }} estilo="peligro" confirmar="¿Cancelar el viaje?">
-            Cancelar viaje
-          </BotonAccion>
+          <CancelarViaje viajeId={viaje.id} quien="conductor" precio={viaje.pago_retenido} />
         </>
       )}
     </main>

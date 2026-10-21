@@ -79,11 +79,25 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - Si un documento se rechaza (con motivo) o se vuelve a subir, el conductor deja de estar disponible hasta que lo aprueben otra vez. Si cambia la placa, la tarjeta de propiedad vuelve a revisión.
 - Pendiente: política de privacidad escrita, borrar archivos viejos y vencimiento de la licencia.
 
+## Billetera, cancelaciones y strikes (fase 4b, migración 012)
+**Decidido por el equipo**
+- Billetera **simulada** (pasarela real después). Recargas con monto libre desde **$2.000**.
+- **Viaje por pedido:** el estudiante paga **al aceptar la oferta** (sin saldo no puede aceptar). El pago queda **retenido** y al terminar el viaje el conductor recibe el 90 % y UniGo el 10 %.
+- **Estudiante cancela con el conductor en camino:** se le cobra el **20 %** (el conductor recibe ese 20 % menos la comisión) y suma **1 strike**. Más adelante el cobro dependerá de cuánto avanzó el conductor (necesita el seguimiento en vivo). **Excepción:** si cancela reportando mal comportamiento o algo raro del conductor, no paga ni recibe strike; el reporte llega a los administradores.
+- **Conductor cancela un viaje aceptado:** devolución completa al estudiante y **1 strike** al conductor.
+- **Viaje en curso:** no se puede cancelar (por ahora).
+- **Cupos:** el estudiante aprobado paga su puesto **a más tardar 10 minutos antes** de la salida; si no paga, pierde el puesto. Si deja un puesto con **40 minutos o más** de anticipación recupera todo; con menos, se le cobra el **30 %** (recupera el 70 %) y suma **1 strike**. Si el **conductor cancela un cupo con puestos pagados**, todos recuperan su dinero y él suma **1 strike**. Al terminar el cupo, el conductor recibe el 90 % de cada puesto pagado.
+- **Strikes:** con **3 strikes** la cuenta queda **suspendida** (no puede pedir viajes, ofertar, publicar cupos ni pedir puestos). Primera suspensión **3 días**, luego **7**, **15** y de ahí en adelante **30**. Después de cada suspensión los strikes vuelven a cero.
+
+**Provisional (propuesto)**
+- Tope de $500.000 por recarga y de $1.000.000 de saldo.
+- Dejar un cupo aprobado a menos de 40 minutos suma strike aunque no haya pagado.
+- Al salir, los puestos aprobados que no se pagaron se liberan sin strike; para salir hace falta al menos un puesto pagado.
+
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |
 |---|---|---|
 | 1 | ¿Solo de ida a la universidad o también de regreso? | El viaje guarda origen y destino libres; no se obliga a que uno sea la universidad. |
-| 2 | Cancelaciones: ¿quién, cuándo y con qué penalización? | El estudiante cancela mientras busca conductor; ya aceptado, cancela cualquiera de los dos; en curso nadie. **Sin penalización.** |
 | 4 | "IA para la mejor ruta": ¿modelo de IA o algoritmo? | No aplica con viajes de una persona; queda para cuando haya viajes compartidos. |
 | 5 | ¿Las solicitudes vencen si nadie oferta? | No vencen; el estudiante las cancela. |
 

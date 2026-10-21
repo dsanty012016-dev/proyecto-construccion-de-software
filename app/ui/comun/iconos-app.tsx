@@ -108,3 +108,13 @@ export function IconoUbicacion(props: Props) {
     </Base>
   );
 }
+
+export function IconoBilletera(props: Props) {
+  return (
+    <Base {...props}>
+      <path d="M4 7a2 2 0 012-2h11a1 1 0 011 1v2" />
+      <path d="M4 7v10a2 2 0 002 2h13a1 1 0 001-1v-9a1 1 0 00-1-1H6a2 2 0 01-2-2z" />
+      <circle cx="16" cy="13" r="1.2" />
+    </Base>
+  );
+}

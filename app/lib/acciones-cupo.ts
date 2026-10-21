@@ -90,7 +90,7 @@ export async function responderPuesto(_anterior: EstadoFormulario, formulario: F
 /** Acciones con solo el id del cupo: retirar mi puesto, iniciar, terminar o cancelar el cupo. */
 async function accionSobreCupo(
   formulario: FormData,
-  funcion: "retirar_puesto" | "iniciar_cupo" | "terminar_cupo" | "cancelar_cupo",
+  funcion: "retirar_puesto" | "iniciar_cupo" | "terminar_cupo" | "cancelar_cupo" | "pagar_puesto",
 ): Promise<{ error: string | null; cupo: string | null }> {
   const validado = esquemaIdCupo.safeParse(datosDelFormulario(formulario));
   if (!validado.success) return { error: "Ese cupo no existe.", cupo: null };
@@ -99,6 +99,11 @@ async function accionSobreCupo(
   if (error) return { error: mensajeDeError(error), cupo: null };
   refrescar();
   return { error: null, cupo: validado.data.cupo };
+}
+
+export async function pagarPuesto(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
+  const { error } = await accionSobreCupo(formulario, "pagar_puesto");
+  return error ? falla(error) : { resultado: "listo", mensaje: "Puesto pagado." };
 }
 
 export async function retirarPuesto(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {

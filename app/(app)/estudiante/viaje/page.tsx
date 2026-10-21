@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cancelarViaje } from "@/app/lib/acciones-viaje";
+import { miSaldo } from "@/app/lib/consultas-billetera";
 import { viajeActivoDelEstudiante } from "@/app/lib/consultas-viaje";
 import { calificacionTexto, etiquetaEstado, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
+import { CancelarViaje } from "@/app/ui/comun/cancelar-viaje";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoEstrella, IconoTelefono } from "@/app/ui/comun/iconos-app";
@@ -20,7 +22,7 @@ export const metadata: Metadata = { title: "Tu viaje" };
 // acepta una, el seguimiento hasta que el conductor termina el viaje.
 export default async function PaginaViajeEstudiante() {
   const { usuario } = await exigirRol("estudiante");
-  const activo = await viajeActivoDelEstudiante(usuario.id);
+  const [activo, saldo] = await Promise.all([viajeActivoDelEstudiante(usuario.id), miSaldo(usuario.id)]);
   if (!activo) redirect("/estudiante");
   const { viaje, ofertas, conductor } = activo;
   const origen = { lat: viaje.origen_lat, lng: viaje.origen_lng };
@@ -45,12 +47,15 @@ export default async function PaginaViajeEstudiante() {
           </p>
         ) : (
           <section aria-labelledby="titulo-ofertas" className="space-y-3">
+            <p className="text-sm text-texto-suave">
+              Tu saldo: <span className="font-semibold text-texto">{pesos(saldo)}</span>. Pagas al aceptar una oferta.
+            </p>
             <h2 id="titulo-ofertas" className="text-sm font-semibold text-texto-suave">
               {ofertas.length} {ofertas.length === 1 ? "oferta" : "ofertas"}, de menor a mayor precio
             </h2>
             <ul className="space-y-3">
               {ofertas.map((oferta) => (
-                <TarjetaOferta key={oferta.ofertaId} oferta={oferta} />
+                <TarjetaOferta key={oferta.ofertaId} oferta={oferta} saldo={saldo} />
               ))}
             </ul>
           </section>
@@ -114,11 +119,7 @@ export default async function PaginaViajeEstudiante() {
         )}
       </section>
 
-      {viaje.estado === "aceptado" && (
-        <BotonAccion accion={cancelarViaje} campos={{ viaje: viaje.id }} estilo="peligro" confirmar="¿Cancelar el viaje? El conductor ya va en camino.">
-          Cancelar viaje
-        </BotonAccion>
-      )}
+      {viaje.estado === "aceptado" && <CancelarViaje viajeId={viaje.id} quien="estudiante" precio={viaje.pago_retenido} />}
     </main>
   );
 }
