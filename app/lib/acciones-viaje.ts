@@ -174,11 +174,13 @@ export async function guardarVehiculo(_anterior: EstadoFormulario, formulario: F
   const { supabase, usuario } = await conSesion();
   if (!usuario) return falla("Inicia sesión primero.");
 
-  // Un vehículo por conductor: se crea o se actualiza. Lo protegen las
-  // políticas RLS de 003-vehiculos.sql (solo el conductor toca el suyo).
-  const { error } = await supabase
-    .from("vehiculos")
-    .upsert({ conductor_id: usuario.id, ...validado.data }, { onConflict: "conductor_id" });
+  // Un vehículo por conductor: se crea o se actualiza. No se usa upsert porque
+  // la base solo deja cambiar placa, marca, modelo y color (nunca el dueño),
+  // y el upsert intentaría actualizar también conductor_id (003-vehiculos.sql).
+  const { data: existente } = await supabase.from("vehiculos").select("id").eq("conductor_id", usuario.id).maybeSingle();
+  const { error } = existente
+    ? await supabase.from("vehiculos").update(validado.data).eq("id", existente.id)
+    : await supabase.from("vehiculos").insert({ conductor_id: usuario.id, ...validado.data });
   if (error) {
     if (error.code === "23505") {
       return { resultado: "error", errores: { placa: "Esa placa ya está registrada." }, valores: datos };
