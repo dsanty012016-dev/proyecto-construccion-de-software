@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { puestoActivoDelEstudiante } from "@/app/lib/consultas-cupo";
 import { historialDeViajes, viajeActivoDelEstudiante } from "@/app/lib/consultas-viaje";
+import { etiquetaPuesto } from "@/app/lib/cupo";
 import { etiquetaEstado, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
@@ -14,7 +16,11 @@ export const metadata: Metadata = { title: "Inicio" };
 export default async function PaginaEstudiante({ searchParams }: { searchParams: Promise<{ clave?: string }> }) {
   const { usuario, perfil } = await exigirRol("estudiante");
   const { clave } = await searchParams;
-  const [activo, historial] = await Promise.all([viajeActivoDelEstudiante(usuario.id), historialDeViajes(usuario.id)]);
+  const [activo, historial, miPuesto] = await Promise.all([
+    viajeActivoDelEstudiante(usuario.id),
+    historialDeViajes(usuario.id),
+    puestoActivoDelEstudiante(usuario.id),
+  ]);
   const ultimo = historial.find((h) => h.viaje.estado === "terminado");
   const porCalificar = ultimo && !ultimo.calificado ? ultimo : null;
 
@@ -50,6 +56,21 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
             {activo.viaje.estado === "solicitado" ? "Ver ofertas" : "Ver mi viaje"}
           </Link>
         </section>
+      ) : miPuesto ? (
+        <section aria-labelledby="titulo-mi-cupo" className="space-y-3 rounded-2xl bg-superficie p-5">
+          <h2 id="titulo-mi-cupo" className="text-lg">
+            {miPuesto.cupo.estado === "en_curso" ? "Tu cupo ya salió" : etiquetaPuesto(miPuesto.puesto.estado)}
+          </h2>
+          <p className="text-sm text-texto-suave">
+            Sale {fechaCorta(miPuesto.cupo.sale_en)} · te subes en {miPuesto.puesto.recogida_texto}
+          </p>
+          <Link
+            href={`/estudiante/cupos/${miPuesto.cupo.id}`}
+            className="flex h-14 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto transition-colors hover:bg-primario/85"
+          >
+            Ver mi cupo
+          </Link>
+        </section>
       ) : (
         <section aria-labelledby="titulo-pedir" className="space-y-4 rounded-2xl bg-superficie p-5">
           <h2 id="titulo-pedir" className="text-xl">
@@ -62,6 +83,15 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
           >
             Pedir viaje
           </Link>
+          <div className="border-t border-texto-suave/20 pt-4">
+            <p className="text-sm text-texto-suave">¿Vas con tiempo? Súbete en el camino de un conductor que ya publicó su hora de salida.</p>
+            <Link
+              href="/estudiante/cupos"
+              className="mt-3 flex min-h-12 w-full items-center justify-center rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-fondo"
+            >
+              Ver cupos publicados
+            </Link>
+          </div>
         </section>
       )}
 

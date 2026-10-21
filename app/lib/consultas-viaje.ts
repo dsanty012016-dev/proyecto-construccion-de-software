@@ -9,12 +9,12 @@ import type { Database } from "./supabase/tipos";
 export type FilaViaje = Database["public"]["Tables"]["viajes"]["Row"];
 export type FilaOferta = Database["public"]["Tables"]["ofertas"]["Row"];
 export type FilaVehiculo = Database["public"]["Tables"]["vehiculos"]["Row"];
-type PerfilPublico = Database["public"]["Functions"]["perfiles_publicos"]["Returns"][number];
+export type PerfilPublico = Database["public"]["Functions"]["perfiles_publicos"]["Returns"][number];
 
 const ACTIVOS: FilaViaje["estado"][] = ["solicitado", "aceptado", "en_curso"];
 
 /** Nombre y reputación de otras personas (misma universidad, sin teléfono). */
-async function perfilesPublicos(ids: string[]): Promise<Map<string, PerfilPublico>> {
+export async function perfilesPublicos(ids: string[]): Promise<Map<string, PerfilPublico>> {
   const mapa = new Map<string, PerfilPublico>();
   if (ids.length === 0) return mapa;
   const supabase = await crearClienteServidor();

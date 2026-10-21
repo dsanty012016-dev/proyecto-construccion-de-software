@@ -9,7 +9,7 @@ import { crearClienteNavegador } from "./supabase/client";
 // publicación "supabase_realtime" (008-tiempo-real.sql).
 
 export interface Escucha {
-  tabla: "viajes" | "ofertas";
+  tabla: "viajes" | "ofertas" | "cupos" | "puestos";
   /** Filtro de Realtime, por ejemplo "id=eq.<uuid>". Sin filtro: toda la tabla visible. */
   filtro?: string;
 }
