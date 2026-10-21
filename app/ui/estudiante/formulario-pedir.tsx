@@ -19,6 +19,14 @@ interface Ubicacion {
 
 type EstadoUbicacion = { paso: "pendiente" } | { paso: "buscando" } | { paso: "lista"; ubicacion: Ubicacion } | { paso: "error"; mensaje: string };
 
+/** Códigos de GeolocationPositionError: 1 permiso, 2 sin señal, 3 tardó demasiado. */
+function mensajeDeFallo(codigo: number): string {
+  if (codigo === 1) return "El navegador no nos dejó leer tu ubicación. Permítela en el candado de la barra de direcciones y vuelve a intentar.";
+  if (codigo === 2) return "Tu dispositivo no pudo calcular dónde estás. Revisa que la ubicación del sistema esté activada.";
+  if (codigo === 3) return "La ubicación tardó demasiado. Inténtalo de nuevo.";
+  return "No pudimos leer tu ubicación. Inténtalo de nuevo.";
+}
+
 export function FormularioPedir({ destino }: { destino: string }) {
   const [estado, accion] = useActionState(pedirViaje, ESTADO_INICIAL);
   const [ubicacion, setUbicacion] = useState<EstadoUbicacion>({ paso: "pendiente" });
@@ -37,12 +45,11 @@ export function FormularioPedir({ destino }: { destino: string }) {
           paso: "lista",
           ubicacion: { lat: posicion.coords.latitude, lng: posicion.coords.longitude, precision: Math.round(posicion.coords.accuracy) },
         }),
-      () =>
-        setUbicacion({
-          paso: "error",
-          mensaje: "No pudimos leer tu ubicación. Activa el permiso de ubicación del navegador e inténtalo de nuevo.",
-        }),
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 },
+      (fallo) =>
+        setUbicacion({ paso: "error", mensaje: mensajeDeFallo(fallo.code) }),
+      // Sin "alta precisión": en computadores sin GPS responde mucho más rápido
+      // (usa la red) y alcanza de sobra, porque la persona también escribe la dirección.
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
     );
   }
 
@@ -110,7 +117,10 @@ export function FormularioPedir({ destino }: { destino: string }) {
         <p className="text-sm text-texto-suave">Los conductores te enviarán su precio. Tú eliges la oferta que más te sirva.</p>
       </section>
 
-      <BotonEnviar enviando="Buscando conductores…">Buscar conductores</BotonEnviar>
+      <BotonEnviar enviando="Buscando conductores…" deshabilitado={!lista}>
+        Buscar conductores
+      </BotonEnviar>
+      {!lista && <p className="text-center text-sm text-texto-suave">Primero toca “Usar mi ubicación actual”.</p>}
     </form>
   );
 }
