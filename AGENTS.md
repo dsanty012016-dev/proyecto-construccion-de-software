@@ -21,7 +21,7 @@ Si dudas de una API de Next 16, consulta la documentación oficial; no asumas.
 2. Si una jugada o acción no es válida, la función devuelve el mismo estado; no lanza error.
 3. Los cambios de datos pasan por Server Actions que llaman a funciones RPC de Supabase. Toda tabla con **RLS activado**; las reglas de seguridad viven en la base de datos, no en la pantalla.
 4. Componentes con `"use client"` solo si necesitan clics, estado, efectos o APIs del navegador. Las páginas con `metadata` son Server Components.
-5. Colores solo con los tokens de `app/globals.css` (`bg-fondo`, `bg-superficie`, `bg-primario`, `text-texto`, `text-texto-suave`, `text-secundario`). Nada de hex sueltos. `#2563EB` no se usa como color de texto (contraste 3,6:1): para texto azul, `text-secundario`.
+5. Colores solo con los tokens de `app/globals.css` (`bg-fondo`, `bg-superficie`, `bg-primario`, `text-texto`, `text-texto-suave`, `text-secundario`, `border-linea`, y `text-tinta-suave` para texto gris sobre fondos claros). Nada de hex sueltos. `#2563EB` no se usa como color de texto (contraste 3,6:1): para texto azul, `text-secundario`.
 6. Fuentes: `font-titulo` (Inter) y `font-texto` (Manrope), cargadas con `next/font`.
 7. Accesibilidad: botones reales, `aria-label` en iconos, foco visible, `prefers-reduced-motion`, objetivos táctiles de al menos 44 px.
 8. A-Frame u otro 3D **solo en el sitio público**, cargado en el navegador y después del contenido, con imagen de respaldo. Nunca en la app.

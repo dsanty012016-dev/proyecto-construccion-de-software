@@ -16,6 +16,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 ## Avance
 - Fase 0: lista (rama `fase-0-base`).
 - Fase 1: lista (rama `fase-1-reglas`). `viaje.ts` con 25 pruebas; 5 migraciones con 85 comprobaciones de RLS y RPC que GitHub corre en cada subida. Falta aplicarlas en un proyecto de Supabase real.
+- Fase 5 (adelantada a pedido del equipo): landing pública en `app/(sitio)/` (rama `fase-5-landing`). Mapa SVG al instante y escena 3D con A-Frame encima cuando el navegador puede.
 
 ## Decisiones tomadas
 - **Una sola app Next.js** (sitio público + app PWA + Supabase), no web y API separadas. Si luego se quiere app nativa, `app/api/v1/` y las reglas en la base de datos lo permiten sin rehacer.

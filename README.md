@@ -2,7 +2,7 @@
 
 App web (PWA) de movilidad estudiantil universitaria para Villavicencio: estudiantes y conductores verificados comparten el viaje hacia la universidad. Proyecto académico.
 
-**Estado:** fase 1 (reglas del viaje y base de datos). Ver `docs/plan.md`.
+**Estado:** fase 1 (reglas y base de datos) y landing pública (fase 5, adelantada). Ver `docs/plan.md`.
 
 ## Cómo correrlo
 Requiere Node 22 o superior.
