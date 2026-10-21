@@ -28,6 +28,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 - Fase 4d: cambio de modo estudiante ↔ conductor con la misma cuenta (rama `fase-4d-cambio-rol`, migración 009).
 - Fase 4c: cupos publicados por el conductor y puestos que piden los estudiantes, con aprobación (rama `fase-4c-cupos`, migración 010).
 - Fase 4e: verificación del conductor con documentos en almacenamiento privado y panel de administración (rama `fase-4e-verificacion`, migración 011).
+- Fase 4b: billetera simulada, pago al aceptar y retenido hasta terminar, cobros por cancelación, pago de cupos 10 min antes, strikes y suspensiones (rama `fase-4b-billetera`, migración 012).
 
 ## Decisiones tomadas
 - **Una sola app Next.js** (sitio público + app PWA + Supabase), no web y API separadas. Si luego se quiere app nativa, `app/api/v1/` y las reglas en la base de datos lo permiten sin rehacer.
