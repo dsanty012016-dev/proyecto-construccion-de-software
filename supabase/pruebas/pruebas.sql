@@ -87,6 +87,14 @@ select prueba.falla($$insert into auth.users (email) values ('@ustavillavo.edu.c
 select prueba.falla($$insert into auth.users (email, raw_user_meta_data) values ('tel@ustavillavo.edu.co', '{"telefono":"3001234"}')$$, 'teléfono', 'rechaza teléfonos mal escritos');
 select prueba.falla(format('update auth.users set email = %L where id = %L', 'ana@gmail.com', :'ana'), 'correo institucional', 'no deja cambiar el correo a uno no institucional');
 
+-- Documentos ya aprobados para los conductores de estas pruebas (011): así
+-- las secciones de viajes y cupos prueban sus reglas sin el trámite.
+insert into public.documentos_conductor (conductor_id, tipo, ruta, estado, autorizado_en)
+select p.id, t.tipo, p.id || '/' || t.tipo || '.jpg', 'aprobado', now()
+from public.perfiles p
+cross join unnest(enum_range(null::public.tipo_documento)) as t(tipo)
+where p.id in (:'carlos', :'diana', :'eva', :'hugo');
+
 -- ---------------------------------------------------------------------------
 -- 2. Perfiles
 -- ---------------------------------------------------------------------------
@@ -474,6 +482,72 @@ select prueba.ok(
    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename in ('cupos', 'puestos')),
   'cupos y puestos están en tiempo real'
 );
+
+-- ---------------------------------------------------------------------------
+-- 8d. Verificación del conductor (011)
+-- ---------------------------------------------------------------------------
+\echo '== Verificación del conductor'
+
+reset role;
+\set ivan '00000000-0000-0000-0000-0000000000b8'
+insert into auth.users (id, email, raw_user_meta_data) values
+  (:'ivan', 'ivan@ustavillavo.edu.co', '{"nombre":"Iván Gil","telefono":"+573009998877","rol":"conductor"}');
+update public.perfiles set es_admin = true where id = :'gabo';
+set role authenticated;
+
+select prueba.como(:'ivan');
+insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (:'ivan', 'IVA321', 'Kia', 'Rio', 'Azul');
+select prueba.falla($$select public.cambiar_disponibilidad(true)$$, 'documentos aún no están aprobados', 'sin documentos aprobados no se pone disponible');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 1, 5000)$$, 'documentos aún no están aprobados', 'sin documentos aprobados no publica cupo');
+select prueba.falla(format('select public.enviar_documento(%L, %L, false)', 'cedula', :'ivan' || '/cedula-1.jpg'), 'autorizar', 'sin autorizar el tratamiento de datos no se envía');
+select prueba.falla(format('select public.enviar_documento(%L, %L, true)', 'cedula', :'carlos' || '/cedula-1.jpg'), 'no es válido', 'no registra archivos de la carpeta de otro');
+select prueba.falla(format('select public.enviar_documento(%L, %L, true)', 'cedula', '../' || :'ivan' || '/x.jpg'), 'no es válido', 'no acepta rutas raras');
+select public.enviar_documento('cedula', :'ivan' || '/cedula-1.jpg', true);
+select public.enviar_documento('licencia', :'ivan' || '/licencia-1.jpg', true);
+select public.enviar_documento('tarjeta_propiedad', :'ivan' || '/tarjeta-1.pdf', true);
+select prueba.ok((select count(*) = 3 and bool_and(estado = 'pendiente') and bool_and(autorizado_en is not null) from public.documentos_conductor), 'el conductor ve sus documentos en revisión, con la autorización guardada');
+select prueba.falla(format('select public.revisar_documento(id, true) from public.documentos_conductor limit 1'), 'Solo un administrador', 'un conductor no revisa documentos');
+select prueba.falla($$update public.perfiles set es_admin = true$$, 'permission denied', 'nadie se vuelve administrador a mano');
+select prueba.falla($$update public.documentos_conductor set estado = 'aprobado'$$, 'permission denied', 'no se aprueban documentos a mano');
+select prueba.falla($$insert into public.documentos_conductor (conductor_id, tipo, ruta, estado, autorizado_en) values (auth.uid(), 'cedula', 'x/y', 'aprobado', now())$$, 'permission denied', 'no se insertan documentos a mano');
+
+select prueba.como(:'carlos');
+select prueba.ok((select count(*) = 3 and bool_and(conductor_id = :'carlos') from public.documentos_conductor), 'otro conductor solo ve los suyos');
+
+select prueba.como(:'ana');
+select prueba.ok((select count(*) = 0 from public.documentos_conductor), 'un estudiante no ve documentos');
+
+select prueba.como(:'gabo');
+select prueba.ok((select count(*) = 3 from public.documentos_conductor where conductor_id = :'ivan'), 'el administrador ve los documentos');
+select prueba.ok((select count(*) = 1 from public.perfiles where id = :'ivan'), 'y el perfil del conductor');
+select prueba.ok((select count(*) = 1 from public.vehiculos where conductor_id = :'ivan'), 'y su vehículo, para comparar la placa');
+select id as doc_cedula from public.documentos_conductor where conductor_id = :'ivan' and tipo = 'cedula' \gset
+select id as doc_licencia from public.documentos_conductor where conductor_id = :'ivan' and tipo = 'licencia' \gset
+select id as doc_tarjeta from public.documentos_conductor where conductor_id = :'ivan' and tipo = 'tarjeta_propiedad' \gset
+select prueba.falla(format('select public.revisar_documento(%L, false)', :'doc_cedula'), 'motivo', 'rechazar exige un motivo');
+select public.revisar_documento(:'doc_cedula', true);
+select public.revisar_documento(:'doc_licencia', true);
+select public.revisar_documento(:'doc_tarjeta', false, 'La foto está borrosa');
+select prueba.falla(format('select public.revisar_documento(%L, true)', :'doc_cedula'), 'ya fue revisado', 'no se revisa dos veces');
+
+select prueba.como(:'ivan');
+select prueba.falla($$select public.cambiar_disponibilidad(true)$$, 'no están aprobados', 'con un documento rechazado sigue bloqueado');
+select prueba.ok((select motivo = 'La foto está borrosa' from public.documentos_conductor where tipo = 'tarjeta_propiedad'), 've el motivo del rechazo');
+select public.enviar_documento('tarjeta_propiedad', :'ivan' || '/tarjeta-2.pdf', true);
+select prueba.como(:'gabo');
+select public.revisar_documento(:'doc_tarjeta', true);
+select prueba.como(:'ivan');
+select public.cambiar_disponibilidad(true);
+select prueba.ok((select disponible from public.perfiles), 'con los tres aprobados ya se pone disponible');
+update public.vehiculos set placa = 'IVA322';
+select prueba.ok((select not disponible from public.perfiles), 'al cambiar la placa deja de estar disponible');
+select prueba.ok((select estado = 'pendiente' from public.documentos_conductor where tipo = 'tarjeta_propiedad'), 'y la tarjeta de propiedad vuelve a revisión');
+
+reset role;
+update public.perfiles set es_admin = true where id = :'ivan';
+set role authenticated;
+select prueba.como(:'ivan');
+select prueba.falla(format('select public.revisar_documento(%L, true)', :'doc_tarjeta'), 'propios', 'nadie revisa sus propios documentos');
 
 -- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
