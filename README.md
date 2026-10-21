@@ -2,7 +2,7 @@
 
 App web (PWA) de movilidad estudiantil universitaria para Villavicencio: estudiantes y conductores verificados comparten el viaje hacia la universidad. Proyecto académico.
 
-**Estado:** fase 0 (base del proyecto). Ver `docs/plan.md`.
+**Estado:** fase 1 (reglas del viaje y base de datos). Ver `docs/plan.md`.
 
 ## Cómo correrlo
 Requiere Node 22 o superior.
@@ -11,6 +11,7 @@ Requiere Node 22 o superior.
 npm install
 npm run dev      # http://localhost:3000
 npm run lint
+npm test         # pruebas de las reglas del viaje
 npm run build
 ```
 
@@ -22,6 +23,7 @@ Las variables de entorno van en `.env.local` (nunca se sube). El archivo `.env.e
 - `docs/identidad.md`: colores, tipografía y logos.
 - `docs/plan.md`: fases del trabajo.
 - `docs/diseno/`: mockups.
+- `supabase/migraciones/`: base de datos (cómo aplicarla y probarla en su README).
 - `docs/landing-original/`: la landing en HTML del equipo, conservada como referencia.
 
 ## Stack

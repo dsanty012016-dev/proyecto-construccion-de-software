@@ -1,6 +1,6 @@
 name: CI
 
-# Revisa que el proyecto compile y pase el lint en cada subida.
+# Revisa el proyecto en cada subida: lint, pruebas, build y la base de datos.
 on:
   push:
   pull_request:
@@ -27,5 +27,36 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Pruebas de las reglas del viaje
+        run: npm test
+
       - name: Build (incluye revisión de tipos)
         run: npm run build
+
+  base-de-datos:
+    # Corre las migraciones y las pruebas de seguridad (RLS y RPC) en un
+    # Postgres vacío que imita lo mínimo de Supabase.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Migraciones y pruebas de la base
+        run: ./supabase/pruebas/correr.sh
