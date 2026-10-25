@@ -1,23 +1,31 @@
 import "server-only";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { crearClienteServidor } from "./supabase/server";
 
 // Datos de la persona con sesión para las páginas privadas. Si no hay sesión
 // manda a /entrar (además del proxy, por si acaso).
-export async function perfilActual() {
+//
+// Rapidez: el layout y la página la piden en la misma petición, así que va con
+// cache() de React y se calcula una sola vez. Y usa getClaims, que revisa la
+// firma del token en el servidor sin ir a Supabase Auth cuando el proyecto
+// firma con llaves asimétricas (si no, hace la misma consulta que getUser).
+export const perfilActual = cache(async () => {
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) redirect("/entrar");
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) redirect("/entrar");
+  const usuario = { id: claims.sub, email: typeof claims.email === "string" ? claims.email : "" };
 
   // RLS: cada quien solo puede leer su propio perfil.
   const { data: perfil } = await supabase
     .from("perfiles")
     .select("id, nombre, rol, telefono, disponible, universidad_id, es_admin")
-    .eq("id", data.user.id)
+    .eq("id", usuario.id)
     .single();
 
-  return { usuario: data.user, perfil };
-}
+  return { usuario, perfil };
+});
 
 /** Ruta de inicio de cada rol (null si todavía no eligió). */
 export function inicioDeRol(rol: "estudiante" | "conductor" | null | undefined) {
