@@ -4,6 +4,7 @@ import { useActionState, useId } from "react";
 import { cancelarViaje } from "@/app/lib/acciones-viaje";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { pesos } from "@/app/lib/formato";
+import { BotonAccion } from "./boton-accion";
 import { cancelacionDeViaje } from "@/app/lib/pagos";
 
 // Cancelar un viaje ya aceptado, diciendo antes cuánto cuesta (012):
@@ -21,24 +22,21 @@ export function CancelarViaje({ viajeId, quien, precio }: { viajeId: string; qui
 
   return (
     <div className="space-y-3">
-      <form
-        action={accion}
-        onSubmit={(e) => {
-          if (!window.confirm(aviso)) e.preventDefault();
-        }}
-      >
-        <input type="hidden" name="viaje" value={viajeId} />
-        <button
-          type="submit"
-          disabled={pendiente}
-          className="min-h-12 w-full rounded-xl border border-error/45 font-titulo font-semibold text-error hover:bg-error/10 disabled:opacity-70"
+      <div>
+        <BotonAccion
+          accion={cancelarViaje}
+          campos={{ viaje: viajeId }}
+          estilo="peligroBorde"
+          enviando="Cancelando…"
+          confirmar={aviso}
+          textoSi="Sí, cancelar"
         >
-          {pendiente ? "Cancelando…" : quien === "estudiante" && cobro > 0 ? `Cancelar viaje · te cuesta ${pesos(cobro)}` : "Cancelar viaje"}
-        </button>
+          {quien === "estudiante" && cobro > 0 ? `Cancelar viaje · te cuesta ${pesos(cobro)}` : "Cancelar viaje"}
+        </BotonAccion>
         <p className="mt-2 text-center text-[13px] text-texto-suave">
           {quien === "estudiante" ? "Cobra el 20 % y suma un strike." : "El estudiante recupera todo y tú sumas un strike."}
         </p>
-      </form>
+      </div>
 
       {quien === "estudiante" && (
         <details className="rounded-2xl border border-texto-suave/20 px-4 py-1">

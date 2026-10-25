@@ -6,7 +6,7 @@ import { cancelarViaje } from "@/app/lib/acciones-viaje";
 import { miSaldo } from "@/app/lib/consultas-billetera";
 import { ubicacionConHora } from "@/app/lib/consultas-seguimiento";
 import { viajeActivoDelEstudiante } from "@/app/lib/consultas-viaje";
-import { calificacionTexto, etiquetaEstado, nombreCorto, pesos } from "@/app/lib/formato";
+import { etiquetaEstado, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
@@ -19,6 +19,7 @@ import { RutaCorta } from "@/app/ui/comun/ruta-viaje";
 import { BotonCompartirViaje } from "@/app/ui/estudiante/boton-compartir-viaje";
 import { MapaEnVivo } from "@/app/ui/estudiante/mapa-en-vivo";
 import { TarjetaOferta } from "@/app/ui/estudiante/tarjeta-oferta";
+import { Nota } from "@/app/ui/comun/nota";
 
 export const metadata: Metadata = { title: "Tu viaje" };
 
@@ -73,7 +74,7 @@ export default async function PaginaViajeEstudiante() {
             <IconoCandado className="mt-0.5 size-[18px] shrink-0 text-secundario" />
             Pagas al aceptar con tu saldo ({pesos(saldo)}). El conductor recibe el dinero cuando llegues.
           </p>
-          <BotonAccion accion={cancelarViaje} campos={{ viaje: viaje.id }} estilo="discreto" confirmar="¿Cancelar la solicitud?">
+          <BotonAccion accion={cancelarViaje} campos={{ viaje: viaje.id }} estilo="discreto" textoSi="Sí, cancelar" confirmar="¿Cancelar la solicitud?">
             Cancelar la solicitud
           </BotonAccion>
         </div>
@@ -126,7 +127,12 @@ export default async function PaginaViajeEstudiante() {
             <div className="min-w-0 flex-1">
               <p className="truncate font-bold">
                 {nombre}
-                {perfil && ` · ${perfil.total_calificaciones > 0 ? `★ ${calificacionTexto(perfil.calificacion)}` : "Nuevo"}`}
+                {perfil && (
+                  <>
+                    {" · "}
+                    <Nota promedio={perfil.calificacion} total={perfil.total_calificaciones} />
+                  </>
+                )}
               </p>
               {vehiculo && (
                 <p className="text-[13px] text-texto-suave">

@@ -3,6 +3,7 @@ import { DOMINIO_INSTITUCIONAL } from "@/app/lib/validaciones-auth";
 import { EscenaRuta } from "./escena-ruta";
 import { BOTON_BORDE, BOTON_PRINCIPAL } from "./estilos";
 import { MapaRespaldo } from "./mapa-respaldo";
+import { IconoEstrella } from "@/app/ui/comun/iconos-app";
 
 // Portada: la pregunta de siempre en el grupo de chat y cómo UniGo la
 // responde con ofertas. Detrás, el mapa de la ruta (SVG al instante; escena
@@ -15,9 +16,9 @@ const MENSAJES = [
 ];
 
 const OFERTAS = [
-  { iniciales: "AR", nombre: "Andrés R.", detalle: "★ 4,9 · Spark gris · KDS 482", precio: "$7.000" },
-  { iniciales: "VC", nombre: "Valentina C.", detalle: "Nueva · Logan blanco", precio: "$7.500" },
-  { iniciales: "JM", nombre: "Julián M.", detalle: "★ 4,7 · moto", precio: "$9.000" },
+  { iniciales: "AR", nombre: "Andrés R.", nota: "4,9", detalle: "Spark gris · KDS 482", precio: "$7.000" },
+  { iniciales: "VC", nombre: "Valentina C.", nota: null, detalle: "Nueva · Logan blanco", precio: "$7.500" },
+  { iniciales: "JM", nombre: "Julián M.", nota: "4,7", detalle: "moto", precio: "$9.000" },
 ];
 
 // Cada elemento del chat entra un poco después del anterior (solo si la
@@ -93,7 +94,15 @@ export function Portada() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-bold">{o.nombre}</span>
-                  <span className="block truncate text-xs text-texto-suave">{o.detalle}</span>
+                  <span className="flex items-center gap-1 truncate text-xs text-texto-suave">
+                    {o.nota && (
+                      <>
+                        <IconoEstrella llena className="size-3 shrink-0 text-secundario" />
+                        {o.nota} ·
+                      </>
+                    )}{" "}
+                    {o.detalle}
+                  </span>
                 </span>
                 <span className="font-titulo text-lg font-bold tabular-nums">{o.precio}</span>
               </div>

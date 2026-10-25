@@ -57,6 +57,18 @@
   }
 }
 
+/* Lo que dibuja el navegador también lleva la identidad: selección de texto,
+   cursor de escritura y barras de desplazamiento. */
+::selection {
+  background-color: color-mix(in srgb, var(--color-secundario) 35%, transparent);
+  color: var(--color-texto);
+}
+
+html {
+  caret-color: var(--color-secundario);
+  scrollbar-color: var(--color-linea) var(--color-fondo);
+}
+
 /* Sobre los bloques azules de la landing, el foco azul claro no se ve: va en blanco. */
 .zona-azul :focus-visible {
   outline-color: var(--color-texto);

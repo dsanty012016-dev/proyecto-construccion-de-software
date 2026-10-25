@@ -5,7 +5,7 @@ import { cupoActivoDelConductor } from "@/app/lib/consultas-cupo";
 import { misDocumentos } from "@/app/lib/consultas-verificacion";
 import { TIPOS_DOCUMENTO } from "@/app/lib/documentos";
 import { resumenDelConductor, solicitudesAbiertas, vehiculoDe, viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
-import { calificacionTexto, etiquetaEstado, hace, horaCorta, nombreCorto, pesos } from "@/app/lib/formato";
+import { etiquetaEstado, hace, horaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { estadoDeCuenta, miSaldo } from "@/app/lib/consultas-billetera";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
@@ -16,6 +16,7 @@ import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
 import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
 import { PastillaSaldo } from "@/app/ui/comun/pastilla-saldo";
 import { InterruptorDisponible } from "@/app/ui/conductor/interruptor-disponible";
+import { Nota } from "@/app/ui/comun/nota";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -44,9 +45,12 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
   const abiertas = perfil.disponible && !activo ? await solicitudesAbiertas(usuario.id) : null;
   const solicitudes = abiertas?.solicitudes ?? [];
   const ahora = abiertas?.ahora ?? 0;
-  const lineaResumen = `Esta semana: ${resumen.viajesEstaSemana} ${resumen.viajesEstaSemana === 1 ? "viaje" : "viajes"} · ${
-    resumen.totalCalificaciones > 0 ? `★ ${calificacionTexto(resumen.calificacion)}` : "aún sin calificación"
-  }`;
+  const lineaResumen = (
+    <>
+      Esta semana: {resumen.viajesEstaSemana} {resumen.viajesEstaSemana === 1 ? "viaje" : "viajes"} ·{" "}
+      {resumen.totalCalificaciones > 0 ? <Nota promedio={resumen.calificacion} total={resumen.totalCalificaciones} /> : "aún sin calificación"}
+    </>
+  );
 
   return (
     <main className="space-y-3 px-5 pt-4">

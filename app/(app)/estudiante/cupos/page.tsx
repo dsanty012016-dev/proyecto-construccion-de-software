@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cuposDisponibles, puestoActivoDelEstudiante, type CupoDisponible } from "@/app/lib/consultas-cupo";
 import { esMoto, etiquetaPuesto } from "@/app/lib/cupo";
-import { calificacionTexto, diaRelativo, fechaCorta, horaCorta, nombreCorto, pesos } from "@/app/lib/formato";
+import { diaRelativo, fechaCorta, horaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { MINUTOS_CUPO_SIN_COBRO, MINUTOS_LIMITE_PAGO, COBRO_CUPO_TARDE } from "@/app/lib/pagos";
 import { exigirRol } from "@/app/lib/sesion";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
+import { Nota } from "@/app/ui/comun/nota";
 
 export const metadata: Metadata = { title: "Cupos publicados" };
 
@@ -75,13 +76,12 @@ function FilaCupo({ item }: { item: CupoDisponible }) {
   const { cupo, conductor, vehiculo, libres } = item;
   const { hora, periodo } = horaCorta(cupo.sale_en);
   const lleno = libres <= 0;
-  const quien = [
-    conductor ? nombreCorto(conductor.nombre) : "Conductor",
-    conductor && conductor.total_calificaciones > 0 ? `★ ${calificacionTexto(conductor.calificacion)}` : "Nuevo",
-    vehiculo && esMoto(vehiculo.placa) ? "moto" : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const quien = (
+    <>
+      {conductor ? nombreCorto(conductor.nombre) : "Conductor"} · <Nota promedio={conductor?.calificacion} total={conductor?.total_calificaciones ?? 0} />
+      {vehiculo && esMoto(vehiculo.placa) && " · moto"}
+    </>
+  );
 
   return (
     <li className="border-b border-texto-suave/15 last:border-b-0">
