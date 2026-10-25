@@ -24,11 +24,12 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 - Fase 2: registro, entrar, recuperar contraseña y elegir rol con correo y contraseña (rama `fase-2-auth`). Migraciones aplicadas en el proyecto Unigo de Supabase. Configuración del panel en `docs/supabase-auth.md`.
 
 - Fase 3: pantallas de estudiante y conductor, barra inferior, calificación e historial (rama `fase-3-pantallas`). Migración 007 con la ubicación de la sede.
-- Fase 4, parte 1: mapa (MapLibre + OpenFreeMap) para elegir la recogida, mapas en los viajes y tiempo real con Supabase Realtime (rama `fase-4-mapa`, migración 008). Parte 2 pendiente: seguimiento en vivo del conductor y compartir el viaje.
+- Fase 4, parte 1: mapa (MapLibre + OpenFreeMap) para elegir la recogida, mapas en los viajes y tiempo real con Supabase Realtime (rama `fase-4-mapa`, migración 008). Parte 2: seguimiento en vivo del conductor y "Compartir viaje" con enlace público (rama `fase-4g-seguimiento`, migración 013).
 - Fase 4d: cambio de modo estudiante ↔ conductor con la misma cuenta (rama `fase-4d-cambio-rol`, migración 009).
 - Fase 4c: cupos publicados por el conductor y puestos que piden los estudiantes, con aprobación (rama `fase-4c-cupos`, migración 010).
 - Fase 4e: verificación del conductor con documentos en almacenamiento privado y panel de administración (rama `fase-4e-verificacion`, migración 011).
 - Fase 4b: billetera simulada, pago al aceptar y retenido hasta terminar, cobros por cancelación, pago de cupos 10 min antes, strikes y suspensiones (rama `fase-4b-billetera`, migración 012).
+- Fase 4f: rediseño de la zona privada con la skill impeccable, mapa teñido con la paleta y páginas más rápidas (rama `fase-4f-rediseno`).
 
 ## Decisiones tomadas
 - **Una sola app Next.js** (sitio público + app PWA + Supabase), no web y API separadas. Si luego se quiere app nativa, `app/api/v1/` y las reglas en la base de datos lo permiten sin rehacer.

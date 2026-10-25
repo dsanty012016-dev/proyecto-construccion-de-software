@@ -84,6 +84,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["suspensiones"]["Insert"]>;
         Relationships: Relacion[];
       };
+      ubicaciones_viaje: {
+        Row: { actualizado_en: string; conductor_id: string; lat: number; lng: number; precision_m: number | null; viaje_id: string };
+        Insert: { viaje_id: string; conductor_id: string; lat: number; lng: number; precision_m?: number | null };
+        Update: Partial<Database["public"]["Tables"]["ubicaciones_viaje"]["Insert"]>;
+        Relationships: Relacion[];
+      };
       reportes: {
         Row: { autor_id: string; creado_en: string; id: string; motivo: string; revisado_en: string | null; sobre_id: string; viaje_id: string | null };
         Insert: { autor_id: string; sobre_id: string; motivo: string };
@@ -316,6 +322,27 @@ export type Database = {
     Views: { [_ in never]: never };
     Functions: {
       aceptar_oferta: { Args: { p_oferta: string }; Returns: undefined };
+      reportar_ubicacion: { Args: { p_viaje: string; p_lat: number; p_lng: number; p_precision?: number }; Returns: undefined };
+      compartir_viaje: { Args: { p_viaje: string }; Returns: string };
+      viaje_compartido: {
+        Args: { p_token: string };
+        Returns: {
+          estado: EstadoViaje;
+          origen_texto: string | null;
+          destino_texto: string | null;
+          origen_lat: number | null;
+          origen_lng: number | null;
+          destino_lat: number | null;
+          destino_lng: number | null;
+          estudiante: string | null;
+          conductor: string | null;
+          vehiculo: string | null;
+          placa: string | null;
+          ubicacion_lat: number | null;
+          ubicacion_lng: number | null;
+          ubicacion_en: string | null;
+        }[];
+      };
       calificar: {
         Args: { p_comentario?: string; p_estrellas: number; p_viaje: string };
         Returns: undefined;

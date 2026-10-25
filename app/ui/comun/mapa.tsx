@@ -31,12 +31,14 @@ interface Props {
   irA?: Coordenada | null;
   /** Puntos de recogida de otros estudiantes (cupos), como círculos pequeños. */
   paradas?: Coordenada[];
+  /** Dónde va el conductor ahora (seguimiento en vivo); se mueve sin reencuadrar. */
+  vehiculo?: Coordenada | null;
   /** De borde a borde (arriba de una pantalla): sin esquinas redondeadas ni botones de zoom. */
   aRas?: boolean;
   className?: string;
 }
 
-function elementoMarcador(tipo: "origen" | "destino" | "parada") {
+function elementoMarcador(tipo: "origen" | "destino" | "parada" | "vehiculo") {
   const elemento = document.createElement("div");
   elemento.setAttribute("aria-hidden", "true");
   // Como en los diseños: recogida = punto azul con halo; sede = la "U" blanca.
@@ -45,9 +47,15 @@ function elementoMarcador(tipo: "origen" | "destino" | "parada") {
       "size-[18px] rounded-full border-[3px] border-texto bg-primario shadow-[0_0_0_10px_color-mix(in_srgb,var(--color-primario)_22%,transparent)]",
     destino: "flex size-6 items-center justify-center rounded-md bg-texto font-titulo text-sm font-bold text-fondo shadow-lg",
     parada: "size-3.5 rounded-full border-2 border-primario bg-texto shadow",
+    vehiculo: "flex size-8 items-center justify-center rounded-full bg-texto text-fondo shadow-lg ring-4 ring-secundario/40",
   };
   elemento.className = clases[tipo];
   if (tipo === "destino") elemento.textContent = "U";
+  if (tipo === "vehiculo") {
+    // El mismo carro de los iconos de la app, dibujado aquí porque el marcador vive fuera de React.
+    elemento.innerHTML =
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M6 17l1.5-6h9L18 17M8 11l1-3h6l1 3"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>';
+  }
   return elemento;
 }
 
@@ -142,12 +150,13 @@ function encuadrar(mapa: MapaLibre, caja: [[number, number], [number, number]], 
   }, 1500);
 }
 
-export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, aRas, className }: Props) {
+export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, vehiculo, aRas, className }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<MapaLibre | null>(null);
   const libRef = useRef<Libreria | null>(null);
   const marcadores = useRef<{ origen?: Marker; destino?: Marker }>({});
   const marcadoresParadas = useRef<Marker[]>([]);
+  const marcadorVehiculo = useRef<Marker | null>(null);
   // Cuando la app mueve la cámara para encuadrar la ruta, ese movimiento no
   // cuenta como "elegir punto": solo los de la persona (o "mi ubicación").
   const encuadrando = useRef(false);
@@ -229,6 +238,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
       mapaRef.current = null;
       marcadores.current = {};
       marcadoresParadas.current = [];
+      marcadorVehiculo.current = null;
     };
   }, []);
 
@@ -294,6 +304,23 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
       .filter(coordenadaValida)
       .map((p) => new lib.Marker({ element: elementoMarcador("parada") }).setLngLat([p.lng, p.lat]).addTo(mapa));
   }, [estado, claveParadas]);
+
+  // El conductor en vivo: el marcador se crea una vez y luego solo se mueve.
+  const vLat = vehiculo?.lat;
+  const vLng = vehiculo?.lng;
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    const lib = libRef.current;
+    if (estado !== "listo" || !mapa || !lib) return;
+    const punto = vLat !== undefined && vLng !== undefined ? { lat: vLat, lng: vLng } : null;
+    if (coordenadaValida(punto)) {
+      if (marcadorVehiculo.current) marcadorVehiculo.current.setLngLat([punto.lng, punto.lat]);
+      else marcadorVehiculo.current = new lib.Marker({ element: elementoMarcador("vehiculo") }).setLngLat([punto.lng, punto.lat]).addTo(mapa);
+    } else if (marcadorVehiculo.current) {
+      marcadorVehiculo.current.remove();
+      marcadorVehiculo.current = null;
+    }
+  }, [estado, vLat, vLng]);
 
   // Mover la cámara cuando lo piden ("mi ubicación").
   const irLat = irA?.lat;
