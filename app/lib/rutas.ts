@@ -30,5 +30,9 @@ export function destinoSeguro(siguiente: string | null | undefined, porDefecto =
   if (!siguiente || !siguiente.startsWith("/") || siguiente.startsWith("//") || siguiente.includes("\\")) {
     return porDefecto;
   }
+  // Los navegadores borran tabs y saltos de línea de una URL: "/\t/sitio-malo"
+  // terminaría siendo "//sitio-malo" (otro sitio). Se rechaza cualquier
+  // carácter de control o espacio (revisión de seguridad, fase 7).
+  if (/[\u0000-\u0020\u007f-\u009f]/.test(siguiente)) return porDefecto;
   return siguiente;
 }

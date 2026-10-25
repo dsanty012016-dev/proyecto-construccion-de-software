@@ -29,6 +29,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 - Fase 4c: cupos publicados por el conductor y puestos que piden los estudiantes, con aprobación (rama `fase-4c-cupos`, migración 010).
 - Fase 4e: verificación del conductor con documentos en almacenamiento privado y panel de administración (rama `fase-4e-verificacion`, migración 011).
 - Fase 4b: billetera simulada, pago al aceptar y retenido hasta terminar, cobros por cancelación, pago de cupos 10 min antes, strikes y suspensiones (rama `fase-4b-billetera`, migración 012).
+- Fase 7: revisión de seguridad (docs/seguridad.md): vehículo cambiado sin revisión y redirección con tab corregidos, cabeceras de seguridad, permisos sobrantes quitados y 30 pruebas de abuso en CI (rama `fase-7-seguridad`, migración 015).
 - Fase 6 (pulido, parte 2): bordes de los campos y textos de ayuda con el contraste que pide WCAG, texto de elegir rol al día con el cambio de modo, botones de acceso con la misma letra (rama `fase-6-pulido-2`).
 - Fase 6 (pulido, parte 1): confirmaciones dentro del botón en vez de la ventana del navegador, pantallas de "no existe", error y carga, calificación con estrella dibujada, selección y barras con la paleta, perfil en filas (rama `fase-6-pulido`).
 - Fase 4h: cupos completos: calificaciones, historial, seguimiento en vivo, compartir por estudiante y orden de recogida (rama `fase-4h-cupos-completos`, migración 014).

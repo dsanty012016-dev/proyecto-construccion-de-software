@@ -117,4 +117,12 @@ describe("rutas", () => {
     expect(destinoSeguro("/\\sitio-malo.com")).toBe("/inicio");
     expect(destinoSeguro(null)).toBe("/inicio");
   });
+
+  it("destinoSeguro no deja pasar tabs, saltos de línea ni espacios (el navegador los borra)", () => {
+    expect(destinoSeguro("/\t/sitio-malo.com")).toBe("/inicio");
+    expect(destinoSeguro("/\n/sitio-malo.com")).toBe("/inicio");
+    expect(destinoSeguro("/\r\n/sitio-malo.com")).toBe("/inicio");
+    expect(destinoSeguro("/ /sitio-malo.com")).toBe("/inicio");
+    expect(destinoSeguro("/estudiante/cupos/1?x=1")).toBe("/estudiante/cupos/1?x=1");
+  });
 });

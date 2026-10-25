@@ -966,6 +966,89 @@ select prueba.ok((select count(*) = 1 from pg_publication_tables where pubname =
                  'la ubicación del cupo está en tiempo real');
 
 -- ---------------------------------------------------------------------------
+-- 10. Intentos de abuso (fase 7: revisión de seguridad)
+-- ---------------------------------------------------------------------------
+-- Lo que un usuario con sesión podría intentar desde la API de Supabase
+-- (PostgREST), saltándose la app. Todo debe fallar o no tener efecto.
+\echo '== Intentos de abuso'
+
+reset role;
+set role authenticated;
+select prueba.como(:'lia');
+
+-- Escalar privilegios en el propio perfil
+select prueba.falla($$update public.perfiles set es_admin = true where id = auth.uid()$$, 'permission denied', 'nadie se hace administrador');
+select prueba.falla($$update public.perfiles set rol = 'conductor' where id = auth.uid()$$, 'permission denied', 'el rol solo cambia con cambiar_modo');
+select prueba.falla($$update public.perfiles set disponible = true where id = auth.uid()$$, 'permission denied', 'la disponibilidad solo cambia con su función');
+select prueba.falla($$update public.perfiles set universidad_id = 2 where id = auth.uid()$$, 'permission denied', 'nadie se cambia de universidad');
+update public.perfiles set nombre = 'Hackeado' where id = :'memo';
+reset role;
+select prueba.ok((select nombre = 'Memo Lara' from public.perfiles where id = :'memo'), 'nadie edita el perfil de otro');
+set role authenticated;
+select prueba.como(:'lia');
+
+-- Saltarse las funciones de la base
+select prueba.falla($$insert into public.viajes (estudiante_id, universidad_id, origen_lat, origen_lng, origen_texto, destino_lat, destino_lng, destino_texto) values (auth.uid(), 1, 4.1, -73.6, 'x', 4.1, -73.6, 'y')$$, 'permission denied', 'no se crean viajes sin solicitar_viaje');
+select prueba.falla($$update public.viajes set precio = 1$$, 'permission denied', 'no se cambia el precio de un viaje');
+select prueba.falla($$update public.viajes set pago_retenido = 0$$, 'permission denied', 'no se toca el dinero retenido');
+select prueba.falla($$update public.ofertas set estado = 'aceptada'$$, 'permission denied', 'no se acepta una oferta a mano');
+select prueba.falla($$update public.puestos set pagado = 999999$$, 'permission denied', 'no se marca un puesto como pagado');
+select prueba.falla($$update public.cupos set precio = 1$$, 'permission denied', 'no se cambia el precio de un cupo');
+select prueba.falla(format('insert into public.calificaciones (puesto_id, autor_id, calificado_id, estrellas) select id, auth.uid(), %L, 1 from public.puestos limit 1', :'memo'), 'permission denied', 'no se inventan calificaciones');
+select prueba.falla(format('insert into public.strikes (persona_id, motivo) values (%L, %L)', :'memo', 'x'), 'permission denied', 'no se ponen strikes a otros');
+select prueba.falla($$delete from public.strikes$$, 'permission denied', 'ni se borran los propios');
+select prueba.falla($$select privado.mover_saldo(auth.uid(), 100000, 'recarga', 'x')$$, 'permission denied', 'no se mueve saldo con la función interna');
+select prueba.falla($$select privado.pagar_conductor(auth.uid(), 100000, 'x')$$, 'permission denied', 'ni se cobra como conductor');
+
+-- Leer lo ajeno
+select prueba.ok((select count(*) = 0 from public.perfiles where id = :'carlos'), 'no se ve el perfil (ni el teléfono) de alguien con quien no se viaja');
+select prueba.ok((select count(*) = 0 from public.perfiles_publicos(array[:'hugo'::uuid])), 'no se ven perfiles de otra universidad');
+select prueba.ok((select count(*) = 0 from public.comisiones), 'no se ven las comisiones de UniGo');
+select prueba.ok((select count(*) = 0 from public.movimientos where persona_id <> auth.uid()), 'no se ven movimientos ajenos');
+select prueba.ok((select count(*) = 0 from public.documentos_conductor), 'no se ven documentos de conductores');
+
+-- Documentos y verificación
+select prueba.como(:'memo');
+select prueba.falla($$update public.documentos_conductor set estado = 'aprobado'$$, 'permission denied', 'el conductor no se aprueba sus documentos');
+select prueba.falla(format('select public.revisar_documento(%L, true)', (select id from public.documentos_conductor where conductor_id = :'memo' limit 1)), 'Solo un administrador', 'ni con la función de revisión');
+select prueba.falla($$update public.vehiculos set conductor_id = (select id from public.perfiles where id <> auth.uid() limit 1)$$, 'permission denied', 'nadie le pasa su vehículo a otro');
+reset role;
+select prueba.ok((select count(*) = 3 from public.documentos_conductor where conductor_id = :'memo' and estado = 'aprobado'), 'Memo está verificado antes de cambiar de carro');
+set role authenticated;
+select prueba.como(:'memo');
+delete from public.vehiculos where conductor_id = auth.uid();
+insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (auth.uid(), 'OTR999', 'Mazda', '2', 'Rojo');
+reset role;
+select prueba.ok((select estado = 'pendiente' from public.documentos_conductor where conductor_id = :'memo' and tipo = 'tarjeta_propiedad'),
+                 'borrar el carro y registrar otro manda la tarjeta de propiedad a revisión');
+select prueba.ok((select not privado.conductor_verificado(:'memo')), 'y mientras tanto no está verificado');
+
+-- Dinero: nada se crea ni se pierde en toda la base de pruebas. Algunas
+-- secciones de arriba ponen saldo inicial a mano (sin movimiento), así que se
+-- cuenta con los movimientos: lo que entra por recargas = lo que se movió
+-- entre billeteras + lo que cobró UniGo + lo que sigue retenido.
+select prueba.ok((
+  select (select coalesce(sum(monto), 0) from public.movimientos where tipo = 'recarga')
+       = (select coalesce(sum(monto), 0) from public.movimientos)
+       + (select coalesce(sum(monto), 0) from public.comisiones)
+       + (select coalesce(sum(pago_retenido), 0) from public.viajes)
+       + (select coalesce(sum(p.pagado), 0) from public.puestos p join public.cupos c on c.id = p.cupo_id where c.estado <> 'terminado')
+), 'el dinero de toda la base cuadra');
+select prueba.ok((
+  select count(*) = 0 from information_schema.role_table_grants
+  where table_schema = 'public' and grantee in ('anon', 'authenticated') and privilege_type in ('TRIGGER', 'REFERENCES', 'TRUNCATE')
+), 'nadie desde la API tiene permisos de TRIGGER, REFERENCES ni TRUNCATE');
+select prueba.ok((
+  select bool_and(p.proconfig @> array['search_path=""'])
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname in ('public', 'privado') and p.prosecdef
+), 'toda función SECURITY DEFINER fija search_path vacío');
+select prueba.ok((
+  select bool_and(c.relrowsecurity) from pg_class c join pg_namespace n on n.oid = c.relnamespace
+  where n.nspname = 'public' and c.relkind = 'r'
+), 'todas las tablas tienen RLS activado');
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'
@@ -976,7 +1059,7 @@ set role anon;
 select prueba.ok((select count(*) = 2 from public.universidades), 'sin sesión se ven las universidades');
 select prueba.falla($$select * from public.viajes$$, 'permission denied', 'sin sesión no se ven viajes');
 select prueba.falla($$select * from public.cupos$$, 'permission denied', 'sin sesión no se ven cupos');
-select prueba.ok((select count(*) = 0 from public.perfiles), 'sin sesión no se ven perfiles');
+select prueba.falla($$select * from public.perfiles$$, 'permission denied', 'sin sesión no se ven perfiles');
 select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'a', 4.08, -73.58, 'b')$$, 'permission denied', 'sin sesión no se llaman las funciones');
 select prueba.falla($$select privado.mi_perfil()$$, 'permission denied', 'sin sesión no se usa el esquema privado');
 
