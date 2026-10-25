@@ -1,0 +1,172 @@
+<DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniGo — Transporte universitario</title>
+  <meta name="description" content="UniGo: servicio de viajes compartidos para universitarios, rápido, seguro y económico.">
+</head>
+<body>
+  
+  <header>
+    <p><strong>UniGo</strong></p>
+    <nav>
+      <ul>
+        <li><a href="#problema">Problematica</a></li>
+        <li><a href="#Funcionalidades">Funcionalidades</a></li>
+        <li><a href="#Equipo">Equipo</a></li>
+        <li><a href="#Registro">Registrarme</a></li>
+      </ul>
+    </nav>
+  </header>
+</body>
+
+<section id="inicio">
+  <h1>Unigo</h1>
+  <p>Unigo conecta a estudiantes que comparten la misma ruta hacia la universidad.
+  <strong> Rápido, seguro y económico.</strong></p>
+  <p><a href="Registro">Quiero probarlo</a></p>
+  </section>
+
+  <section id="problema">
+    <h2>El problema</h2>
+    <p>Muchos estudiantes universitarios enfrentan dificultades para llegar a sus clases debido a la falta de transporte público confiable y asequible. Esto puede resultar en retrasos, estrés y gastos adicionales.</p>
+    <ul>
+      <li>Transporte público limitado o en casos especiales, inexistente.</li>
+      <li>Costos elevados en tarifas de algunas plataformas</li>
+      <li>Poca seguridad al viajar con desconocidos</li>
+
+    </ul>
+    <blockquote>
+      <p>En Villavicencio, más del 65 % de los estudiantes universitarios pierde entre 1 y 2 horas diarias debido a los embotellamientos en corredores clave como la Avenida del Llano y la vía a Puerto López.</p>
+      <footer>Informe de Movilidad y Transporte Urbano de Villavicencio, 2025</footer>
+    </blockquote>
+  </section>
+
+  <section id="funcionalidades">
+    <h2>Las tres principales funciones</h2>
+    <article>
+      <h3>Mapa interactivo para escoger destino</h3>
+      <p>Le permite al estudiante escoger facilmente lugar de destino y punto de recogida para el</p>
+      <figure>
+        <img src="img/funcionalidad 1.png" 
+        alt="Mapa interactivo de la aplicación UniGo" 
+         loading="lazy"width="400" height="300"
+        >
+        <figcaption>Mapa interactivo</figcaption>
+      </figure>
+   </article>
+    <article>
+     <h3>Sistema de estadisticas para el conductor</h3>
+      <p>El conductor ve su porcentaje de aceptacion, cantidad de viajes y calificacion</p>
+      <figure>
+        <img src="img/funcionalida 2.png" 
+        alt="Sistema de estadisticas para el conductor" 
+         loading="lazy"width="400" height="300"
+        >
+        <figcaption>Sistema de estadisticas</figcaption>
+      </figure>
+    </article>
+    <article>
+      <h3>Asistencia de IA para encontrar la mejor ruta</h3>
+      <p>Se aplicara un sistema de IA que optimize las rutas para el conductor cuando tiene varias personas por recoger a la vez</p>
+      <figure>
+        <img src="img/funcionalidad 3.png" 
+        alt="Asistencia de IA para encontrar la mejor ruta" 
+         loading="lazy" width="400" height="300" 
+        >
+        <figcaption>Sistema de IA para encontrar mejores rutas</figcaption>
+      </figure>
+    </article>
+ </section>
+
+<section id="equipo">
+  <h2>Equipo</h2>
+  <table border="1" cellpadding="8" cellspacing="0">
+    <caption>Intregantes del equipo de UniGo</caption>
+    <thead>
+      <tr>
+        <th scope="col">Integrante</th>
+        <th scope="col">Rol</th>
+        <th scope="col">Responsabilidad</th>
+      </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Dilan santiago Chavarro Parra</th>
+      <td>Frontend, Backend, Full Stack, Diseñador UX/UI, Project Manager, Ingeniero QA</td>
+      <td>Desarrollo de la interfaz de usuario, diseño de la experiencia del usuario, gestión del proyecto, desarrollo del backend y aseguramiento de la calidad.</td>
+    </tr>
+    <tr>
+      <th scope="row">David Eduardo Durán Acevedo</th>
+      <td>Frontend, Backend, Fullstack, Project Manager, Ingeniero QA</td>
+      <td>Desarrollo de la interfaz de usuario, desarrollo del backend, gestión del proyecto y aseguramiento de la calidad.</td>
+  </tbody>
+  </table>
+</section>
+
+<section id="registro">
+  <h2>"De estudiantes para estudiantes".Acompañanos.</h2>
+  <form action="#" method="post">
+    <fieldset>
+     <legend>Formulario de registro</legend>
+     <p>
+     <label for="nombre">Nombre completo</label>
+      <input type="text" id="nombre" name="nombre" required autocomplete="name">
+      </p>
+      <p>
+     <label for="correo">Correo electrónico</label>
+      <input type="email" id="correo" name="correo" required placeholder="tu@correo.com">
+      </p>
+      <p>
+     <label for="telefono">Teléfono</label>
+      <input type="tel" id="telefono" name="telefono" patern="[0-9]{10}" required placeholder="10 digitos, sin espacios">
+      </p>
+      <p>
+          <label for="usuario">Tipo de usuario</label><br>
+          <select id="usuario" name="usuario">
+            <option value="">Como quieres ser parte de nuestra comunidad?</option>
+            <option value="estudiante">estudiante</option>
+            <option value="conductor">conductor</option>
+            <option value="programador">programador</option>
+          </select>
+        </p>
+    </fieldset>
+      <fieldset>
+        <legend>Por donde quieres que te contactemos</legend>
+        <p>
+          <input type="radio" id="c-correo" name="canal" value="correo" checked>
+          <label for="c-correo">Correo</label>
+
+          <input type="radio" id="c-whatsapp" name="canal" value="whatsapp">
+          <label for="c-whatsapp">WhatsApp</label>
+        </p>
+      </fieldset>
+       <p>
+        <label for="comentario">¿Que desearias ver cuando pides transporte ?</label><br>
+        <textarea id="comentario" name="comentario"
+                  rows="4" cols="40" maxlength="300"></textarea>
+      </p>
+     <p>
+        <input type="checkbox" id="terminos" name="terminos" required>
+        <label for="terminos">Acepto la política de tratamiento de datos</label>
+    </p>
+    <p><button type="submit">Unete a UniGo</button></p>
+  </form>
+
+</section>
+</main>
+
+<footer>
+  <h2>Contacto</h2>
+  <address>
+    Escribenos a <a href="contact.unigocol@gmail.com">contact.unigocol@gmail.com</a><br>
+    Villavicencio, Colombia
+  </address>
+  <p>
+    <a href=""
+    target="">Repositorio del Proyecto</a>
+  </p>
+  <p><small>© <time datetime="2026">2026</time>UniGo. Proyecto académico.</small></p>
+</footer>
+</html>

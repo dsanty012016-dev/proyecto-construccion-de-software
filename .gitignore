@@ -1,0 +1,35 @@
+# dependencias
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+
+# pruebas
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# producción
+/build
+
+# sistema
+.DS_Store
+*.pem
+
+# registros
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# variables de entorno: NUNCA se suben (claves de Supabase, etc.)
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
