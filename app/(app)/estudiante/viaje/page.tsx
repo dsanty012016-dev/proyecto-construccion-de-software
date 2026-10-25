@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cancelarViaje } from "@/app/lib/acciones-viaje";
 import { miSaldo } from "@/app/lib/consultas-billetera";
+import { ubicacionConHora } from "@/app/lib/consultas-seguimiento";
 import { viajeActivoDelEstudiante } from "@/app/lib/consultas-viaje";
 import { calificacionTexto, etiquetaEstado, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
@@ -12,9 +13,10 @@ import { CancelarViaje } from "@/app/ui/comun/cancelar-viaje";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoAtras, IconoCandado, IconoTelefono } from "@/app/ui/comun/iconos-app";
-import { Mapa } from "@/app/ui/comun/mapa";
 import { PasosViaje } from "@/app/ui/comun/pasos-viaje";
 import { RutaCorta } from "@/app/ui/comun/ruta-viaje";
+import { BotonCompartirViaje } from "@/app/ui/estudiante/boton-compartir-viaje";
+import { MapaEnVivo } from "@/app/ui/estudiante/mapa-en-vivo";
 import { TarjetaOferta } from "@/app/ui/estudiante/tarjeta-oferta";
 
 export const metadata: Metadata = { title: "Tu viaje" };
@@ -78,7 +80,8 @@ export default async function PaginaViajeEstudiante() {
     );
   }
 
-  // Aceptado o en curso.
+  // Aceptado o en curso: con el conductor en vivo en el mapa.
+  const { ubicacion, ahora } = await ubicacionConHora(viaje.id);
   const perfil = conductor?.perfil;
   const vehiculo = conductor?.vehiculo;
   const nombre = perfil ? nombreCorto(perfil.nombre) : "Tu conductor";
@@ -86,8 +89,14 @@ export default async function PaginaViajeEstudiante() {
   return (
     <main>
       {enVivo}
-      <div className="relative h-72">
-        <Mapa etiqueta="Mapa del viaje" centro={origen} origen={origen} destino={destino} aRas className="h-full" />
+      <div className="relative">
+        <MapaEnVivo
+          viajeId={viaje.id}
+          origen={origen}
+          destino={destino}
+          inicial={ubicacion ? { lat: ubicacion.lat, lng: ubicacion.lng, actualizado_en: ubicacion.actualizado_en } : null}
+          ahoraInicial={ahora}
+        />
         <Link
           href="/estudiante"
           aria-label="Volver al inicio"
@@ -148,6 +157,8 @@ export default async function PaginaViajeEstudiante() {
             <strong className="font-titulo tabular-nums">{pesos(viaje.pago_retenido)}</strong>
           </p>
         )}
+
+        <BotonCompartirViaje viajeId={viaje.id} />
 
         {viaje.estado === "aceptado" && <CancelarViaje viajeId={viaje.id} quien="estudiante" precio={viaje.pago_retenido} />}
       </div>

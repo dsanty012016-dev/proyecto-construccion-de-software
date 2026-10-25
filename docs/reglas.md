@@ -17,7 +17,7 @@ Si cambias una regla, cámbiala en los dos y en sus pruebas.
 - **Pagos:** solo **digitales**, sin efectivo. Por ahora una **billetera simulada** (saldo y recargas de prueba); la pasarela real (Wompi, Mercado Pago o ePayco) llega después sin cambiar la lógica.
 - **Comisión:** UniGo cobra el **10 % del precio de la oferta al conductor**. El estudiante paga el precio ofertado; el conductor recibe el 90 % (oferta de $6.500 → recibe $5.850).
 - **Teléfono:** estudiante y conductor se ven el celular solo mientras el viaje está aceptado o en curso.
-- **Compartir viaje:** el estudiante podrá enviar un enlace para seguir su viaje; se hace en la fase 4 (necesita ubicación en tiempo real).
+- **Compartir viaje:** el estudiante puede enviar un enlace para seguir su viaje en vivo (fase 4 parte 2, ver abajo).
 
 - **Recogida:** el estudiante elige el punto en el mapa (o con la ubicación del celular). No puede ser la misma universidad (menos de 100 m se rechaza en pantalla; la base rechaza el mismo punto exacto).
 
@@ -93,6 +93,12 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - Tope de $500.000 por recarga y de $1.000.000 de saldo.
 - Dejar un cupo aprobado a menos de 40 minutos suma strike aunque no haya pagado.
 - Al salir, los puestos aprobados que no se pagaron se liberan sin strike; para salir hace falta al menos un puesto pagado.
+
+## Seguimiento en vivo y compartir viaje (fase 4 parte 2, migración 013)
+- Mientras el viaje está **aceptado o en curso**, el teléfono del conductor envía su ubicación **cada 5 segundos** (la base ignora las que lleguen antes de 4 s). Solo se guarda la última y **se borra al terminar o cancelar** el viaje.
+- La ubicación la ven solo el estudiante y el conductor de ese viaje, en tiempo real.
+- **Compartir viaje:** solo el estudiante crea el enlace, cuando el viaje ya tiene conductor. Quien lo tenga lo ve **sin iniciar sesión**: nombres cortos, vehículo, placa, recorrido y la ubicación del conductor; nunca teléfonos. El enlace es un código al azar de 64 caracteres y **deja de mostrar el viaje cuando termina o se cancela**.
+- Por ahora solo para viajes por pedido; los cupos tendrán seguimiento más adelante.
 
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |

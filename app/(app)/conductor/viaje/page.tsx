@@ -14,10 +14,12 @@ import { IconoTelefono, IconoUbicacion } from "@/app/ui/comun/iconos-app";
 import { Mapa } from "@/app/ui/comun/mapa";
 import { PasosViaje } from "@/app/ui/comun/pasos-viaje";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
+import { TransmisorUbicacion } from "@/app/ui/conductor/transmisor-ubicacion";
 
 export const metadata: Metadata = { title: "Tu viaje" };
 
 // El viaje del conductor: ir a recoger al estudiante, iniciarlo y terminarlo.
+// Mientras tanto, su ubicación se envía en vivo al estudiante (013).
 export default async function PaginaViajeConductor() {
   const { usuario } = await exigirRol("conductor");
   const activo = await viajeActivoDelConductor(usuario.id);
@@ -37,6 +39,7 @@ export default async function PaginaViajeConductor() {
       <EncabezadoPantalla titulo={enCurso ? `Llevando a ${nombre}` : `Ve a recoger a ${nombre}`} volverA="/conductor" />
       <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} />
       <Mapa etiqueta="Mapa del viaje" centro={origen} origen={origen} destino={destino} className="h-52" />
+      <TransmisorUbicacion viajeId={viaje.id} />
       <a
         href={navegar}
         target="_blank"

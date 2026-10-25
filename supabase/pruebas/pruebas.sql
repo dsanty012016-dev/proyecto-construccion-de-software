@@ -774,6 +774,103 @@ select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() 
 select prueba.falla($$select privado.dar_strike(auth.uid(), 'x')$$, 'permission denied', 'nadie se pone strikes a mano');
 
 -- ---------------------------------------------------------------------------
+-- 8f. Seguimiento en vivo y compartir viaje (013)
+-- ---------------------------------------------------------------------------
+\echo '== Seguimiento y compartir viaje'
+
+reset role;
+\set lia  '00000000-0000-0000-0000-0000000000e7'
+\set memo '00000000-0000-0000-0000-0000000000e8'
+\set nico '00000000-0000-0000-0000-0000000000e9'
+insert into auth.users (id, email, raw_user_meta_data) values
+  (:'lia', 'lia@ustavillavo.edu.co', '{"nombre":"Lía Gómez Ruiz","telefono":"+573009998877","rol":"estudiante"}'),
+  (:'memo', 'memo@ustavillavo.edu.co', '{"nombre":"Memo Lara","telefono":"+573005556677","rol":"conductor"}'),
+  (:'nico', 'nico@ustavillavo.edu.co', '{"nombre":"Nico Paz","rol":"estudiante"}');
+insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (:'memo', 'MEM123', 'Chevrolet', 'Spark', 'Gris');
+insert into public.documentos_conductor (conductor_id, tipo, ruta, estado, autorizado_en)
+select :'memo', t.tipo, :'memo' || '/' || t.tipo || '.jpg', 'aprobado', now()
+from unnest(enum_range(null::public.tipo_documento)) as t(tipo);
+set role authenticated;
+
+select prueba.como(:'lia');
+select public.recargar(10000);
+select public.solicitar_viaje(4.15, -73.64, 'Barzal Alto', 4.12, -73.61, 'USTA') as viaje_s \gset
+select prueba.falla(format('select public.compartir_viaje(%L)', :'viaje_s'), 'cuando un conductor lo acepte', 'no se comparte un viaje que nadie ha aceptado');
+select prueba.como(:'memo');
+select public.cambiar_disponibilidad(true);
+select prueba.falla(format('select public.reportar_ubicacion(%L, 4.14, -73.63)', :'viaje_s'), 'ya no está activo', 'antes de aceptar no se reporta ubicación');
+select public.ofertar(:'viaje_s', 6000) as oferta_s \gset
+select prueba.como(:'lia');
+select public.aceptar_oferta(:'oferta_s');
+
+-- Ubicación
+select prueba.como(:'memo');
+select public.reportar_ubicacion(:'viaje_s', 4.14, -73.63, 12);
+select prueba.ok((select count(*) = 1 and min(lat) = 4.14 from public.ubicaciones_viaje where viaje_id = :'viaje_s'), 'el conductor reporta su ubicación');
+select public.reportar_ubicacion(:'viaje_s', 4.20, -73.70);
+select prueba.ok((select lat = 4.14 from public.ubicaciones_viaje where viaje_id = :'viaje_s'), 'si llega antes de 4 segundos se ignora');
+reset role;
+update public.ubicaciones_viaje set actualizado_en = now() - interval '10 seconds' where viaje_id = :'viaje_s';
+set role authenticated;
+select public.reportar_ubicacion(:'viaje_s', 4.135, -73.625);
+select prueba.ok((select lat = 4.135 and precision_m is null from public.ubicaciones_viaje where viaje_id = :'viaje_s'), 'pasados unos segundos se actualiza');
+select prueba.falla(format('select public.reportar_ubicacion(%L, 95, -73.6)', :'viaje_s'), 'no es válida', 'no acepta coordenadas imposibles');
+select prueba.falla($$update public.ubicaciones_viaje set lat = 0$$, 'permission denied', 'nadie cambia la ubicación a mano');
+select prueba.falla(format('insert into public.ubicaciones_viaje (viaje_id, conductor_id, lat, lng) values (%L, auth.uid(), 1, 1)', :'viaje_s'), 'permission denied', 'ni la inventa');
+
+select prueba.como(:'lia');
+select prueba.ok((select count(*) = 1 from public.ubicaciones_viaje where viaje_id = :'viaje_s'), 'el estudiante del viaje ve la ubicación');
+select prueba.falla(format('select public.reportar_ubicacion(%L, 4.1, -73.6)', :'viaje_s'), 'ya no está activo', 'el estudiante no reporta ubicación');
+select prueba.como(:'nico');
+select prueba.ok((select count(*) = 0 from public.ubicaciones_viaje), 'otro estudiante no la ve');
+select prueba.como(:'carlos');
+select prueba.ok((select count(*) = 0 from public.ubicaciones_viaje), 'otro conductor tampoco');
+
+-- Compartir
+select prueba.como(:'memo');
+select prueba.falla(format('select public.compartir_viaje(%L)', :'viaje_s'), 'no existe', 'el conductor no crea el enlace');
+select prueba.como(:'nico');
+select prueba.falla(format('select public.compartir_viaje(%L)', :'viaje_s'), 'no existe', 'otra persona tampoco');
+select prueba.como(:'lia');
+select public.compartir_viaje(:'viaje_s') as token_s \gset
+select prueba.ok(:'token_s' ~ '^[0-9a-f]{64}$', 'el enlace lleva un token largo al azar');
+select prueba.ok((select public.compartir_viaje(:'viaje_s') = :'token_s'), 'pedirlo otra vez da el mismo enlace');
+select prueba.falla($$select * from public.enlaces_viaje$$, 'permission denied', 'nadie lee la tabla de enlaces');
+
+reset role;
+select prueba.como(null);
+set role anon;
+select prueba.ok((select count(*) = 1 from public.viaje_compartido(:'token_s')
+                  where estado = 'aceptado' and estudiante = 'Lía R.' and conductor = 'Memo L.'
+                    and vehiculo = 'Chevrolet Spark Gris' and placa = 'MEM123' and ubicacion_lat = 4.135),
+                 'sin sesión, el enlace muestra nombres cortos, vehículo y ubicación');
+select prueba.ok((select count(*) = 0 from public.viaje_compartido(repeat('a', 64))), 'un token que no existe no muestra nada');
+select prueba.ok((select count(*) = 0 from public.viaje_compartido('x'' or true --')), 'ni un token mal formado');
+select prueba.falla($$select * from public.ubicaciones_viaje$$, 'permission denied', 'sin sesión no se leen las ubicaciones');
+select prueba.falla(format('select public.compartir_viaje(%L)', :'viaje_s'), 'permission denied', 'sin sesión no se crean enlaces');
+select prueba.falla(format('select public.reportar_ubicacion(%L, 4.1, -73.6)', :'viaje_s'), 'permission denied', 'ni se reportan ubicaciones');
+
+-- Al terminar: se borra la ubicación y el enlace ya no muestra el viaje
+reset role;
+set role authenticated;
+select prueba.como(:'memo');
+select public.iniciar_viaje(:'viaje_s');
+select public.reportar_ubicacion(:'viaje_s', 4.13, -73.62);
+select public.terminar_viaje(:'viaje_s');
+reset role;
+select prueba.ok((select count(*) = 0 from public.ubicaciones_viaje where viaje_id = :'viaje_s'), 'al terminar el viaje se borra la ubicación');
+select prueba.ok((select count(*) = 1 from public.viaje_compartido(:'token_s') where estado = 'terminado' and conductor is null and placa is null and origen_texto is null),
+                 'el enlace de un viaje terminado solo dice que terminó');
+set role authenticated;
+select prueba.como(:'memo');
+select prueba.falla(format('select public.reportar_ubicacion(%L, 4.1, -73.6)', :'viaje_s'), 'ya no está activo', 'después de terminar no se reporta ubicación');
+reset role;
+select prueba.ok(privado.nombre_corto('  Ana  ') = 'Ana' and privado.nombre_corto('Ana María Rojas') = 'Ana R.' and privado.nombre_corto('') = '',
+                 'los nombres cortos se arman como en la app');
+select prueba.ok((select count(*) = 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'ubicaciones_viaje'),
+                 'la ubicación está en tiempo real');
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'
