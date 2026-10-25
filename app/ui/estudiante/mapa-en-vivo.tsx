@@ -6,9 +6,12 @@ import { INTERVALO_UBICACION_MS, textoUbicacion } from "@/app/lib/seguimiento";
 import { crearClienteNavegador } from "@/app/lib/supabase/client";
 import { Mapa } from "@/app/ui/comun/mapa";
 
-// Mapa del viaje con el conductor moviéndose en vivo. La primera ubicación
-// llega del servidor y las siguientes por Realtime (RLS: solo el estudiante y
-// el conductor de ese viaje las reciben, 013).
+// Mapa del viaje (o del cupo) con el conductor moviéndose en vivo. La primera
+// ubicación llega del servidor y las siguientes por Realtime (RLS: solo
+// quienes van en ese viaje o cupo las reciben, 013 y 014).
+
+/** De dónde sale la ubicación: la tabla del viaje o la del cupo. */
+export type FuenteUbicacion = { tabla: "ubicaciones_viaje"; columna: "viaje_id"; id: string } | { tabla: "ubicaciones_cupo"; columna: "cupo_id"; id: string };
 
 export interface UbicacionEnVivo {
   lat: number;
@@ -23,16 +26,19 @@ function masReciente(a: UbicacionEnVivo | null, b: UbicacionEnVivo | null) {
 }
 
 export function MapaEnVivo({
-  viajeId,
+  fuente,
   origen,
   destino,
+  paradas,
   inicial,
   ahoraInicial,
   className,
 }: {
-  viajeId: string;
+  fuente: FuenteUbicacion;
   origen: Coordenada;
   destino: Coordenada;
+  /** Recogidas (cupos): se muestran como puntos pequeños. */
+  paradas?: Coordenada[];
   inicial: UbicacionEnVivo | null;
   /** Hora del servidor al cargar, para que el texto coincida al hidratar. */
   ahoraInicial: number;
@@ -59,10 +65,10 @@ export function MapaEnVivo({
       await supabase.realtime.setAuth(data.session.access_token);
       if (cancelado) return;
       canal = supabase
-        .channel(`ubicacion-${viajeId}`)
+        .channel(`ubicacion-${fuente.id}`)
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "ubicaciones_viaje", filter: `viaje_id=eq.${viajeId}` },
+          { event: "*", schema: "public", table: fuente.tabla, filter: `${fuente.columna}=eq.${fuente.id}` },
           (cambio) => {
             if (cambio.eventType === "DELETE") {
               setBorrada(true);
@@ -81,7 +87,7 @@ export function MapaEnVivo({
       cancelado = true;
       if (canal) supabase.removeChannel(canal);
     };
-  }, [viajeId]);
+  }, [fuente.tabla, fuente.columna, fuente.id]);
 
   const actual = borrada ? null : masReciente(inicial, enVivo);
   const texto = textoUbicacion(actual ? Date.parse(actual.actualizado_en) : null, ahora);
@@ -93,6 +99,7 @@ export function MapaEnVivo({
         centro={origen}
         origen={origen}
         destino={destino}
+        paradas={paradas}
         vehiculo={actual ? { lat: actual.lat, lng: actual.lng } : null}
         aRas
         className="h-full"

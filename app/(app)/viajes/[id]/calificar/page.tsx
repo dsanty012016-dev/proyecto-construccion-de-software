@@ -32,7 +32,7 @@ export default async function PaginaCalificar({ params }: { params: Promise<{ id
           <Avatar nombre={otro?.nombre ?? "?"} sobreTarjeta />
           <p className="font-bold">{nombre}</p>
         </div>
-        <FormularioCalificar viajeId={viaje.id} aQuien={nombre} />
+        <FormularioCalificar campos={{ viaje: viaje.id }} aQuien={nombre} />
       </div>
     </main>
   );

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { pagarPuesto, retirarPuesto } from "@/app/lib/acciones-cupo";
+import { compartirPuesto } from "@/app/lib/acciones-seguimiento";
 import { cupoParaEstudiante } from "@/app/lib/consultas-cupo";
+import { ubicacionDelCupoConHora } from "@/app/lib/consultas-seguimiento";
 import { etiquetaPuesto } from "@/app/lib/cupo";
 import { calificacionTexto, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { limiteDePago, puedePagarPuesto, salidaDeCupo } from "@/app/lib/pagos";
@@ -14,7 +16,9 @@ import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoEstrella, IconoTelefono } from "@/app/ui/comun/iconos-app";
 import { Mapa } from "@/app/ui/comun/mapa";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
+import { BotonCompartirViaje } from "@/app/ui/estudiante/boton-compartir-viaje";
 import { FormularioPuesto } from "@/app/ui/estudiante/formulario-puesto";
+import { MapaEnVivo } from "@/app/ui/estudiante/mapa-en-vivo";
 
 export const metadata: Metadata = { title: "Cupo" };
 
@@ -32,6 +36,10 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
   const aprobado = miPuesto?.estado === "aprobado";
   const puedePedir = cupo.estado === "publicado" && libres > 0 && !tengoPuesto && miPuesto?.estado !== "rechazado";
   const nombre = conductor ? nombreCorto(conductor.nombre) : "el conductor";
+  const pagado = aprobado && (miPuesto?.pagado ?? 0) > 0;
+  const miRecogida = miPuesto ? { lat: miPuesto.recogida_lat, lng: miPuesto.recogida_lng } : salida;
+  // Con el cupo en camino y el puesto pagado, la ubicación del conductor (014).
+  const enVivo = cupo.estado === "en_curso" && pagado ? await ubicacionDelCupoConHora(cupo.id) : null;
 
   return (
     <main className="space-y-5 px-5 pt-6">
@@ -71,14 +79,29 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
             {cupo.estado === "en_curso" ? "El conductor ya salió" : etiquetaPuesto(miPuesto.estado)}
           </h2>
           <p className="text-sm">Te subes en: {miPuesto.recogida_texto}</p>
-          <Mapa
-            etiqueta="Mapa del cupo con tu punto de recogida"
-            centro={salida}
-            origen={salida}
-            destino={destino}
-            paradas={[{ lat: miPuesto.recogida_lat, lng: miPuesto.recogida_lng }]}
-            className="h-52"
-          />
+          {enVivo ? (
+            // El conductor ya salió: se ve moverse en vivo (014). Solo tu recogida en el mapa.
+            <div className="-mx-4 overflow-hidden">
+              <MapaEnVivo
+                fuente={{ tabla: "ubicaciones_cupo", columna: "cupo_id", id: cupo.id }}
+                origen={salida}
+                destino={destino}
+                paradas={[miRecogida]}
+                inicial={enVivo.ubicacion ? { lat: enVivo.ubicacion.lat, lng: enVivo.ubicacion.lng, actualizado_en: enVivo.ubicacion.actualizado_en } : null}
+                ahoraInicial={enVivo.ahora}
+                className="h-64"
+              />
+            </div>
+          ) : (
+            <Mapa
+              etiqueta="Mapa del cupo con tu punto de recogida"
+              centro={salida}
+              origen={salida}
+              destino={destino}
+              paradas={[miRecogida]}
+              className="h-52"
+            />
+          )}
           {aprobado && miPuesto.pagado > 0 && <Aviso tipo="listo">Puesto pagado: {pesos(miPuesto.pagado)}.</Aviso>}
           {aprobado && miPuesto.pagado === 0 && cupo.estado === "publicado" && (
             puedePagarPuesto(saleMs, ahora) ? (
@@ -94,6 +117,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
               <Aviso tipo="error">Ya pasó el límite para pagar (10 minutos antes de la salida).</Aviso>
             )
           )}
+          {pagado && <BotonCompartirViaje compartir={compartirPuesto.bind(null, cupo.id)} />}
           {telefonoConductor && (
             <a
               href={`tel:${telefonoConductor}`}

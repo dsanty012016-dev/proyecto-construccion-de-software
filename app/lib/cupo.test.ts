@@ -1,6 +1,6 @@
 // Pruebas de las reglas puras de los cupos.
 import { describe, expect, it } from "vitest";
-import { distanciaATramoKm, esMoto, etiquetaPuesto, horaLocalAIso, puestosLibres, puestosMaximos, salidaValida } from "./cupo";
+import { avanceEnTramo, distanciaATramoKm, esMoto, etiquetaPuesto, horaLocalAIso, ordenarRecogidas, puestosLibres, puestosMaximos, salidaValida } from "./cupo";
 
 describe("vehículo y puestos", () => {
   it("reconoce la placa de moto", () => {
@@ -68,5 +68,35 @@ describe("estados del puesto", () => {
   it("tienen nombre para la pantalla", () => {
     expect(etiquetaPuesto("pendiente")).toBe("Esperando al conductor");
     expect(etiquetaPuesto("aprobado")).toBe("Puesto aprobado");
+  });
+});
+
+describe("orden de recogida", () => {
+  // Salida al norte de la ciudad, la U al sur.
+  const salida = { lat: 4.16, lng: -73.64 };
+  const destino = { lat: 4.08, lng: -73.6 };
+
+  it("mide el avance de 0 (salida) a 1 (destino)", () => {
+    expect(avanceEnTramo(salida, salida, destino)).toBe(0);
+    expect(avanceEnTramo(destino, salida, destino)).toBe(1);
+    expect(avanceEnTramo({ lat: 4.12, lng: -73.62 }, salida, destino)).toBeCloseTo(0.5, 2);
+    // Antes de la salida o después del destino se queda en los extremos.
+    expect(avanceEnTramo({ lat: 4.3, lng: -73.7 }, salida, destino)).toBe(0);
+    expect(avanceEnTramo({ lat: 4.0, lng: -73.55 }, salida, destino)).toBe(1);
+  });
+
+  it("ordena de la salida hacia la U y respeta el orden de llegada en empates", () => {
+    const lista = [
+      { id: "c", recogida: { lat: 4.09, lng: -73.605 } },
+      { id: "a", recogida: { lat: 4.155, lng: -73.638 } },
+      { id: "b", recogida: { lat: 4.12, lng: -73.62 } },
+      { id: "b2", recogida: { lat: 4.12, lng: -73.62 } },
+    ];
+    expect(ordenarRecogidas(salida, destino, lista).map((x) => x.id)).toEqual(["a", "b", "b2", "c"]);
+    expect(lista[0].id).toBe("c");
+  });
+
+  it("con salida y destino iguales no se rompe", () => {
+    expect(ordenarRecogidas(salida, salida, [{ recogida: destino }, { recogida: salida }])).toHaveLength(2);
   });
 });

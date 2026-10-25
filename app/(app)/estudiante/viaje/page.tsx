@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { compartirViaje } from "@/app/lib/acciones-seguimiento";
 import { cancelarViaje } from "@/app/lib/acciones-viaje";
 import { miSaldo } from "@/app/lib/consultas-billetera";
 import { ubicacionConHora } from "@/app/lib/consultas-seguimiento";
@@ -91,7 +92,7 @@ export default async function PaginaViajeEstudiante() {
       {enVivo}
       <div className="relative">
         <MapaEnVivo
-          viajeId={viaje.id}
+          fuente={{ tabla: "ubicaciones_viaje", columna: "viaje_id", id: viaje.id }}
           origen={origen}
           destino={destino}
           inicial={ubicacion ? { lat: ubicacion.lat, lng: ubicacion.lng, actualizado_en: ubicacion.actualizado_en } : null}
@@ -158,7 +159,7 @@ export default async function PaginaViajeEstudiante() {
           </p>
         )}
 
-        <BotonCompartirViaje viajeId={viaje.id} />
+        <BotonCompartirViaje compartir={compartirViaje.bind(null, viaje.id)} />
 
         {viaje.estado === "aceptado" && <CancelarViaje viajeId={viaje.id} quien="estudiante" precio={viaje.pago_retenido} />}
       </div>

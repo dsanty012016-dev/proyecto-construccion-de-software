@@ -1,14 +1,14 @@
 "use client";
 
 import { useId, useState, useTransition } from "react";
-import { compartirViaje } from "@/app/lib/acciones-seguimiento";
 import { enlaceCompartido } from "@/app/lib/seguimiento";
 import { IconoCompartir } from "@/app/ui/comun/iconos-app";
 
-// "Compartir viaje": crea (o recupera) el enlace del viaje y abre el menú de
-// compartir del teléfono; si no hay, lo copia. Quien lo abra ve el viaje en
-// vivo sin iniciar sesión hasta que termine (013).
-export function BotonCompartirViaje({ viajeId }: { viajeId: string }) {
+// "Compartir viaje": crea (o recupera) el enlace del viaje o del puesto del
+// cupo y abre el menú de compartir del teléfono; si no hay, lo copia. Quien
+// lo abra ve el viaje en vivo sin iniciar sesión hasta que termine (013, 014).
+// Recibe la acción ya atada a su viaje o cupo (compartirViaje.bind).
+export function BotonCompartirViaje({ compartir: pedirEnlace }: { compartir: () => Promise<{ token?: string; mensaje?: string }> }) {
   const [pendiente, empezar] = useTransition();
   const [aviso, setAviso] = useState<{ tipo: "listo" | "error"; texto: string } | null>(null);
   const [enlace, setEnlace] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function BotonCompartirViaje({ viajeId }: { viajeId: string }) {
   function compartir() {
     setAviso(null);
     empezar(async () => {
-      const respuesta = await compartirViaje(viajeId);
+      const respuesta = await pedirEnlace();
       if (!respuesta.token) {
         setAviso({ tipo: "error", texto: respuesta.mensaje ?? "No pudimos crear el enlace." });
         return;

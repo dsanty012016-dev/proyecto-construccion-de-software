@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cancelarCupo, iniciarCupo, responderPuesto, terminarCupo } from "@/app/lib/acciones-cupo";
+import { reportarUbicacionCupo } from "@/app/lib/acciones-seguimiento";
 import { gananciaConductor } from "@/app/lib/comision";
 import { cupoActivoDelConductor, type SolicitudDePuesto } from "@/app/lib/consultas-cupo";
-import { distanciaATramoKm } from "@/app/lib/cupo";
+import { distanciaATramoKm, ordenarRecogidas } from "@/app/lib/cupo";
 import { calificacionTexto, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { type Coordenada, distanciaTexto } from "@/app/lib/mapa";
 import { exigirRol } from "@/app/lib/sesion";
@@ -14,6 +15,7 @@ import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoEstrella, IconoTelefono } from "@/app/ui/comun/iconos-app";
 import { Mapa } from "@/app/ui/comun/mapa";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
+import { TransmisorUbicacion } from "@/app/ui/conductor/transmisor-ubicacion";
 
 export const metadata: Metadata = { title: "Tu cupo" };
 
@@ -40,7 +42,8 @@ function Persona({ solicitud, salida, destino }: { solicitud: SolicitudDePuesto;
 }
 
 // El cupo publicado del conductor: solicitudes por aprobar, estudiantes
-// aprobados (con su teléfono) y los botones para salir, llegar o cancelar.
+// aprobados en orden de recogida (con su teléfono) y los botones para salir,
+// llegar o cancelar. Mientras va en camino, transmite su ubicación (014).
 export default async function PaginaCupoConductor() {
   const { usuario } = await exigirRol("conductor");
   const datos = await cupoActivoDelConductor(usuario.id);
@@ -48,7 +51,13 @@ export default async function PaginaCupoConductor() {
   const { cupo, libres, pendientes, aprobados } = datos;
   const salida = { lat: cupo.salida_lat, lng: cupo.salida_lng };
   const destino = { lat: cupo.destino_lat, lng: cupo.destino_lng };
-  const paradas = [...aprobados, ...pendientes].map((s) => ({ lat: s.puesto.recogida_lat, lng: s.puesto.recogida_lng }));
+  // Orden de recogida (014): de la salida hacia la U. En el mapa van numeradas.
+  const enOrden = ordenarRecogidas(
+    salida,
+    destino,
+    aprobados.map((s) => ({ ...s, recogida: { lat: s.puesto.recogida_lat, lng: s.puesto.recogida_lng } })),
+  );
+  const paradas = enOrden.length > 0 ? enOrden.map((s) => s.recogida) : pendientes.map((s) => ({ lat: s.puesto.recogida_lat, lng: s.puesto.recogida_lng }));
   const publicado = cupo.estado === "publicado";
   const hayPagos = aprobados.some((s) => s.puesto.pagado > 0);
 
@@ -70,7 +79,16 @@ export default async function PaginaCupoConductor() {
         </p>
       </section>
 
-      <Mapa etiqueta="Mapa del cupo con las recogidas" centro={salida} origen={salida} destino={destino} paradas={paradas} className="h-56" />
+      <Mapa
+        etiqueta={enOrden.length > 0 ? "Mapa del cupo con las recogidas numeradas en orden" : "Mapa del cupo con las solicitudes"}
+        centro={salida}
+        origen={salida}
+        destino={destino}
+        paradas={paradas}
+        numerarParadas={enOrden.length > 0}
+        className="h-56"
+      />
+      {!publicado && <TransmisorUbicacion enviar={reportarUbicacionCupo.bind(null, cupo.id)} clave={cupo.id} quienVe="Tus estudiantes" />}
 
       {publicado && (
         <section aria-labelledby="titulo-pendientes" className="space-y-3">
@@ -103,30 +121,39 @@ export default async function PaginaCupoConductor() {
 
       <section aria-labelledby="titulo-aprobados" className="space-y-3">
         <h2 id="titulo-aprobados" className="text-lg">
-          Van contigo
+          {enOrden.length > 1 ? "Orden de recogida" : "Van contigo"}
         </h2>
-        {aprobados.length === 0 ? (
+        {enOrden.length === 0 ? (
           <p className="text-sm text-texto-suave">Todavía no has aprobado a nadie.</p>
         ) : (
-          <ul className="space-y-3">
-            {aprobados.map((solicitud) => (
-              <li key={solicitud.puesto.id} className="space-y-3 rounded-2xl bg-superficie p-4">
-                <Persona solicitud={solicitud} salida={salida} destino={destino} />
-                <p className={`text-sm font-semibold ${solicitud.puesto.pagado > 0 ? "text-secundario" : "text-texto-suave"}`}>
-                  {solicitud.puesto.pagado > 0 ? `Pagó ${pesos(solicitud.puesto.pagado)}` : "Aún no ha pagado (tiene hasta 10 minutos antes de salir)"}
-                </p>
-                {solicitud.telefono && (
-                  <a
-                    href={`tel:${solicitud.telefono}`}
-                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-texto-suave/30 text-sm font-semibold text-texto hover:bg-fondo"
-                  >
-                    <IconoTelefono className="size-4" />
-                    Llamar
-                  </a>
-                )}
+          <ol className="space-y-3">
+            {enOrden.map((solicitud, i) => (
+              <li key={solicitud.puesto.id} className="flex gap-3 rounded-2xl bg-superficie p-4">
+                <span
+                  aria-hidden="true"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full bg-texto font-titulo text-sm font-bold text-fondo"
+                >
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1 space-y-3">
+                  <span className="sr-only">Recogida {i + 1}: </span>
+                  <Persona solicitud={solicitud} salida={salida} destino={destino} />
+                  <p className={`text-sm font-semibold ${solicitud.puesto.pagado > 0 ? "text-secundario" : "text-texto-suave"}`}>
+                    {solicitud.puesto.pagado > 0 ? `Pagó ${pesos(solicitud.puesto.pagado)}` : "Aún no ha pagado (tiene hasta 10 minutos antes de salir)"}
+                  </p>
+                  {solicitud.telefono && (
+                    <a
+                      href={`tel:${solicitud.telefono}`}
+                      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-texto-suave/30 text-sm font-semibold text-texto hover:bg-fondo"
+                    >
+                      <IconoTelefono className="size-4" />
+                      Llamar
+                    </a>
+                  )}
+                </div>
               </li>
             ))}
-          </ul>
+          </ol>
         )}
       </section>
 

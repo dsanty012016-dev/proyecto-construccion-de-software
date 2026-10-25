@@ -9,6 +9,8 @@ import type { Database } from "./supabase/tipos";
 
 export type FilaUbicacion = Database["public"]["Tables"]["ubicaciones_viaje"]["Row"];
 export type ViajeCompartido = Database["public"]["Functions"]["viaje_compartido"]["Returns"][number];
+export type CupoCompartido = Database["public"]["Functions"]["cupo_compartido"]["Returns"][number];
+export type FilaUbicacionCupo = Database["public"]["Tables"]["ubicaciones_cupo"]["Row"];
 
 export async function ubicacionDelViaje(viajeId: string): Promise<FilaUbicacion | null> {
   const supabase = await crearClienteServidor();
@@ -28,4 +30,20 @@ export async function viajeCompartido(token: string): Promise<{ viaje: ViajeComp
   const { data } = await supabase.rpc("viaje_compartido", { p_token: token });
   const viaje = data?.[0];
   return viaje ? { viaje, ahora: Date.now() } : null;
+}
+
+/** Ubicación del conductor en un cupo en curso, con la hora de la consulta (014). */
+export async function ubicacionDelCupoConHora(cupoId: string): Promise<{ ubicacion: FilaUbicacionCupo | null; ahora: number }> {
+  const supabase = await crearClienteServidor();
+  const { data } = await supabase.from("ubicaciones_cupo").select("*").eq("cupo_id", cupoId).maybeSingle();
+  return { ubicacion: data, ahora: Date.now() };
+}
+
+/** Lo que ve quien abre el enlace del puesto de un cupo. Null si no existe. */
+export async function cupoCompartido(token: string): Promise<{ cupo: CupoCompartido; ahora: number } | null> {
+  if (!tokenValido(token)) return null;
+  const supabase = await crearClienteServidor();
+  const { data } = await supabase.rpc("cupo_compartido", { p_token: token });
+  const cupo = data?.[0];
+  return cupo ? { cupo, ahora: Date.now() } : null;
 }

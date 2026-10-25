@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { reportarUbicacion } from "@/app/lib/acciones-seguimiento";
+import type { Posicion } from "@/app/lib/acciones-seguimiento";
 import { INTERVALO_UBICACION_MS, tocaEnviar } from "@/app/lib/seguimiento";
 
-// Mientras el viaje está activo, manda la ubicación del conductor cada 5
-// segundos (013) para que el estudiante lo vea moverse en el mapa. Pide que la
+// Mientras el viaje o el cupo está activo, manda la ubicación del conductor
+// cada 5 segundos (013 y 014) para que los estudiantes lo vean moverse en el
+// mapa. Recibe la acción ya atada a su viaje o cupo (reportarUbicacion.bind). Pide que la
 // pantalla no se apague, porque con la pantalla apagada el navegador deja de
 // dar la ubicación.
 
@@ -19,7 +20,20 @@ function mensajeDeFallo(codigo: number): string {
   return "Tu teléfono no pudo calcular dónde estás. Revisa que el GPS esté encendido.";
 }
 
-export function TransmisorUbicacion({ viajeId }: { viajeId: string }) {
+export function TransmisorUbicacion({
+  enviar: enviarAlServidor,
+  clave,
+  quienVe = "El estudiante",
+}: {
+  enviar: (posicion: Posicion) => Promise<{ ok: boolean; mensaje?: string }>;
+  /** Id del viaje o del cupo: si cambia, se vuelve a empezar. */
+  clave: string;
+  quienVe?: string;
+}) {
+  const enviarRef = useRef(enviarAlServidor);
+  useEffect(() => {
+    enviarRef.current = enviarAlServidor;
+  });
   // Saber si hay GPS sin romper la hidratación (en el servidor se supone que sí).
   const conGps = useSyncExternalStore(
     sinSuscripcion,
@@ -40,8 +54,7 @@ export function TransmisorUbicacion({ viajeId }: { viajeId: string }) {
       if (!posicion || enviando.current || !tocaEnviar(ultimoEnvio.current, ahora)) return;
       enviando.current = true;
       ultimoEnvio.current = ahora;
-      const respuesta = await reportarUbicacion({
-        viaje: viajeId,
+      const respuesta = await enviarRef.current({
         lat: posicion.coords.latitude,
         lng: posicion.coords.longitude,
         precision: Number.isFinite(posicion.coords.accuracy) ? posicion.coords.accuracy : undefined,
@@ -81,10 +94,10 @@ export function TransmisorUbicacion({ viajeId }: { viajeId: string }) {
       document.removeEventListener("visibilitychange", pedirPantalla);
       void bloqueo?.release().catch(() => {});
     };
-  }, [viajeId, conGps]);
+  }, [clave, conGps]);
 
   const error = !conGps
-    ? "Este navegador no puede dar tu ubicación. El estudiante no te verá en el mapa."
+    ? `Este navegador no puede dar tu ubicación. ${quienVe} no te verá en el mapa.`
     : estado.paso === "error"
       ? estado.mensaje
       : null;
@@ -95,7 +108,7 @@ export function TransmisorUbicacion({ viajeId }: { viajeId: string }) {
         aria-hidden="true"
         className={`mt-1.5 size-2 shrink-0 rounded-full ${error ? "bg-error" : estado.paso === "en-vivo" ? "bg-secundario motion-safe:animate-pulse" : "bg-texto-suave"}`}
       />
-      {error ?? (estado.paso === "en-vivo" ? "El estudiante ve tu ubicación en vivo. Deja esta pantalla abierta." : "Buscando tu ubicación…")}
+      {error ?? (estado.paso === "en-vivo" ? `${quienVe} ve tu ubicación en vivo. Deja esta pantalla abierta.` : "Buscando tu ubicación…")}
     </p>
   );
 }
