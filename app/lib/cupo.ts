@@ -85,3 +85,30 @@ export function etiquetaPuesto(estado: "pendiente" | "aprobado" | "rechazado" | 
   };
   return etiquetas[estado];
 }
+
+/**
+ * Qué tan avanzado está un punto en el camino de a a b: 0 en la salida, 1 en
+ * el destino (proyección sobre el tramo recto, en el mismo plano local que
+ * distanciaATramoKm). Sirve para ordenar las recogidas del cupo.
+ */
+export function avanceEnTramo(p: Coordenada, a: Coordenada, b: Coordenada): number {
+  const kmPorGradoLng = Math.cos((((a.lat + b.lat) / 2) * Math.PI) / 180);
+  const dx = (b.lng - a.lng) * kmPorGradoLng;
+  const dy = b.lat - a.lat;
+  const largo2 = dx * dx + dy * dy;
+  if (largo2 === 0) return 0;
+  const t = ((p.lng - a.lng) * kmPorGradoLng * dx + (p.lat - a.lat) * dy) / largo2;
+  return Math.max(0, Math.min(1, t));
+}
+
+/**
+ * Orden de recogida del cupo: primero quien queda más cerca de la salida en
+ * el camino hacia la U. Con empate, se respeta el orden en que llegaron.
+ * No cambia la lista que entra.
+ */
+export function ordenarRecogidas<T extends { recogida: Coordenada }>(salida: Coordenada, destino: Coordenada, lista: readonly T[]): T[] {
+  return lista
+    .map((item, indice) => ({ item, indice, avance: avanceEnTramo(item.recogida, salida, destino) }))
+    .sort((x, y) => x.avance - y.avance || x.indice - y.indice)
+    .map(({ item }) => item);
+}

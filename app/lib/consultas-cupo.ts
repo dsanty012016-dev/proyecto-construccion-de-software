@@ -177,3 +177,109 @@ export async function puestoActivoDelEstudiante(estudianteId: string): Promise<{
   }
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// Historial y calificaciones de cupos (014)
+// ---------------------------------------------------------------------------
+
+/** Un cupo terminado o cancelado, visto por quien lo manejó o por quien iba. */
+export interface CupoEnHistorial {
+  cupo: FilaCupo;
+  soyConductor: boolean;
+  /** Mi puesto, si iba como estudiante. */
+  puesto: FilaPuesto | null;
+  /** Nombres de la otra parte: el conductor, o los estudiantes que llevó. */
+  otros: string[];
+  /** Queda alguien por calificar en este cupo. */
+  porCalificar: boolean;
+}
+
+/** Puestos en los que de verdad se viajó: aprobados y pagados. */
+function viajo(p: FilaPuesto) {
+  return p.estado === "aprobado" && p.pagado > 0;
+}
+
+export async function historialDeCupos(usuarioId: string): Promise<CupoEnHistorial[]> {
+  const supabase = await crearClienteServidor();
+  const [comoConductor, misPuestos] = await Promise.all([
+    supabase.from("cupos").select("*").eq("conductor_id", usuarioId).in("estado", ["terminado", "cancelado"]).order("sale_en", { ascending: false }).limit(20),
+    supabase.from("puestos").select("*").eq("estudiante_id", usuarioId).in("estado", ["aprobado", "cancelado"]).limit(40),
+  ]);
+  const propios = comoConductor.data ?? [];
+  const puestosMios = misPuestos.data ?? [];
+
+  const [puestosDeMisCupos, cuposDeMisPuestos, calificadas] = await Promise.all([
+    propios.length
+      ? supabase.from("puestos").select("*").in("cupo_id", propios.map((c) => c.id)).eq("estado", "aprobado").gt("pagado", 0)
+      : Promise.resolve({ data: [] as FilaPuesto[] }),
+    puestosMios.length
+      ? supabase.from("cupos").select("*").in("id", puestosMios.map((p) => p.cupo_id)).in("estado", ["terminado", "cancelado"])
+      : Promise.resolve({ data: [] as FilaCupo[] }),
+    supabase.from("calificaciones").select("puesto_id").eq("autor_id", usuarioId).not("puesto_id", "is", null),
+  ]);
+  const pasajeros = puestosDeMisCupos.data ?? [];
+  const yaCalifique = new Set((calificadas.data ?? []).map((c) => c.puesto_id));
+  const ids = [...pasajeros.map((p) => p.estudiante_id), ...(cuposDeMisPuestos.data ?? []).map((c) => c.conductor_id)];
+  const perfiles = await perfilesPublicos(ids);
+  const nombre = (id: string) => perfiles.get(id)?.nombre ?? "";
+
+  const lista: CupoEnHistorial[] = propios.map((cupo) => {
+    const suyos = pasajeros.filter((p) => p.cupo_id === cupo.id);
+    return {
+      cupo,
+      soyConductor: true,
+      puesto: null,
+      otros: suyos.map((p) => nombre(p.estudiante_id)).filter(Boolean),
+      porCalificar: cupo.estado === "terminado" && suyos.some((p) => !yaCalifique.has(p.id)),
+    };
+  });
+  for (const cupo of cuposDeMisPuestos.data ?? []) {
+    const puesto = puestosMios.find((p) => p.cupo_id === cupo.id);
+    if (!puesto) continue;
+    // Terminados en los que viajé, o cancelados por el conductor.
+    if (!(cupo.estado === "terminado" ? viajo(puesto) : puesto.estado === "cancelado")) continue;
+    lista.push({
+      cupo,
+      soyConductor: false,
+      puesto,
+      otros: [nombre(cupo.conductor_id)].filter(Boolean),
+      porCalificar: cupo.estado === "terminado" && !yaCalifique.has(puesto.id),
+    });
+  }
+  return lista.sort((a, b) => Date.parse(b.cupo.sale_en) - Date.parse(a.cupo.sale_en));
+}
+
+export interface CupoParaCalificar {
+  cupo: FilaCupo;
+  soyConductor: boolean;
+  /** A quién me falta calificar: un puesto y el nombre de la otra persona. */
+  pendientes: { puestoId: string; nombre: string }[];
+}
+
+/** Lo que falta calificar de un cupo terminado (null si no viajé en él). */
+export async function cupoParaCalificar(cupoId: string, usuarioId: string): Promise<CupoParaCalificar | null> {
+  const supabase = await crearClienteServidor();
+  const { data: cupo } = await supabase.from("cupos").select("*").eq("id", cupoId).maybeSingle();
+  if (!cupo || cupo.estado !== "terminado") return null;
+  const soyConductor = cupo.conductor_id === usuarioId;
+
+  const consulta = supabase.from("puestos").select("*").eq("cupo_id", cupoId).eq("estado", "aprobado").gt("pagado", 0);
+  const [{ data: puestos }, { data: calificadas }] = await Promise.all([
+    soyConductor ? consulta : consulta.eq("estudiante_id", usuarioId),
+    supabase.from("calificaciones").select("puesto_id").eq("autor_id", usuarioId).not("puesto_id", "is", null),
+  ]);
+  const lista = puestos ?? [];
+  if (lista.length === 0) return null;
+  const yaCalifique = new Set((calificadas ?? []).map((c) => c.puesto_id));
+  const faltan = lista.filter((p) => !yaCalifique.has(p.id));
+  const perfiles = await perfilesPublicos(soyConductor ? faltan.map((p) => p.estudiante_id) : [cupo.conductor_id]);
+
+  return {
+    cupo,
+    soyConductor,
+    pendientes: faltan.map((p) => ({
+      puestoId: p.id,
+      nombre: perfiles.get(soyConductor ? p.estudiante_id : cupo.conductor_id)?.nombre ?? (soyConductor ? "Estudiante" : "Conductor"),
+    })),
+  };
+}

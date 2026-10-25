@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { reportarUbicacion } from "@/app/lib/acciones-seguimiento";
 import { iniciarViaje, terminarViaje } from "@/app/lib/acciones-viaje";
 import { gananciaConductor } from "@/app/lib/comision";
 import { viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
@@ -39,7 +40,7 @@ export default async function PaginaViajeConductor() {
       <EncabezadoPantalla titulo={enCurso ? `Llevando a ${nombre}` : `Ve a recoger a ${nombre}`} volverA="/conductor" />
       <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} />
       <Mapa etiqueta="Mapa del viaje" centro={origen} origen={origen} destino={destino} className="h-52" />
-      <TransmisorUbicacion viajeId={viaje.id} />
+      <TransmisorUbicacion enviar={reportarUbicacion.bind(null, viaje.id)} clave={viaje.id} />
       <a
         href={navegar}
         target="_blank"

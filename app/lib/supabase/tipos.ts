@@ -36,7 +36,8 @@ export type Database = {
           creada_en: string;
           estrellas: number;
           id: string;
-          viaje_id: string;
+          puesto_id: string | null;
+          viaje_id: string | null;
         };
         Insert: {
           autor_id: string;
@@ -82,6 +83,12 @@ export type Database = {
         Row: { desde: string; hasta: string; id: string; nivel: number; persona_id: string };
         Insert: { persona_id: string; nivel: number; hasta: string };
         Update: Partial<Database["public"]["Tables"]["suspensiones"]["Insert"]>;
+        Relationships: Relacion[];
+      };
+      ubicaciones_cupo: {
+        Row: { actualizado_en: string; conductor_id: string; cupo_id: string; lat: number; lng: number; precision_m: number | null };
+        Insert: { cupo_id: string; conductor_id: string; lat: number; lng: number; precision_m?: number | null };
+        Update: Partial<Database["public"]["Tables"]["ubicaciones_cupo"]["Insert"]>;
         Relationships: Relacion[];
       };
       ubicaciones_viaje: {
@@ -346,6 +353,30 @@ export type Database = {
       calificar: {
         Args: { p_comentario?: string; p_estrellas: number; p_viaje: string };
         Returns: undefined;
+      };
+      calificar_puesto: { Args: { p_puesto: string; p_estrellas: number; p_comentario?: string }; Returns: undefined };
+      reportar_ubicacion_cupo: { Args: { p_cupo: string; p_lat: number; p_lng: number; p_precision?: number }; Returns: undefined };
+      compartir_puesto: { Args: { p_cupo: string }; Returns: string };
+      cupo_compartido: {
+        Args: { p_token: string };
+        Returns: {
+          estado: EstadoCupo;
+          activo: boolean;
+          sale_en: string | null;
+          recogida_texto: string | null;
+          destino_texto: string | null;
+          recogida_lat: number | null;
+          recogida_lng: number | null;
+          destino_lat: number | null;
+          destino_lng: number | null;
+          estudiante: string | null;
+          conductor: string | null;
+          vehiculo: string | null;
+          placa: string | null;
+          ubicacion_lat: number | null;
+          ubicacion_lng: number | null;
+          ubicacion_en: string | null;
+        }[];
       };
       cambiar_disponibilidad: { Args: { p_disponible: boolean }; Returns: undefined };
       cambiar_modo: { Args: { p_modo: Rol }; Returns: undefined };

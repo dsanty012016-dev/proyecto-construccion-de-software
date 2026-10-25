@@ -7,7 +7,7 @@ import { redondear } from "./mapa";
 import { crearClienteServidor } from "./supabase/server";
 import { datosDelFormulario, erroresPorCampo } from "./validaciones-auth";
 import { esquemaIdCupo, esquemaPedirPuesto, esquemaPublicarCupo, esquemaResponderPuesto } from "./validaciones-cupo";
-import { textoDeRecogida } from "./validaciones-viaje";
+import { esquemaCalificacionPuesto, textoDeRecogida } from "./validaciones-viaje";
 
 // Server Actions de los cupos publicados por el conductor. Cada una valida con
 // Zod y llama a la función de la base (010-cupos.sql), que es la que hace
@@ -117,13 +117,34 @@ export async function iniciarCupo(_anterior: EstadoFormulario, formulario: FormD
 }
 
 export async function terminarCupo(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
-  const { error } = await accionSobreCupo(formulario, "terminar_cupo");
+  const { error, cupo } = await accionSobreCupo(formulario, "terminar_cupo");
   if (error) return falla(error);
-  redirect("/conductor");
+  // Al llegar, el conductor califica a cada estudiante que llevó (014).
+  redirect(`/viajes/cupo/${cupo}/calificar`);
 }
 
 export async function cancelarCupo(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
   const { error } = await accionSobreCupo(formulario, "cancelar_cupo");
   if (error) return falla(error);
   redirect("/conductor");
+}
+
+/** Califica a la otra persona de un puesto de un cupo terminado (014). */
+export async function calificarPuesto(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
+  const datos = datosDelFormulario(formulario);
+  const validado = esquemaCalificacionPuesto.safeParse(datos);
+  if (!validado.success) {
+    return { resultado: "error", errores: erroresPorCampo(validado.error), valores: datos };
+  }
+  const supabase = await crearClienteServidor();
+  const { error } = await supabase.rpc("calificar_puesto", {
+    p_puesto: validado.data.puesto,
+    p_estrellas: validado.data.estrellas,
+    p_comentario: validado.data.comentario,
+  });
+  if (error) return falla(mensajeDeError(error), datos);
+
+  refrescar();
+  // Vuelve a la misma pantalla: si quedan estudiantes por calificar, siguen ahí.
+  redirect(`/viajes/cupo/${validado.data.cupo}/calificar`);
 }

@@ -102,3 +102,9 @@ export const esquemaUbicacion = z.object({
   lng: z.number().finite().min(-180).max(180),
   precision: z.number().finite().min(0).max(100_000).optional(),
 });
+
+/** Calificación de un puesto de un cupo terminado (014): mismas estrellas y comentario. */
+export const esquemaCalificacionPuesto = esquemaCalificacion.omit({ viaje: true }).extend({
+  puesto: z.string({ required_error: "Falta el puesto." }).uuid("Ese viaje no existe."),
+  cupo: z.string({ required_error: "Falta el cupo." }).uuid("Ese viaje no existe."),
+});

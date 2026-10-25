@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { puestoActivoDelEstudiante } from "@/app/lib/consultas-cupo";
+import { historialDeCupos, puestoActivoDelEstudiante } from "@/app/lib/consultas-cupo";
 import { historialDeViajes, sedeDeUniversidad, viajeActivoDelEstudiante } from "@/app/lib/consultas-viaje";
 import { etiquetaPuesto } from "@/app/lib/cupo";
 import { etiquetaEstado, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
@@ -27,12 +27,15 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
   // Saldo y strikes arrancan ya; la pastilla y el aviso los reciben listos (cache).
   void miSaldo(usuario.id);
   void estadoDeCuenta(usuario.id);
-  const [activo, historial, miPuesto, sede] = await Promise.all([
+  const [activo, historial, miPuesto, sede, cupos] = await Promise.all([
     viajeActivoDelEstudiante(usuario.id),
     historialDeViajes(usuario.id),
     puestoActivoDelEstudiante(usuario.id),
     sedeDeUniversidad(perfil.universidad_id),
+    historialDeCupos(usuario.id),
   ]);
+  // Un cupo terminado en el que viajé y aún no califiqué al conductor (014).
+  const cupoPorCalificar = cupos.find((c) => !c.soyConductor && c.porCalificar) ?? null;
   const ultimo = historial.find((h) => h.viaje.estado === "terminado");
   const porCalificar = ultimo && !ultimo.calificado ? ultimo : null;
   const puntoSede = sede && sede.lat !== null && sede.lng !== null ? { lat: sede.lat, lng: sede.lng } : null;
@@ -111,8 +114,21 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
           </section>
         )}
 
-        {(porCalificar || ultimo) && (
+        {(porCalificar || cupoPorCalificar || ultimo) && (
           <ul className="divide-y divide-texto-suave/15 border-t border-texto-suave/15">
+            {cupoPorCalificar && (
+              <li>
+                <Link href={`/viajes/cupo/${cupoPorCalificar.cupo.id}/calificar`} className="flex min-h-14 items-center gap-3 py-2 text-texto">
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold">
+                      ¿Cómo te fue{cupoPorCalificar.otros[0] ? ` con ${nombreCorto(cupoPorCalificar.otros[0])}` : ""} en el cupo?
+                    </span>
+                    <span className="block text-[13px] text-secundario">Calificar al conductor</span>
+                  </span>
+                  <IconoSiguiente className="size-5 text-texto-suave" />
+                </Link>
+              </li>
+            )}
             {porCalificar && (
               <li>
                 <Link href={`/viajes/${porCalificar.viaje.id}/calificar`} className="flex min-h-14 items-center gap-3 py-2 text-texto">

@@ -58,7 +58,7 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - Cancelar: el estudiante puede retirar su solicitud o su puesto antes de que el cupo salga; si el conductor cancela el cupo, se cancelan todos los puestos. Sin penalización (igual que hoy).
 - No hay límite fijo de desvío: el conductor decide al aprobar, viendo la distancia aproximada (en línea recta) de cada recogida a su camino.
 
-**Pendiente para otras fases:** calificar los cupos y verlos en el historial; el pago (fase 4b).
+**Completado en la migración 014:** calificaciones, historial, seguimiento en vivo y compartir (ver "Cupos completos").
 
 ## Cambio de modo (fase 4d)
 - Una misma cuenta usa la app **como estudiante o como conductor** y puede cambiar cuando quiera (botón en Inicio y en Perfil). `perfiles.rol` es el **modo actual**; `elegir_rol` solo sirve la primera vez.
@@ -98,7 +98,14 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - Mientras el viaje está **aceptado o en curso**, el teléfono del conductor envía su ubicación **cada 5 segundos** (la base ignora las que lleguen antes de 4 s). Solo se guarda la última y **se borra al terminar o cancelar** el viaje.
 - La ubicación la ven solo el estudiante y el conductor de ese viaje, en tiempo real.
 - **Compartir viaje:** solo el estudiante crea el enlace, cuando el viaje ya tiene conductor. Quien lo tenga lo ve **sin iniciar sesión**: nombres cortos, vehículo, placa, recorrido y la ubicación del conductor; nunca teléfonos. El enlace es un código al azar de 64 caracteres y **deja de mostrar el viaje cuando termina o se cancela**.
-- Por ahora solo para viajes por pedido; los cupos tendrán seguimiento más adelante.
+- Para los cupos, ver "Cupos completos" (migración 014).
+
+## Cupos completos (migración 014)
+- **Calificar:** al terminar un cupo, cada estudiante que viajó (puesto aprobado y pagado) califica al conductor, y el conductor califica a cada estudiante. Una vez cada uno. Los cupos terminados cuentan en "viajes" del perfil.
+- **Seguimiento en vivo:** desde que el conductor sale (cupo en curso) hasta que llega, lo ven en el mapa solo él y los estudiantes con el puesto pagado. Igual que en los viajes: cada 5 s, solo la última ubicación, se borra al terminar o cancelar.
+- **Compartir:** cada estudiante con el puesto pagado tiene su propio enlace: muestra al conductor, el vehículo, **su** recogida (no la de los demás) y, desde que salen, la ubicación en vivo. Se apaga al terminar o cancelar el cupo, o si pierde el puesto.
+- **Orden de recogida:** el conductor ve a sus estudiantes aprobados numerados de la salida hacia la U (según qué tan avanzada queda cada recogida en el camino); el estudiante solo ve su propia recogida.
+- **Historial:** "Mis viajes" muestra viajes por pedido y cupos (terminados y cancelados) de los dos roles, con el botón para calificar lo que falte.
 
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |

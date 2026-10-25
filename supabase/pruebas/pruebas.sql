@@ -871,6 +871,101 @@ select prueba.ok((select count(*) = 1 from pg_publication_tables where pubname =
                  'la ubicación está en tiempo real');
 
 -- ---------------------------------------------------------------------------
+-- 8g. Cupos completos: seguimiento, compartir y calificaciones (014)
+-- ---------------------------------------------------------------------------
+\echo '== Cupos completos'
+
+set role authenticated;
+select prueba.como(:'memo');
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 3000) as cupo_g \gset
+select prueba.como(:'lia');
+select public.recargar(5000);
+select public.pedir_puesto(:'cupo_g', 4.14, -73.63, 'Cra 33 con 41') as puesto_lia \gset
+select prueba.como(:'nico');
+select public.recargar(5000);
+select public.pedir_puesto(:'cupo_g', 4.13, -73.62, 'Parque del Hacha') as puesto_nico \gset
+select prueba.como(:'memo');
+select public.responder_puesto(:'puesto_lia', true);
+select public.responder_puesto(:'puesto_nico', true);
+
+-- Compartir: solo con el puesto pagado
+select prueba.como(:'lia');
+select prueba.falla(format('select public.compartir_puesto(%L)', :'cupo_g'), 'esté pagado', 'sin pagar no se comparte el cupo');
+select public.pagar_puesto(:'cupo_g');
+select public.compartir_puesto(:'cupo_g') as token_g \gset
+select prueba.ok(:'token_g' ~ '^[0-9a-f]{64}$' and (select public.compartir_puesto(:'cupo_g') = :'token_g'), 'el estudiante con el puesto pagado tiene su enlace, siempre el mismo');
+select prueba.como(:'nico');
+select public.pagar_puesto(:'cupo_g');
+select prueba.ok((select public.compartir_puesto(:'cupo_g') <> :'token_g'), 'cada estudiante tiene su propio enlace');
+select prueba.como(:'memo');
+select prueba.falla(format('select public.compartir_puesto(%L)', :'cupo_g'), 'No tienes puesto', 'el conductor no comparte con el enlace de un estudiante');
+select prueba.falla($$select * from public.enlaces_puesto$$, 'permission denied', 'nadie lee la tabla de enlaces de puestos');
+
+-- Ubicación: solo con el cupo en curso
+select prueba.falla(format('select public.reportar_ubicacion_cupo(%L, 4.15, -73.64)', :'cupo_g'), 'no está en camino', 'antes de salir no se reporta ubicación del cupo');
+select public.iniciar_cupo(:'cupo_g');
+select public.reportar_ubicacion_cupo(:'cupo_g', 4.149, -73.639);
+select prueba.ok((select count(*) = 1 from public.ubicaciones_cupo where cupo_id = :'cupo_g'), 'el conductor reporta su ubicación en el cupo');
+select public.reportar_ubicacion_cupo(:'cupo_g', 4.0, -73.0);
+select prueba.ok((select lat = 4.149 from public.ubicaciones_cupo where cupo_id = :'cupo_g'), 'si llega antes de 4 segundos se ignora');
+select prueba.falla(format('select public.reportar_ubicacion_cupo(%L, 4.1, 200)', :'cupo_g'), 'no es válida', 'no acepta coordenadas imposibles');
+select prueba.falla($$update public.ubicaciones_cupo set lat = 0$$, 'permission denied', 'nadie cambia la ubicación del cupo a mano');
+select prueba.como(:'lia');
+select prueba.ok((select count(*) = 1 from public.ubicaciones_cupo where cupo_id = :'cupo_g'), 'el estudiante con puesto pagado ve al conductor');
+select prueba.falla(format('select public.reportar_ubicacion_cupo(%L, 4.1, -73.6)', :'cupo_g'), 'no está en camino', 'el estudiante no reporta la ubicación del cupo');
+select prueba.como(:'beto');
+select prueba.ok((select count(*) = 0 from public.ubicaciones_cupo), 'otro estudiante no la ve');
+select prueba.como(:'carlos');
+select prueba.ok((select count(*) = 0 from public.ubicaciones_cupo), 'otro conductor tampoco');
+select prueba.falla(format('select public.calificar_puesto(%L, 5)', :'puesto_lia'), 'No puedes calificar', 'quien no viajó no califica el puesto');
+select prueba.como(:'lia');
+select prueba.falla(format('select public.calificar_puesto(%L, 5)', :'puesto_lia'), 'cupos terminados', 'no se califica antes de llegar');
+
+reset role;
+select prueba.como(null);
+set role anon;
+select prueba.ok((select count(*) = 1 from public.cupo_compartido(:'token_g')
+                  where estado = 'en_curso' and activo and estudiante = 'Lía R.' and conductor = 'Memo L.'
+                    and recogida_texto = 'Cra 33 con 41' and placa = 'MEM123' and ubicacion_lat = 4.149),
+                 'sin sesión, el enlace del puesto muestra la recogida de ese estudiante y al conductor en vivo');
+select prueba.ok((select count(*) = 0 from public.cupo_compartido(repeat('b', 64))), 'un token de puesto que no existe no muestra nada');
+select prueba.falla($$select * from public.ubicaciones_cupo$$, 'permission denied', 'sin sesión no se leen ubicaciones de cupos');
+select prueba.falla(format('select public.compartir_puesto(%L)', :'cupo_g'), 'permission denied', 'sin sesión no se crean enlaces de puestos');
+select prueba.falla(format('select public.calificar_puesto(%L, 5)', :'puesto_lia'), 'permission denied', 'sin sesión no se califica');
+
+-- Llegar: se borra la ubicación, el enlace se apaga y se califican
+reset role;
+set role authenticated;
+select prueba.como(:'memo');
+select public.terminar_cupo(:'cupo_g');
+reset role;
+select prueba.ok((select count(*) = 0 from public.ubicaciones_cupo where cupo_id = :'cupo_g'), 'al llegar se borra la ubicación del cupo');
+select prueba.ok((select count(*) = 1 from public.cupo_compartido(:'token_g') where estado = 'terminado' and not activo and conductor is null and recogida_texto is null),
+                 'el enlace de un cupo terminado solo dice que terminó');
+set role authenticated;
+
+select prueba.como(:'lia');
+select public.calificar_puesto(:'puesto_lia', 5, 'Puntual');
+select prueba.ok((select count(*) = 1 from public.calificaciones where puesto_id = :'puesto_lia' and calificado_id = :'memo' and estrellas = 5), 'el estudiante califica al conductor del cupo');
+select prueba.falla(format('select public.calificar_puesto(%L, 4)', :'puesto_lia'), 'Ya calificaste', 'solo una vez');
+select prueba.falla(format('select public.calificar_puesto(%L, 4)', :'puesto_nico'), 'No puedes calificar', 'no se califica el puesto de otro');
+select prueba.falla(format('select public.calificar_puesto(%L, 9)', :'puesto_nico'), 'No puedes calificar', 'ni con estrellas imposibles');
+select prueba.como(:'memo');
+select public.calificar_puesto(:'puesto_lia', 4);
+select public.calificar_puesto(:'puesto_nico', 5);
+select prueba.ok((select count(*) = 2 from public.calificaciones where autor_id = :'memo' and puesto_id in (:'puesto_lia', :'puesto_nico')), 'el conductor califica a cada estudiante');
+select prueba.falla(format('select public.calificar_puesto(%L, 3, null)', :'puesto_nico'), 'Ya calificaste', 'también una sola vez');
+select prueba.falla(format('select public.calificar_puesto(%L, 0)', :'puesto_lia'), 'de 1 a 5', 'las estrellas van de 1 a 5');
+select prueba.como(:'lia');
+select prueba.ok((select viajes_terminados = 2 and total_calificaciones = 1 from public.perfiles_publicos(array[:'memo'::uuid])),
+                 'el perfil del conductor cuenta el cupo terminado y su calificación');
+select prueba.ok((select viajes_terminados = 2 from public.perfiles_publicos(array[:'lia'::uuid])),
+                 'y el del estudiante también cuenta el cupo');
+reset role;
+select prueba.ok((select count(*) = 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'ubicaciones_cupo'),
+                 'la ubicación del cupo está en tiempo real');
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'

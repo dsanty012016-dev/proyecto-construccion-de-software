@@ -31,6 +31,8 @@ interface Props {
   irA?: Coordenada | null;
   /** Puntos de recogida de otros estudiantes (cupos), como círculos pequeños. */
   paradas?: Coordenada[];
+  /** Si se dan, cada parada muestra su número de orden de recogida (1, 2, 3...). */
+  numerarParadas?: boolean;
   /** Dónde va el conductor ahora (seguimiento en vivo); se mueve sin reencuadrar. */
   vehiculo?: Coordenada | null;
   /** De borde a borde (arriba de una pantalla): sin esquinas redondeadas ni botones de zoom. */
@@ -38,7 +40,7 @@ interface Props {
   className?: string;
 }
 
-function elementoMarcador(tipo: "origen" | "destino" | "parada" | "vehiculo") {
+function elementoMarcador(tipo: "origen" | "destino" | "parada" | "paradaNumerada" | "vehiculo", texto?: string) {
   const elemento = document.createElement("div");
   elemento.setAttribute("aria-hidden", "true");
   // Como en los diseños: recogida = punto azul con halo; sede = la "U" blanca.
@@ -47,10 +49,12 @@ function elementoMarcador(tipo: "origen" | "destino" | "parada" | "vehiculo") {
       "size-[18px] rounded-full border-[3px] border-texto bg-primario shadow-[0_0_0_10px_color-mix(in_srgb,var(--color-primario)_22%,transparent)]",
     destino: "flex size-6 items-center justify-center rounded-md bg-texto font-titulo text-sm font-bold text-fondo shadow-lg",
     parada: "size-3.5 rounded-full border-2 border-primario bg-texto shadow",
+    paradaNumerada: "flex size-6 items-center justify-center rounded-full border-2 border-primario bg-texto font-titulo text-xs font-bold text-fondo shadow",
     vehiculo: "flex size-8 items-center justify-center rounded-full bg-texto text-fondo shadow-lg ring-4 ring-secundario/40",
   };
   elemento.className = clases[tipo];
   if (tipo === "destino") elemento.textContent = "U";
+  if (tipo === "paradaNumerada" && texto) elemento.textContent = texto;
   if (tipo === "vehiculo") {
     // El mismo carro de los iconos de la app, dibujado aquí porque el marcador vive fuera de React.
     elemento.innerHTML =
@@ -150,7 +154,7 @@ function encuadrar(mapa: MapaLibre, caja: [[number, number], [number, number]], 
   }, 1500);
 }
 
-export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, vehiculo, aRas, className }: Props) {
+export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, numerarParadas, vehiculo, aRas, className }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<MapaLibre | null>(null);
   const libRef = useRef<Libreria | null>(null);
@@ -302,8 +306,12 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     const lista: Coordenada[] = JSON.parse(claveParadas);
     marcadoresParadas.current = lista
       .filter(coordenadaValida)
-      .map((p) => new lib.Marker({ element: elementoMarcador("parada") }).setLngLat([p.lng, p.lat]).addTo(mapa));
-  }, [estado, claveParadas]);
+      .map((p, i) =>
+        new lib.Marker({ element: numerarParadas ? elementoMarcador("paradaNumerada", String(i + 1)) : elementoMarcador("parada") })
+          .setLngLat([p.lng, p.lat])
+          .addTo(mapa),
+      );
+  }, [estado, claveParadas, numerarParadas]);
 
   // El conductor en vivo: el marcador se crea una vez y luego solo se mueve.
   const vLat = vehiculo?.lat;

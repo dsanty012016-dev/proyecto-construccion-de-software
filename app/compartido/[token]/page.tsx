@@ -2,28 +2,108 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { viajeCompartido } from "@/app/lib/consultas-seguimiento";
+import { cupoCompartido, viajeCompartido } from "@/app/lib/consultas-seguimiento";
+import { fechaCorta } from "@/app/lib/formato";
+import type { Coordenada } from "@/app/lib/mapa";
 import { textoUbicacion, viajeSeSigue } from "@/app/lib/seguimiento";
 import { Mapa } from "@/app/ui/comun/mapa";
 import { PasosViaje } from "@/app/ui/comun/pasos-viaje";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 import { RefrescarCada } from "@/app/ui/compartido/refrescar-cada";
 
-// Página pública del enlace "Compartir viaje" (013): quien lo reciba ve el
-// viaje en vivo sin iniciar sesión. Solo nombres cortos, vehículo, placa y la
-// ubicación del conductor; nada de teléfonos. Cuando el viaje termina o se
-// cancela, la base deja de dar los datos y aquí solo se dice eso.
+// Página pública del enlace "Compartir viaje" (013 y 014): quien lo reciba ve
+// el viaje por pedido, o el viaje de un estudiante en un cupo, en vivo y sin
+// iniciar sesión. Solo nombres cortos, vehículo, placa, recorrido y la
+// ubicación del conductor; nada de teléfonos. Cuando termina o se cancela, la
+// base deja de dar los datos y aquí solo se dice eso.
 
 export const metadata: Metadata = {
   title: "Viaje compartido",
   robots: { index: false, follow: false },
 };
 
+/** Lo que la pantalla necesita, venga de un viaje o de un cupo. */
+interface Vista {
+  activo: boolean;
+  terminado: boolean;
+  titulo: string;
+  detalle: string | null;
+  pasos: "aceptado" | "en_curso" | null;
+  origen: Coordenada | null;
+  destino: Coordenada | null;
+  vehiculo: Coordenada | null;
+  origenTexto: string | null;
+  destinoTexto: string | null;
+  conductor: string | null;
+  vehiculoTexto: string | null;
+  placa: string | null;
+  estudiante: string;
+  ubicacionEn: string | null;
+}
+
+function punto(lat: number | null, lng: number | null): Coordenada | null {
+  return lat !== null && lng !== null ? { lat, lng } : null;
+}
+
+async function cargar(token: string): Promise<{ vista: Vista; ahora: number } | null> {
+  const deViaje = await viajeCompartido(token);
+  if (deViaje) {
+    const { viaje: v, ahora } = deViaje;
+    const estudiante = v.estudiante || "El estudiante";
+    return {
+      ahora,
+      vista: {
+        activo: viajeSeSigue(v.estado),
+        terminado: v.estado === "terminado",
+        titulo: v.estado === "aceptado" ? `${v.conductor ?? "El conductor"} va por ${estudiante}` : `${estudiante} va camino a la U`,
+        detalle: null,
+        pasos: v.estado === "aceptado" || v.estado === "en_curso" ? v.estado : null,
+        origen: punto(v.origen_lat, v.origen_lng),
+        destino: punto(v.destino_lat, v.destino_lng),
+        vehiculo: punto(v.ubicacion_lat, v.ubicacion_lng),
+        origenTexto: v.origen_texto,
+        destinoTexto: v.destino_texto,
+        conductor: v.conductor,
+        vehiculoTexto: v.vehiculo,
+        placa: v.placa,
+        estudiante,
+        ubicacionEn: v.ubicacion_en,
+      },
+    };
+  }
+
+  const deCupo = await cupoCompartido(token);
+  if (!deCupo) return null;
+  const { cupo: c, ahora } = deCupo;
+  const estudiante = c.estudiante || "El estudiante";
+  const enCamino = c.estado === "en_curso";
+  return {
+    ahora,
+    vista: {
+      activo: c.activo,
+      terminado: c.estado === "terminado",
+      titulo: enCamino ? `${estudiante} va en el cupo de ${c.conductor ?? "su conductor"}` : `${estudiante} tiene puesto en un cupo`,
+      detalle: !enCamino && c.sale_en ? `Sale ${fechaCorta(c.sale_en)}. Verás al conductor en el mapa cuando arranque.` : null,
+      pasos: null,
+      origen: punto(c.recogida_lat, c.recogida_lng),
+      destino: punto(c.destino_lat, c.destino_lng),
+      vehiculo: punto(c.ubicacion_lat, c.ubicacion_lng),
+      origenTexto: c.recogida_texto,
+      destinoTexto: c.destino_texto,
+      conductor: c.conductor,
+      vehiculoTexto: c.vehiculo,
+      placa: c.placa,
+      estudiante,
+      ubicacionEn: enCamino ? c.ubicacion_en : null,
+    },
+  };
+}
+
 export default async function PaginaViajeCompartido({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const resultado = await viajeCompartido(token);
+  const resultado = await cargar(token);
   if (!resultado) notFound();
-  const { viaje, ahora } = resultado;
+  const { vista, ahora } = resultado;
 
   const encabezado = (
     <header className="flex items-center justify-between gap-3 px-5 pt-4">
@@ -32,12 +112,12 @@ export default async function PaginaViajeCompartido({ params }: { params: Promis
     </header>
   );
 
-  if (!viajeSeSigue(viaje.estado)) {
+  if (!vista.activo) {
     return (
       <main className="mx-auto min-h-dvh w-full max-w-md">
         {encabezado}
         <div className="space-y-3 px-5 pt-16 text-center">
-          <h1 className="text-2xl tracking-tight">{viaje.estado === "terminado" ? "Este viaje ya terminó" : "Este viaje ya no está activo"}</h1>
+          <h1 className="text-2xl tracking-tight">{vista.terminado ? "Este viaje ya terminó" : "Este viaje ya no está activo"}</h1>
           <p className="text-sm text-texto-suave">Por privacidad, el enlace deja de mostrar el recorrido cuando el viaje termina o se cancela.</p>
           <Link href="/" className="inline-flex min-h-11 items-center font-semibold">
             Conoce UniGo
@@ -47,20 +127,23 @@ export default async function PaginaViajeCompartido({ params }: { params: Promis
     );
   }
 
-  const origen = viaje.origen_lat !== null && viaje.origen_lng !== null ? { lat: viaje.origen_lat, lng: viaje.origen_lng } : null;
-  const destino = viaje.destino_lat !== null && viaje.destino_lng !== null ? { lat: viaje.destino_lat, lng: viaje.destino_lng } : null;
-  const vehiculo = viaje.ubicacion_lat !== null && viaje.ubicacion_lng !== null ? { lat: viaje.ubicacion_lat, lng: viaje.ubicacion_lng } : null;
-  const estudiante = viaje.estudiante || "El estudiante";
-  const titulo = viaje.estado === "aceptado" ? `${viaje.conductor ?? "El conductor"} va por ${estudiante}` : `${estudiante} va camino a la U`;
-  const senal = textoUbicacion(viaje.ubicacion_en ? Date.parse(viaje.ubicacion_en) : null, ahora);
+  const senal = textoUbicacion(vista.ubicacionEn ? Date.parse(vista.ubicacionEn) : null, ahora);
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md pb-8">
       <RefrescarCada segundos={5} />
       {encabezado}
       <div className="relative mt-4 h-72">
-        {origen && (
-          <Mapa etiqueta="Mapa del viaje compartido" centro={origen} origen={origen} destino={destino} vehiculo={vehiculo} aRas className="h-full" />
+        {vista.origen && (
+          <Mapa
+            etiqueta="Mapa del viaje compartido"
+            centro={vista.origen}
+            origen={vista.origen}
+            destino={vista.destino}
+            vehiculo={vista.vehiculo}
+            aRas
+            className="h-full"
+          />
         )}
         <p className="absolute top-4 right-4 z-10 flex items-center gap-2 rounded-full bg-fondo px-3 py-2 text-xs font-semibold">
           <span aria-hidden="true" className={`size-2 rounded-full ${senal === "Ubicación en vivo" ? "bg-secundario motion-safe:animate-pulse" : "bg-texto-suave"}`} />
@@ -69,26 +152,27 @@ export default async function PaginaViajeCompartido({ params }: { params: Promis
       </div>
 
       <div className="relative -mt-5 space-y-5 rounded-t-3xl bg-fondo px-5 pt-5">
-        <h1 role="status" className="text-[26px] tracking-tight">
-          {titulo}
-        </h1>
-        <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} />
-        {viaje.origen_texto && viaje.destino_texto && (
-          <RutaViaje origen={viaje.origen_texto} destino={viaje.destino_texto} etiquetaOrigen="Recogida" etiquetaDestino="Destino" />
+        <div role="status" className="space-y-1">
+          <h1 className="text-[26px] tracking-tight">{vista.titulo}</h1>
+          {vista.detalle && <p className="text-sm text-texto-suave">{vista.detalle}</p>}
+        </div>
+        {vista.pasos && <PasosViaje estado={vista.pasos} />}
+        {vista.origenTexto && vista.destinoTexto && (
+          <RutaViaje origen={vista.origenTexto} destino={vista.destinoTexto} etiquetaOrigen="Recogida" etiquetaDestino="Destino" />
         )}
-        {(viaje.vehiculo || viaje.placa) && (
+        {(vista.vehiculoTexto || vista.placa) && (
           <section aria-label="Vehículo" className="flex items-center justify-between gap-3 rounded-2xl bg-superficie p-4">
             <span className="min-w-0">
-              <span className="block font-bold">{viaje.conductor ?? "Conductor"}</span>
-              {viaje.vehiculo && <span className="block text-[13px] text-texto-suave">{viaje.vehiculo}</span>}
+              <span className="block font-bold">{vista.conductor ?? "Conductor"}</span>
+              {vista.vehiculoTexto && <span className="block text-[13px] text-texto-suave">{vista.vehiculoTexto}</span>}
             </span>
-            {viaje.placa && (
-              <span className="shrink-0 rounded-lg bg-texto px-3 py-1 font-titulo text-xl font-bold tracking-[0.08em] text-fondo">{viaje.placa}</span>
+            {vista.placa && (
+              <span className="shrink-0 rounded-lg bg-texto px-3 py-1 font-titulo text-xl font-bold tracking-[0.08em] text-fondo">{vista.placa}</span>
             )}
           </section>
         )}
         <p className="text-[13px] leading-relaxed text-texto-suave">
-          {estudiante} compartió este viaje contigo. Se actualiza solo y deja de mostrarse cuando el viaje termina.
+          {vista.estudiante} compartió este viaje contigo. Se actualiza solo y deja de mostrarse cuando el viaje termina.
         </p>
       </div>
     </main>

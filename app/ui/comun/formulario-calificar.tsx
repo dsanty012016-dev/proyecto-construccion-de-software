@@ -1,21 +1,36 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useId, useState } from "react";
 import { calificarViaje } from "@/app/lib/acciones-viaje";
-import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
+import { ESTADO_INICIAL, type EstadoFormulario } from "@/app/lib/estado-formulario";
 import { Aviso, BotonEnviar } from "@/app/ui/auth/campos";
 import { IconoEstrella } from "./iconos-app";
 
 // De 1 a 5 estrellas y un comentario opcional. Las estrellas son botones de
-// opción reales (se pueden elegir con teclado y lector de pantalla).
-export function FormularioCalificar({ viajeId, aQuien }: { viajeId: string; aQuien: string }) {
-  const [estado, accion] = useActionState(calificarViaje, ESTADO_INICIAL);
+// opción reales (se pueden elegir con teclado y lector de pantalla). Sirve
+// para viajes (por defecto) y para los puestos de un cupo (014), que pasan su
+// propia acción y sus campos ocultos.
+type Accion = (anterior: EstadoFormulario, formulario: FormData) => Promise<EstadoFormulario>;
+
+export function FormularioCalificar({
+  campos,
+  aQuien,
+  accion: accionServidor = calificarViaje,
+}: {
+  campos: Record<string, string>;
+  aQuien: string;
+  accion?: Accion;
+}) {
+  const [estado, accion] = useActionState(accionServidor, ESTADO_INICIAL);
+  const idComentario = useId();
   const [nota, setNota] = useState(Number(estado.valores?.estrellas ?? 5));
   const errores = estado.errores ?? {};
 
   return (
     <form action={accion} className="space-y-5" noValidate>
-      <input type="hidden" name="viaje" value={viajeId} />
+      {Object.entries(campos).map(([nombre, valor]) => (
+        <input key={nombre} type="hidden" name={nombre} value={valor} />
+      ))}
       {estado.resultado === "error" && estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
 
       <fieldset className="space-y-3">
@@ -42,11 +57,11 @@ export function FormularioCalificar({ viajeId, aQuien }: { viajeId: string; aQui
       </fieldset>
 
       <div className="space-y-1.5">
-        <label htmlFor="comentario" className="block text-sm font-medium">
+        <label htmlFor={idComentario} className="block text-sm font-medium">
           Comentario <span className="text-texto-suave">(opcional)</span>
         </label>
         <textarea
-          id="comentario"
+          id={idComentario}
           name="comentario"
           rows={3}
           maxLength={300}
