@@ -53,7 +53,7 @@ export function CancelarViaje({ viajeId, quien, precio }: { viajeId: string; qui
               minLength={3}
               maxLength={300}
               rows={3}
-              className="w-full resize-none rounded-xl border border-superficie bg-superficie p-3 text-sm text-texto outline-none focus:border-secundario"
+              className="w-full resize-none rounded-xl border border-texto-suave/60 bg-superficie p-3 text-sm text-texto outline-none focus:border-secundario"
             />
             <button type="submit" disabled={pendiente} className="min-h-11 w-full rounded-xl border border-error/50 text-sm font-semibold text-error hover:bg-error/10 disabled:opacity-70">
               Cancelar y reportar

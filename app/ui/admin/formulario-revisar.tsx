@@ -20,7 +20,7 @@ export function FormularioRevisar({ documentoId }: { documentoId: string }) {
         name="motivo"
         maxLength={300}
         placeholder="Ej.: la foto está borrosa"
-        className="h-11 w-full rounded-xl border border-superficie bg-fondo px-3 text-sm text-texto outline-none placeholder:text-texto-suave/70 focus:border-secundario"
+        className="h-11 w-full rounded-xl border border-texto-suave/60 bg-fondo px-3 text-sm text-texto outline-none placeholder:text-texto-suave focus:border-secundario"
       />
       <div className="grid grid-cols-2 gap-2">
         <button

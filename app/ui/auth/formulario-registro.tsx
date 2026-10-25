@@ -74,7 +74,7 @@ export function FormularioRegistro() {
           defaultValue={v.rol ?? ""}
           aria-invalid={e.rol ? true : undefined}
           aria-describedby={e.rol ? `${idRol}-error` : undefined}
-          className={`h-12 w-full rounded-xl border bg-superficie px-4 text-texto outline-none focus:border-secundario ${e.rol ? "border-error" : "border-superficie"}`}
+          className={`h-12 w-full rounded-xl border bg-superficie px-4 text-texto outline-none focus:border-secundario ${e.rol ? "border-error" : "border-texto-suave/60"}`}
           required
         >
           <option value="" disabled>

@@ -98,7 +98,7 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
             defaultValue={valores.sale_en}
             aria-invalid={errores.sale_en ? true : undefined}
             aria-describedby={`${idHora}-ayuda`}
-            className="h-12 w-full rounded-xl border border-superficie bg-superficie px-4 text-texto outline-none focus:border-secundario aria-[invalid=true]:border-error"
+            className="h-12 w-full rounded-xl border border-texto-suave/60 bg-superficie px-4 text-texto outline-none focus:border-secundario aria-[invalid=true]:border-error"
           />
           <p id={`${idHora}-ayuda`} className={`mt-1.5 text-sm ${errores.sale_en ? "text-error" : "text-texto-suave"}`}>
             {errores.sale_en ?? "Entre 15 minutos y 7 días desde ahora. Los estudiantes pagan hasta 10 minutos antes."}
@@ -114,7 +114,7 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
             name="puestos"
             defaultValue={valores.puestos ?? "1"}
             aria-invalid={errores.puestos ? true : undefined}
-            className="h-12 w-full rounded-xl border border-superficie bg-superficie px-4 text-texto outline-none focus:border-secundario"
+            className="h-12 w-full rounded-xl border border-texto-suave/60 bg-superficie px-4 text-texto outline-none focus:border-secundario"
           >
             {Array.from({ length: puestosMaximos }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>
@@ -139,7 +139,7 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
             value={precio}
             onChange={(e) => setPrecio(e.target.value.replace(/\D/g, "").slice(0, 6))}
             aria-invalid={errores.precio ? true : undefined}
-            className="h-12 w-full rounded-xl border border-superficie bg-superficie px-4 text-texto outline-none placeholder:text-texto-suave/70 focus:border-secundario aria-[invalid=true]:border-error"
+            className="h-12 w-full rounded-xl border border-texto-suave/60 bg-superficie px-4 text-texto outline-none placeholder:text-texto-suave focus:border-secundario aria-[invalid=true]:border-error"
           />
           <p className={`mt-1.5 text-sm ${errores.precio ? "text-error" : "text-texto-suave"}`} aria-live="polite">
             {errores.precio ??
