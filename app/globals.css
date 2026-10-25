@@ -15,6 +15,7 @@
   --color-mapa-tierra: #0e1729; /* manzanas y terreno, un punto más claro que el fondo */
   --color-mapa-via: #1a2740; /* avenidas y vías principales */
   --color-mapa-via-menor: #152036; /* calles y edificios */
+  --color-linea: #26344f; /* bordes finos y calles del mapa de la landing */
 }
 
 /* Las fuentes las carga app/layout.tsx con next/font y dejan estas variables. */
@@ -26,6 +27,7 @@
 @layer base {
   html {
     color-scheme: dark;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -55,6 +57,11 @@
   }
 }
 
+/* Sobre los bloques azules de la landing, el foco azul claro no se ve: va en blanco. */
+.zona-azul :focus-visible {
+  outline-color: var(--color-texto);
+}
+
 /* Respeta a quien pide menos movimiento. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -64,5 +71,27 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Landing: la ruta del mapa de la portada se dibuja una vez al cargar. */
+@keyframes trazar {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Landing: los mensajes del chat y las ofertas aparecen uno tras otro. */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
