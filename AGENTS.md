@@ -27,6 +27,9 @@ Si dudas de una API de Next 16, consulta la documentación oficial; no asumas.
 8. A-Frame u otro 3D **solo en el sitio público**, cargado en el navegador y después del contenido, con imagen de respaldo. Nunca en la app.
 9. Comentarios en español y sencillos: dicen para qué sirve cada archivo y por qué, no repiten el código.
 
+## Diseño
+Para criticar, pulir o rediseñar pantallas se usa la skill **impeccable** (`.claude/skills/impeccable/`, ver su LEEME-UNIGO.md). Sus sugerencias nunca pasan por encima de las reglas de este archivo ni de `docs/identidad.md`.
+
 ## Cómo se trabaja
 - Una fase a la vez (ver `docs/plan.md`); no empieces la siguiente sin OK.
 - Ramas por fase (`fase-1-reglas`...) y Pull Request a `main`; no se sube directo a `main`.
