@@ -4,6 +4,7 @@ import { puestoActivoDelEstudiante } from "@/app/lib/consultas-cupo";
 import { historialDeViajes, sedeDeUniversidad, viajeActivoDelEstudiante } from "@/app/lib/consultas-viaje";
 import { etiquetaPuesto } from "@/app/lib/cupo";
 import { etiquetaEstado, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
+import { estadoDeCuenta, miSaldo } from "@/app/lib/consultas-billetera";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
@@ -23,6 +24,9 @@ const BOTON_PRINCIPAL =
 export default async function PaginaEstudiante({ searchParams }: { searchParams: Promise<{ clave?: string }> }) {
   const { usuario, perfil } = await exigirRol("estudiante");
   const { clave } = await searchParams;
+  // Saldo y strikes arrancan ya; la pastilla y el aviso los reciben listos (cache).
+  void miSaldo(usuario.id);
+  void estadoDeCuenta(usuario.id);
   const [activo, historial, miPuesto, sede] = await Promise.all([
     viajeActivoDelEstudiante(usuario.id),
     historialDeViajes(usuario.id),

@@ -6,6 +6,7 @@ import { misDocumentos } from "@/app/lib/consultas-verificacion";
 import { TIPOS_DOCUMENTO } from "@/app/lib/documentos";
 import { resumenDelConductor, solicitudesAbiertas, vehiculoDe, viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
 import { calificacionTexto, etiquetaEstado, hace, horaCorta, nombreCorto, pesos } from "@/app/lib/formato";
+import { estadoDeCuenta, miSaldo } from "@/app/lib/consultas-billetera";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
@@ -26,6 +27,9 @@ const FILA_ENLACE = "flex min-h-14 items-center gap-3 rounded-2xl border border-
 export default async function PaginaConductor({ searchParams }: { searchParams: Promise<{ clave?: string }> }) {
   const { usuario, perfil } = await exigirRol("conductor");
   const { clave } = await searchParams;
+  // Saldo y strikes arrancan ya; la pastilla y el aviso los reciben listos (cache).
+  void miSaldo(usuario.id);
+  void estadoDeCuenta(usuario.id);
   const [vehiculo, activo, resumen, miCupo, documentos] = await Promise.all([
     vehiculoDe(usuario.id),
     viajeActivoDelConductor(usuario.id),

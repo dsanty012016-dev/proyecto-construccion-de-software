@@ -96,6 +96,8 @@ function pintarEstilo(mapa: MapaLibre) {
       const principal = /motorway|trunk|primary|major|secondary/.test(id);
       poner(id, "line-color", /casing/.test(id) ? c.tierra : principal ? c.via : c.viaMenor);
     } else if (capa.type === "fill") {
+      // Sin texturas (el bosque usa una imagen que este estilo no trae).
+      poner(id, "fill-pattern", undefined);
       poner(id, "fill-color", c.tierra);
       poner(id, "fill-outline-color", c.tierra);
     }
@@ -189,6 +191,11 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
         }
         const instancia = mapa;
         if (conControles.current) instancia.addControl(new lib.NavigationControl({ showCompass: false }), "top-right");
+        // Si el estilo pide una imagen que no trae, se pone una transparente
+        // en vez de llenar la consola de avisos.
+        instancia.on("styleimagemissing", (evento) => {
+          if (!instancia.hasImage(evento.id)) instancia.addImage(evento.id, { width: 1, height: 1, data: new Uint8Array(4) });
+        });
         instancia.on("load", () => {
           cargado = true;
           pintarEstilo(instancia);
