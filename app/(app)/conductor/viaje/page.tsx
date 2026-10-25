@@ -82,7 +82,7 @@ export default async function PaginaViajeConductor() {
       )}
 
       {enCurso ? (
-        <BotonAccion accion={terminarViaje} campos={{ viaje: viaje.id }} enviando="Terminando…" confirmar="¿Llegaron al destino? Se terminará el viaje.">
+        <BotonAccion accion={terminarViaje} campos={{ viaje: viaje.id }} enviando="Terminando…" textoSi="Sí, terminar" confirmar="¿Llegaron al destino? Se terminará el viaje.">
           Llegamos · Terminar viaje
         </BotonAccion>
       ) : (

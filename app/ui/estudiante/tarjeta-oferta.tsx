@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { aceptarOferta } from "@/app/lib/acciones-viaje";
 import type { ConductorConOferta } from "@/app/lib/consultas-viaje";
-import { calificacionTexto, nombreCorto, pesos } from "@/app/lib/formato";
+import { nombreCorto, pesos } from "@/app/lib/formato";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
+import { Nota } from "@/app/ui/comun/nota";
 
 // Una oferta de un conductor, como fila de la lista: quién es, su vehículo y
 // su precio. Aceptarla paga en ese momento y cierra la búsqueda (la regla la
@@ -19,7 +20,7 @@ export function TarjetaOferta({ oferta, saldo, destacada }: { oferta: ConductorC
         <div className="min-w-0 flex-1">
           <p className="truncate font-bold">{nombre}</p>
           <p className="text-[13px] text-texto-suave">
-            {conductor.total_calificaciones > 0 ? `★ ${calificacionTexto(conductor.calificacion)}` : "Nuevo"} · {conductor.viajes_terminados}{" "}
+            <Nota promedio={conductor.calificacion} total={conductor.total_calificaciones} /> · {conductor.viajes_terminados}{" "}
             {conductor.viajes_terminados === 1 ? "viaje" : "viajes"}
           </p>
         </div>

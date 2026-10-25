@@ -78,7 +78,10 @@ export function Paradas() {
               <div className="flex items-center gap-3 border-b border-texto-suave/15 py-3">
                 <span className="flex-1">
                   <span className="block font-bold">Andrés R.</span>
-                  <span className="block text-[13px] text-texto-suave">★ 4,9 · 38 viajes</span>
+                  <span className="flex items-center gap-1 text-[13px] text-texto-suave">
+                    <IconoEstrella llena className="size-3.5 text-secundario" />
+                    4,9 · 38 viajes
+                  </span>
                 </span>
                 <span className="font-titulo text-xl font-bold tabular-nums">$7.000</span>
               </div>

@@ -17,7 +17,7 @@ export function InterruptorDisponible({
   tieneVehiculo: boolean;
   verificado: boolean;
   /** Línea con el resumen de la semana, debajo del interruptor. */
-  resumen?: string;
+  resumen?: React.ReactNode;
 }) {
   const [estado, accion, pendiente] = useActionState(cambiarDisponibilidad, ESTADO_INICIAL);
   return (

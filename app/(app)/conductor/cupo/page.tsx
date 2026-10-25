@@ -159,10 +159,10 @@ export default async function PaginaCupoConductor() {
 
       {publicado ? (
         <>
-          <BotonAccion accion={iniciarCupo} campos={{ cupo: cupo.id }} enviando="Saliendo…" confirmar="¿Sales ahora? Solo van quienes pagaron; los que no, pierden el puesto y las solicitudes pendientes quedan rechazadas.">
+          <BotonAccion accion={iniciarCupo} campos={{ cupo: cupo.id }} enviando="Saliendo…" textoSi="Sí, salir" confirmar="¿Sales ahora? Solo van quienes pagaron; los que no, pierden el puesto y las solicitudes pendientes quedan rechazadas.">
             Salir ahora · Iniciar cupo
           </BotonAccion>
-          <BotonAccion accion={cancelarCupo} campos={{ cupo: cupo.id }} estilo="peligro" confirmar={
+          <BotonAccion accion={cancelarCupo} campos={{ cupo: cupo.id }} estilo="peligro" textoSi="Sí, cancelar" confirmar={
               hayPagos
                 ? "¿Cancelar el cupo? Los estudiantes recuperan todo su dinero y tú sumas 1 strike."
                 : "¿Cancelar el cupo? Se cancelarán todas las solicitudes."
@@ -171,7 +171,7 @@ export default async function PaginaCupoConductor() {
           </BotonAccion>
         </>
       ) : (
-        <BotonAccion accion={terminarCupo} campos={{ cupo: cupo.id }} enviando="Terminando…" confirmar="¿Llegaron a la universidad?">
+        <BotonAccion accion={terminarCupo} campos={{ cupo: cupo.id }} enviando="Terminando…" textoSi="Sí, llegamos" confirmar="¿Llegaron a la universidad?">
           Llegamos · Terminar cupo
         </BotonAccion>
       )}

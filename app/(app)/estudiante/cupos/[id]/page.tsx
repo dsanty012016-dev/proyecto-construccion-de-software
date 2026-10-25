@@ -132,6 +132,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
               accion={retirarPuesto}
               campos={{ cupo: cupo.id }}
               estilo="peligro"
+              textoSi={aprobado ? "Sí, dejarlo" : "Sí, retirarla"}
               confirmar={(() => {
                 if (!aprobado) return "¿Retirar tu solicitud de este cupo?";
                 const salida = salidaDeCupo(miPuesto.pagado, saleMs, ahora);
