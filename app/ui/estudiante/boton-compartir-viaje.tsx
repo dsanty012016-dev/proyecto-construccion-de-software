@@ -68,7 +68,7 @@ export function BotonCompartirViaje({ compartir: pedirEnlace }: { compartir: () 
             readOnly
             value={enlace}
             onFocus={(e) => e.currentTarget.select()}
-            className="h-11 w-full rounded-xl border border-superficie bg-superficie px-3 text-xs text-texto-suave outline-none focus:border-secundario"
+            className="h-11 w-full rounded-xl border border-texto-suave/60 bg-superficie px-3 text-xs text-texto-suave outline-none focus:border-secundario"
           />
         </div>
       )}

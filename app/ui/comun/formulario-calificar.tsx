@@ -49,7 +49,7 @@ export function FormularioCalificar({
               <span className="sr-only">
                 {n} {n === 1 ? "estrella" : "estrellas"}
               </span>
-              <IconoEstrella llena={n <= nota} className={`size-9 ${n <= nota ? "text-secundario" : "text-texto-suave/50"}`} />
+              <IconoEstrella llena={n <= nota} className={`size-9 ${n <= nota ? "text-secundario" : "text-texto-suave/70"}`} />
             </label>
           ))}
         </div>
@@ -68,7 +68,7 @@ export function FormularioCalificar({
           defaultValue={estado.valores?.comentario}
           placeholder="Puntual y amable…"
           aria-invalid={errores.comentario ? true : undefined}
-          className="w-full resize-none rounded-xl border border-superficie bg-superficie p-3 text-texto outline-none placeholder:text-texto-suave/70 focus:border-secundario aria-[invalid=true]:border-error"
+          className="w-full resize-none rounded-xl border border-texto-suave/60 bg-superficie p-3 text-texto outline-none placeholder:text-texto-suave focus:border-secundario aria-[invalid=true]:border-error"
         />
         {errores.comentario && <p className="text-sm text-error">{errores.comentario}</p>}
       </div>

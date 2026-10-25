@@ -5,10 +5,12 @@ import { useFormStatus } from "react-dom";
 import { IconoOjo, IconoOjoTachado } from "./iconos-auth";
 
 // Piezas de los formularios de acceso: campo con etiqueta y error, campo de
-// contraseña con botón para verla, botón de enviar y mensajes.
+// contraseña con botón para verla, botón de enviar y mensajes. El borde de los
+// campos va en gris medio (no del color del relleno) para que el contorno se
+// vea contra el fondo con el contraste que pide WCAG (3:1).
 
 const estiloEntrada =
-  "h-12 w-full rounded-xl border bg-superficie text-texto placeholder:text-texto-suave/70 outline-none transition-colors focus:border-secundario aria-[invalid=true]:border-error";
+  "h-12 w-full rounded-xl border bg-superficie text-texto placeholder:text-texto-suave outline-none transition-colors focus:border-secundario aria-[invalid=true]:border-error";
 
 interface PropsCampo extends React.InputHTMLAttributes<HTMLInputElement> {
   etiqueta: string;
@@ -41,7 +43,7 @@ export function Campo({ etiqueta, error, icono, prefijo, className, ...resto }: 
           id={id}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? idError : undefined}
-          className={`${estiloEntrada} ${icono || prefijo ? "pl-11" : "pl-4"} pr-4 ${error ? "" : "border-superficie"}`}
+          className={`${estiloEntrada} ${icono || prefijo ? "pl-11" : "pl-4"} pr-4 ${error ? "" : "border-texto-suave/60"}`}
           {...resto}
         />
       </div>
@@ -78,7 +80,7 @@ export function CampoClave({ etiqueta, error, icono, className, ...resto }: Prop
           type={visible ? "text" : "password"}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? idError : undefined}
-          className={`${estiloEntrada} ${icono ? "pl-11" : "pl-4"} pr-12 ${error ? "" : "border-superficie"}`}
+          className={`${estiloEntrada} ${icono ? "pl-11" : "pl-4"} pr-12 ${error ? "" : "border-texto-suave/60"}`}
           {...resto}
         />
         <button
@@ -106,7 +108,7 @@ export function BotonEnviar({ children, enviando, deshabilitado }: { children: R
     <button
       type="submit"
       disabled={pending || deshabilitado}
-      className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-semibold text-texto transition-colors hover:bg-primario/85 disabled:opacity-70"
+      className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto transition-colors hover:bg-primario/85 disabled:opacity-70"
     >
       {pending ? enviando : children}
     </button>

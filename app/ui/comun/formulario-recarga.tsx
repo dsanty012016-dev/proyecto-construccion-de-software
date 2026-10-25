@@ -79,7 +79,7 @@ export function FormularioRecarga() {
             onChange={(e) => setMonto(e.target.value.replace(/\D/g, "").slice(0, 6))}
             aria-invalid={conError ? true : undefined}
             aria-describedby={`${id}-ayuda`}
-            className="h-12 w-full rounded-xl border border-superficie bg-superficie px-4 font-titulo text-lg text-texto tabular-nums outline-none placeholder:text-texto-suave/70 focus:border-secundario aria-[invalid=true]:border-error"
+            className="h-12 w-full rounded-xl border border-texto-suave/60 bg-superficie px-4 font-titulo text-lg text-texto tabular-nums outline-none placeholder:text-texto-suave focus:border-secundario aria-[invalid=true]:border-error"
           />
         </div>
       ) : (
