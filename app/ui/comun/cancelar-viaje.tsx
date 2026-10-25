@@ -28,18 +28,22 @@ export function CancelarViaje({ viajeId, quien, precio }: { viajeId: string; qui
         }}
       >
         <input type="hidden" name="viaje" value={viajeId} />
-        <button type="submit" disabled={pendiente} className="min-h-12 w-full rounded-xl font-semibold text-error hover:bg-error/10 disabled:opacity-70">
-          {pendiente ? "Cancelando…" : "Cancelar viaje"}
+        <button
+          type="submit"
+          disabled={pendiente}
+          className="min-h-12 w-full rounded-xl border border-error/45 font-titulo font-semibold text-error hover:bg-error/10 disabled:opacity-70"
+        >
+          {pendiente ? "Cancelando…" : quien === "estudiante" && cobro > 0 ? `Cancelar viaje · te cuesta ${pesos(cobro)}` : "Cancelar viaje"}
         </button>
-        <p className="text-center text-xs text-texto-suave">
-          {quien === "estudiante" ? `Cuesta ${pesos(cobro)} y 1 strike.` : "Suma 1 strike a tu cuenta."}
+        <p className="mt-2 text-center text-[13px] text-texto-suave">
+          {quien === "estudiante" ? "Cobra el 20 % y suma un strike." : "El estudiante recupera todo y tú sumas un strike."}
         </p>
       </form>
 
       {quien === "estudiante" && (
-        <details className="rounded-2xl border border-texto-suave/25 p-4">
-          <summary className="min-h-11 cursor-pointer content-center text-sm font-semibold">¿El conductor se comportó mal o pasó algo raro?</summary>
-          <form action={accion} className="mt-3 space-y-2">
+        <details className="rounded-2xl border border-texto-suave/20 px-4 py-1">
+          <summary className="min-h-11 cursor-pointer content-center text-sm font-semibold text-secundario">¿Pasó algo con el conductor? Repórtalo y cancela sin costo</summary>
+          <form action={accion} className="mt-1 mb-3 space-y-2">
             <input type="hidden" name="viaje" value={viajeId} />
             <label htmlFor={idMotivo} className="block text-sm text-texto-suave">
               Cuéntanos qué pasó. Cancelas sin costo ni strike y un administrador revisa el reporte.

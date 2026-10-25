@@ -1,10 +1,10 @@
 import { etiquetaEstado } from "@/app/lib/formato";
 
-// Tres tramos que muestran en qué paso va el viaje: aceptado → en curso → terminado.
+// Tres tramos que muestran en qué paso va el viaje: aceptado → en viaje → en la U.
 const PASOS = [
   { estado: "aceptado", texto: "Aceptado" },
-  { estado: "en_curso", texto: "En curso" },
-  { estado: "terminado", texto: "Terminado" },
+  { estado: "en_curso", texto: "En viaje" },
+  { estado: "terminado", texto: "En la U" },
 ] as const;
 
 export function PasosViaje({ estado }: { estado: "aceptado" | "en_curso" | "terminado" }) {

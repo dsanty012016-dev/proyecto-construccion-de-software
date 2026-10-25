@@ -1,7 +1,7 @@
 // Pruebas del formato de pesos, nombres, tiempos y de la comisión.
 import { describe, expect, it } from "vitest";
 import { comision, gananciaConductor } from "./comision";
-import { calificacionTexto, etiquetaEstado, fechaCorta, hace, iniciales, nombreCorto, pesos } from "./formato";
+import { calificacionTexto, diaRelativo, etiquetaEstado, fechaCorta, hace, horaCorta, iniciales, nombreCorto, pesos } from "./formato";
 
 describe("pesos", () => {
   it("separa los miles con punto", () => {
@@ -72,5 +72,24 @@ describe("comisión del 10 %", () => {
     for (const precio of [1000, 1005, 6500, 7333, 99999, 100000]) {
       expect(comision(precio) + gananciaConductor(precio)).toBe(precio);
     }
+  });
+});
+
+describe("hora y día en Colombia", () => {
+  // 22 oct 2026, 9:00 a. m. en Colombia.
+  const ahora = Date.parse("2026-10-22T14:00:00Z");
+
+  it("da la hora corta con a. m. / p. m.", () => {
+    expect(horaCorta("2026-10-22T11:30:00Z")).toEqual({ hora: "6:30", periodo: "a. m." });
+    expect(horaCorta("2026-10-22T17:05:00Z")).toEqual({ hora: "12:05", periodo: "p. m." });
+    expect(horaCorta("no es fecha")).toEqual({ hora: "", periodo: "" });
+  });
+
+  it("nombra el día frente a ahora, con el corte a medianoche de Colombia", () => {
+    expect(diaRelativo("2026-10-22T20:00:00Z", ahora)).toBe("Hoy");
+    expect(diaRelativo("2026-10-23T04:59:00Z", ahora)).toBe("Hoy"); // 11:59 p. m. del 22
+    expect(diaRelativo("2026-10-23T05:00:00Z", ahora)).toBe("Mañana");
+    expect(diaRelativo("2026-10-21T12:00:00Z", ahora)).toBe("Ayer");
+    expect(diaRelativo("2026-10-29T12:00:00Z", ahora)).toBe("29 oct");
   });
 });

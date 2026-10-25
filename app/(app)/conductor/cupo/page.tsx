@@ -64,7 +64,7 @@ export default async function PaginaCupoConductor() {
             {aprobados.length}/{cupo.puestos} {cupo.puestos === 1 ? "puesto" : "puestos"}
           </p>
         </div>
-        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} />
+        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} etiquetaOrigen="Sales de" />
         <p className="text-sm text-texto-suave">
           {pesos(cupo.precio)} por puesto · recibes {pesos(gananciaConductor(cupo.precio))} por cada estudiante que pague, al llegar
         </p>

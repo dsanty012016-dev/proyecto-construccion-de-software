@@ -7,13 +7,14 @@ import type { Database } from "./supabase/tipos";
 
 export type FilaMovimiento = Database["public"]["Tables"]["movimientos"]["Row"];
 
-export async function miBilletera(personaId: string): Promise<{ saldo: number; movimientos: FilaMovimiento[] }> {
+/** Saldo, últimos movimientos y la hora de la consulta (para agruparlos por día). */
+export async function miBilletera(personaId: string): Promise<{ saldo: number; movimientos: FilaMovimiento[]; ahora: number }> {
   const supabase = await crearClienteServidor();
   const [billetera, movimientos] = await Promise.all([
     supabase.from("billeteras").select("saldo").eq("persona_id", personaId).maybeSingle(),
     supabase.from("movimientos").select("*").eq("persona_id", personaId).order("creado_en", { ascending: false }).limit(30),
   ]);
-  return { saldo: billetera.data?.saldo ?? 0, movimientos: movimientos.data ?? [] };
+  return { saldo: billetera.data?.saldo ?? 0, movimientos: movimientos.data ?? [], ahora: Date.now() };
 }
 
 export async function miSaldo(personaId: string): Promise<number> {

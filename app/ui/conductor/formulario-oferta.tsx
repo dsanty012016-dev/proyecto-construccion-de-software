@@ -2,11 +2,12 @@
 
 import { useActionState, useId, useState } from "react";
 import { ofertarViaje } from "@/app/lib/acciones-viaje";
-import { gananciaConductor, PORCENTAJE_COMISION } from "@/app/lib/comision";
+import { comision, gananciaConductor, PORCENTAJE_COMISION } from "@/app/lib/comision";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { pesos } from "@/app/lib/formato";
 import { PRECIO_MAXIMO, PRECIO_MINIMO } from "@/app/lib/viaje";
 import { Aviso, BotonEnviar } from "@/app/ui/auth/campos";
+import { IconoMas, IconoMenos } from "@/app/ui/comun/iconos-app";
 
 // El conductor escribe su precio (con − y + de a $500) y ve cuánto recibe
 // después de la comisión de UniGo. La regla de los límites la repite la base.
@@ -32,18 +33,18 @@ export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; p
       <input type="hidden" name="viaje" value={viajeId} />
       {estado.resultado === "error" && estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
 
-      <div className="space-y-2">
-        <label htmlFor={idPrecio} className="block text-base font-bold">
+      <section aria-labelledby={`${idPrecio}-titulo`} className="space-y-4 rounded-[18px] bg-superficie p-5">
+        <label id={`${idPrecio}-titulo`} htmlFor={idPrecio} className="block text-center text-sm font-semibold text-texto-suave">
           Tu precio
         </label>
-        <div className="flex items-center justify-between gap-2 rounded-2xl bg-superficie p-2">
+        <div className="flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => mover(-PASO)}
-            aria-label={`Bajar ${PASO} pesos`}
-            className="size-13 shrink-0 rounded-xl border border-texto-suave/30 text-2xl text-texto hover:bg-fondo"
+            aria-label={`Bajar ${pesos(PASO)}`}
+            className="flex size-14 shrink-0 items-center justify-center rounded-full border border-texto-suave/30 text-texto hover:bg-fondo"
           >
-            −
+            <IconoMenos className="size-[22px]" />
           </button>
           <input
             id={idPrecio}
@@ -56,32 +57,32 @@ export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; p
             onChange={(e) => setPrecio(e.target.value.replace(/\D/g, "").slice(0, 6))}
             aria-invalid={estado.errores?.precio ? true : undefined}
             aria-describedby={`${idPrecio}-ayuda`}
-            className="h-13 min-w-0 flex-1 bg-transparent text-center font-titulo text-3xl font-bold text-texto outline-none placeholder:text-texto-suave/60"
+            className="h-14 min-w-0 flex-1 bg-transparent text-center font-titulo text-[40px] font-bold tracking-tight text-texto tabular-nums outline-none placeholder:text-texto-suave/60"
           />
           <button
             type="button"
             onClick={() => mover(PASO)}
-            aria-label={`Subir ${PASO} pesos`}
-            className="size-13 shrink-0 rounded-xl border border-texto-suave/30 text-2xl text-texto hover:bg-fondo"
+            aria-label={`Subir ${pesos(PASO)}`}
+            className="flex size-14 shrink-0 items-center justify-center rounded-full border border-texto-suave/30 text-texto hover:bg-fondo"
           >
-            +
+            <IconoMas className="size-[22px]" />
           </button>
         </div>
-        <p id={`${idPrecio}-ayuda`} className={`text-sm ${estado.errores?.precio ? "text-error" : "text-texto-suave"}`}>
-          {estado.errores?.precio ?? `Entre ${pesos(PRECIO_MINIMO)} y ${pesos(PRECIO_MAXIMO)}, en pesos enteros.`}
+        <p id={`${idPrecio}-ayuda`} className={`text-center text-[13px] ${estado.errores?.precio ? "text-error" : "text-texto-suave"}`}>
+          {estado.errores?.precio ?? `Entre ${pesos(PRECIO_MINIMO)} y ${pesos(PRECIO_MAXIMO)}, en pesos.`}
         </p>
-      </div>
-
-      <div className="flex items-center justify-between gap-3 rounded-2xl bg-superficie p-4" aria-live="polite">
-        <div>
-          <p className="text-sm text-texto-suave">Recibes en tu billetera</p>
-          <p className="text-xs text-texto-suave">Después del {PORCENTAJE_COMISION} % de UniGo</p>
-        </div>
-        <p className="font-titulo text-xl font-bold">{valido ? pesos(gananciaConductor(numero)) : "—"}</p>
-      </div>
+        <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-y-2 border-t border-texto-suave/15 pt-3.5 text-sm tabular-nums" aria-live="polite">
+          <dt className="text-texto-suave">Comisión UniGo ({PORCENTAJE_COMISION} %)</dt>
+          <dd className="text-right text-texto-suave">{valido ? `−${pesos(comision(numero))}` : "—"}</dd>
+          <dt className="font-bold">Recibes al terminar</dt>
+          <dd className="text-right font-titulo font-bold text-secundario">{valido ? pesos(gananciaConductor(numero)) : "—"}</dd>
+        </dl>
+      </section>
 
       <BotonEnviar enviando="Enviando oferta…">{valido ? `Enviar oferta de ${pesos(numero)}` : "Enviar oferta"}</BotonEnviar>
-      <p className="text-center text-sm text-texto-suave">Puedes retirar la oferta mientras el estudiante no la acepte.</p>
+      <p className="text-center text-[13px] leading-relaxed text-texto-suave">
+        Puedes retirarla mientras no la acepten. Si la aceptan y luego cancelas, el estudiante recupera todo y sumas un strike.
+      </p>
     </form>
   );
 }

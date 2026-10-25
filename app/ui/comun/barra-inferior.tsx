@@ -43,9 +43,9 @@ export function BarraInferior({ rol }: { rol: "estudiante" | "conductor" }) {
   return (
     <nav
       aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-texto-suave/20 bg-fondo pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-texto-suave/15 bg-fondo pb-[env(safe-area-inset-bottom)]"
     >
-      <ul className="mx-auto flex max-w-md justify-around px-2 py-1.5">
+      <ul className="mx-auto flex max-w-md justify-around px-2 pt-1.5 pb-2.5">
         {pestanasDe(rol).map((pestana) => {
           const activa = pestana.activa(ruta);
           return (
@@ -53,9 +53,10 @@ export function BarraInferior({ rol }: { rol: "estudiante" | "conductor" }) {
               <Link
                 href={pestana.href}
                 aria-current={activa ? "page" : undefined}
-                className={`flex min-h-12 min-w-14 flex-col items-center justify-center gap-0.5 rounded-lg px-1.5 text-xs font-semibold ${activa ? "text-secundario" : "text-texto-suave"}`}
+                className={`flex min-h-13 min-w-14 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-xs ${activa ? "font-bold text-secundario" : "font-semibold text-texto-suave hover:text-texto"}`}
               >
-                {pestana.icono}
+                {/* La pestaña actual lleva una pastilla detrás del icono. */}
+                <span className={`flex h-7 w-12 items-center justify-center rounded-full ${activa ? "bg-secundario/15" : ""}`}>{pestana.icono}</span>
                 {pestana.texto}
               </Link>
             </li>

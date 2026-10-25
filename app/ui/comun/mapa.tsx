@@ -30,6 +30,8 @@ interface Props {
   irA?: Coordenada | null;
   /** Puntos de recogida de otros estudiantes (cupos), como círculos pequeños. */
   paradas?: Coordenada[];
+  /** De borde a borde (arriba de una pantalla): sin esquinas redondeadas ni botones de zoom. */
+  aRas?: boolean;
   className?: string;
 }
 
@@ -88,7 +90,7 @@ function encuadrar(mapa: MapaLibre, caja: [[number, number], [number, number]], 
   }, 1500);
 }
 
-export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, className }: Props) {
+export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, aRas, className }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<MapaLibre | null>(null);
   const libRef = useRef<Libreria | null>(null);
@@ -104,6 +106,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   const [estado, setEstado] = useState<Estado>("cargando");
   const [infoRuta, setInfoRuta] = useState<{ clave: string; km: number; minutos: number } | null>(null);
   const modoElegir = !!alElegir;
+  const conControles = useRef(!aRas);
 
   // La función puede cambiar en cada render; el mapa siempre llama a la última.
   useEffect(() => {
@@ -135,7 +138,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
           return;
         }
         const instancia = mapa;
-        instancia.addControl(new lib.NavigationControl({ showCompass: false }), "top-right");
+        if (conControles.current) instancia.addControl(new lib.NavigationControl({ showCompass: false }), "top-right");
         instancia.on("load", () => {
           cargado = true;
           libRef.current = lib;
@@ -244,7 +247,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   }, [estado, irLat, irLng]);
 
   return (
-    <div role="region" aria-label={etiqueta} className={`relative overflow-hidden rounded-2xl bg-superficie ${className ?? "h-64"}`}>
+    <div role="region" aria-label={etiqueta} className={`relative overflow-hidden bg-superficie ${aRas ? "" : "rounded-2xl"} ${className ?? "h-64"}`}>
       {/* Alto y ancho explícitos: la hoja de MapLibre le pone position: relative
           al contenedor y le gana a "absolute inset-0", que lo dejaba en 0 px. */}
       <div ref={contenedor} className="h-full w-full" />
@@ -267,7 +270,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
       )}
 
       {infoRuta && infoRuta.clave === `${oLat},${oLng},${dLat},${dLng}` && (
-        <p className="absolute bottom-2 left-2 rounded-lg bg-fondo/90 px-2.5 py-1 text-xs font-semibold text-texto">
+        <p className={`absolute left-2 rounded-lg ${aRas ? "bottom-8" : "bottom-2"} bg-fondo/90 px-2.5 py-1 text-xs font-semibold text-texto`}>
           {distanciaTexto(infoRuta.km)} · {infoRuta.minutos} min por vía
         </p>
       )}
