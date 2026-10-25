@@ -118,3 +118,60 @@ export function IconoBilletera(props: Props) {
     </Base>
   );
 }
+
+export function IconoCambiar(props: Props) {
+  return (
+    <Base {...props}>
+      <path d="M7 7h11l-3-3M17 17H6l3 3" />
+    </Base>
+  );
+}
+
+export function IconoCandado(props: Props) {
+  return (
+    <Base {...props}>
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V8a4 4 0 018 0v3" />
+    </Base>
+  );
+}
+
+export function IconoSubir(props: Props) {
+  return (
+    <Base {...props}>
+      <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
+    </Base>
+  );
+}
+
+export function IconoAlerta(props: Props) {
+  return (
+    <Base {...props}>
+      <path d="M12 7v6M12 17v.5" />
+    </Base>
+  );
+}
+
+export function IconoSiguiente(props: Props) {
+  return (
+    <Base {...props}>
+      <path d="M9 5l7 7-7 7" />
+    </Base>
+  );
+}
+
+export function IconoMas(props: Props) {
+  return (
+    <Base {...props}>
+      <path d="M12 5v14M5 12h14" />
+    </Base>
+  );
+}
+
+export function IconoMenos(props: Props) {
+  return (
+    <Base {...props}>
+      <path d="M5 12h14" />
+    </Base>
+  );
+}

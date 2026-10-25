@@ -32,10 +32,12 @@ function falla(mensaje: string): EstadoFormulario {
   return { resultado: "error", mensaje };
 }
 
+/** Cliente y persona con sesión. getClaims revisa el token sin ir a Supabase Auth (ver sesion.ts). */
 async function conSesion() {
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.auth.getUser();
-  return { supabase, usuario: data.user };
+  const { data } = await supabase.auth.getClaims();
+  const id = data?.claims?.sub;
+  return { supabase, usuario: id ? { id } : null };
 }
 
 function refrescar() {

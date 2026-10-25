@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { crearClienteServidor } from "./supabase/server";
 import type { Database } from "./supabase/tipos";
 
@@ -7,20 +8,24 @@ import type { Database } from "./supabase/tipos";
 
 export type FilaMovimiento = Database["public"]["Tables"]["movimientos"]["Row"];
 
-export async function miBilletera(personaId: string): Promise<{ saldo: number; movimientos: FilaMovimiento[] }> {
+/** Saldo, últimos movimientos y la hora de la consulta (para agruparlos por día). */
+export async function miBilletera(personaId: string): Promise<{ saldo: number; movimientos: FilaMovimiento[]; ahora: number }> {
   const supabase = await crearClienteServidor();
   const [billetera, movimientos] = await Promise.all([
     supabase.from("billeteras").select("saldo").eq("persona_id", personaId).maybeSingle(),
     supabase.from("movimientos").select("*").eq("persona_id", personaId).order("creado_en", { ascending: false }).limit(30),
   ]);
-  return { saldo: billetera.data?.saldo ?? 0, movimientos: movimientos.data ?? [] };
+  return { saldo: billetera.data?.saldo ?? 0, movimientos: movimientos.data ?? [], ahora: Date.now() };
 }
 
-export async function miSaldo(personaId: string): Promise<number> {
+// miSaldo y estadoDeCuenta van con cache(): las páginas las piden temprano
+// (empiezan a la vez que el resto) y la pastilla del saldo y el aviso de
+// strikes reciben ese mismo resultado sin volver a consultar.
+export const miSaldo = cache(async (personaId: string): Promise<number> => {
   const supabase = await crearClienteServidor();
   const { data } = await supabase.from("billeteras").select("saldo").eq("persona_id", personaId).maybeSingle();
   return data?.saldo ?? 0;
-}
+});
 
 export interface EstadoDeCuenta {
   strikes: number;
@@ -28,7 +33,7 @@ export interface EstadoDeCuenta {
   suspendidoHasta: string | null;
 }
 
-export async function estadoDeCuenta(personaId: string): Promise<EstadoDeCuenta> {
+export const estadoDeCuenta = cache(async (personaId: string): Promise<EstadoDeCuenta> => {
   const supabase = await crearClienteServidor();
   const ahora = new Date().toISOString();
   const [strikes, suspension] = await Promise.all([
@@ -36,7 +41,7 @@ export async function estadoDeCuenta(personaId: string): Promise<EstadoDeCuenta>
     supabase.from("suspensiones").select("hasta").eq("persona_id", personaId).gt("hasta", ahora).order("hasta", { ascending: false }).limit(1),
   ]);
   return { strikes: strikes.count ?? 0, suspendidoHasta: suspension.data?.[0]?.hasta ?? null };
-}
+});
 
 export interface ReporteParaAdmin {
   id: string;

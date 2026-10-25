@@ -5,21 +5,31 @@ import { cupoActivoDelConductor } from "@/app/lib/consultas-cupo";
 import { misDocumentos } from "@/app/lib/consultas-verificacion";
 import { TIPOS_DOCUMENTO } from "@/app/lib/documentos";
 import { resumenDelConductor, solicitudesAbiertas, vehiculoDe, viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
-import { calificacionTexto, etiquetaEstado, fechaCorta, hace, nombreCorto, pesos } from "@/app/lib/formato";
+import { calificacionTexto, etiquetaEstado, hace, horaCorta, nombreCorto, pesos } from "@/app/lib/formato";
+import { estadoDeCuenta, miSaldo } from "@/app/lib/consultas-billetera";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
-import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
-import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
-import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
+import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
+import { EnVivo } from "@/app/ui/comun/en-vivo";
+import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
+import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
+import { PastillaSaldo } from "@/app/ui/comun/pastilla-saldo";
 import { InterruptorDisponible } from "@/app/ui/conductor/interruptor-disponible";
 
 export const metadata: Metadata = { title: "Inicio" };
 
-// Inicio del conductor: disponibilidad, resumen y solicitudes a las que puede ofertar.
+const FILA_ENLACE = "flex min-h-14 items-center gap-3 rounded-2xl border border-texto-suave/25 px-4 py-2 text-texto hover:bg-superficie";
+
+// Inicio del conductor (rediseño): el interruptor de disponibilidad manda;
+// debajo, lo pendiente (verificación, viaje, cupo) en filas y la cola de
+// solicitudes a las que puede ofertar.
 export default async function PaginaConductor({ searchParams }: { searchParams: Promise<{ clave?: string }> }) {
   const { usuario, perfil } = await exigirRol("conductor");
   const { clave } = await searchParams;
+  // Saldo y strikes arrancan ya; la pastilla y el aviso los reciben listos (cache).
+  void miSaldo(usuario.id);
+  void estadoDeCuenta(usuario.id);
   const [vehiculo, activo, resumen, miCupo, documentos] = await Promise.all([
     vehiculoDe(usuario.id),
     viajeActivoDelConductor(usuario.id),
@@ -34,9 +44,12 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
   const abiertas = perfil.disponible && !activo ? await solicitudesAbiertas(usuario.id) : null;
   const solicitudes = abiertas?.solicitudes ?? [];
   const ahora = abiertas?.ahora ?? 0;
+  const lineaResumen = `Esta semana: ${resumen.viajesEstaSemana} ${resumen.viajesEstaSemana === 1 ? "viaje" : "viajes"} · ${
+    resumen.totalCalificaciones > 0 ? `★ ${calificacionTexto(resumen.calificacion)}` : "aún sin calificación"
+  }`;
 
   return (
-    <main className="space-y-6 px-5 pt-6">
+    <main className="space-y-3 px-5 pt-4">
       {/* Solicitudes nuevas, ofertas aceptadas o rechazadas llegan en tiempo real. */}
       {(perfil.disponible || activo || miCupo) && (
         <EnVivo
@@ -47,149 +60,127 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
           ]}
         />
       )}
-      <header className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-texto-suave">Conductor</p>
-          <h1 className="text-3xl tracking-tight">Hola, {perfil.nombre.split(" ")[0]}</h1>
-        </div>
+      <header className="flex items-center justify-between gap-3 pb-2">
+        <h1 className="sr-only">Inicio del conductor, {perfil.nombre.split(" ")[0]}</h1>
         <BotonCambiarModo modoActual="conductor" />
+        <PastillaSaldo personaId={usuario.id} />
       </header>
 
       {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
       <EstadoCuenta personaId={usuario.id} />
 
       {!verificado && (
-        <section aria-labelledby="titulo-verificar" className="space-y-3 rounded-2xl border border-secundario/50 p-5">
-          <h2 id="titulo-verificar" className="text-lg">
-            {rechazados > 0 ? "Hay un documento por corregir" : "Verifica tu cuenta de conductor"}
-          </h2>
-          <p className="text-sm text-texto-suave">
-            Sube tu cédula, licencia y tarjeta de propiedad. Llevas {aprobados} de 3 aprobados.
-          </p>
-          <Link
-            href="/conductor/documentos"
-            className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto hover:bg-primario/85"
-          >
-            {Object.keys(documentos).length === 0 ? "Subir mis documentos" : "Ver mis documentos"}
-          </Link>
-        </section>
+        <Link href="/conductor/documentos" className={FILA_ENLACE}>
+          <span className="font-titulo text-lg font-bold tabular-nums">{aprobados}/3</span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold">{rechazados > 0 ? "Hay un documento por corregir" : "Verifica tu cuenta"}</span>
+            <span className="block text-[13px] text-texto-suave">
+              {Object.keys(documentos).length === 0 ? "Sube cédula, licencia y tarjeta de propiedad" : "Documentos aprobados"}
+            </span>
+          </span>
+          <IconoSiguiente className="size-5 text-texto-suave" />
+        </Link>
       )}
 
-      {activo && (
-        <section aria-labelledby="titulo-viaje-activo" className="space-y-3 rounded-2xl border border-secundario/50 p-5">
-          <h2 id="titulo-viaje-activo" className="text-lg">
+      {!vehiculo && (
+        <Link href="/conductor/vehiculo" className={FILA_ENLACE}>
+          <span className="min-w-0 flex-1 font-bold">Registra tu vehículo</span>
+          <IconoSiguiente className="size-5 text-texto-suave" />
+        </Link>
+      )}
+
+      {activo ? (
+        <section aria-labelledby="titulo-viaje-activo" className="space-y-3 rounded-[18px] bg-primario p-[18px] text-texto">
+          <h2 id="titulo-viaje-activo" className="text-[22px] tracking-tight">
             {etiquetaEstado(activo.viaje.estado)}
           </h2>
-          <p className="text-sm text-texto-suave">
-            {activo.estudiante ? `Estudiante: ${nombreCorto(activo.estudiante.nombre)}` : "Tienes un viaje asignado."}
-          </p>
+          <p className="text-sm">{activo.estudiante ? `Llevas a ${nombreCorto(activo.estudiante.nombre)} · ${activo.viaje.origen_texto}` : "Tienes un viaje asignado."}</p>
           <Link
             href="/conductor/viaje"
-            className="flex h-14 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto transition-colors hover:bg-primario/85"
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-texto font-titulo font-semibold text-fondo hover:bg-texto/90"
           >
             Ver mi viaje
           </Link>
         </section>
+      ) : (
+        <InterruptorDisponible disponible={perfil.disponible} tieneVehiculo={!!vehiculo} verificado={verificado} resumen={lineaResumen} />
       )}
 
-      <section aria-labelledby="titulo-cupo" className="space-y-3 rounded-2xl bg-superficie p-5">
-        <h2 id="titulo-cupo" className="text-lg">
-          {miCupo ? (miCupo.cupo.estado === "en_curso" ? "Tu cupo va en camino" : "Tu cupo publicado") : "¿Vas a la U a una hora fija?"}
-        </h2>
-        {miCupo ? (
-          <>
-            <p className="text-sm text-texto-suave">
-              Sale {fechaCorta(miCupo.cupo.sale_en)} · {miCupo.aprobados.length}/{miCupo.cupo.puestos} puestos
-              {miCupo.pendientes.length > 0 && ` · ${miCupo.pendientes.length} por aprobar`}
-            </p>
-            <Link
-              href="/conductor/cupo"
-              className="flex h-14 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto transition-colors hover:bg-primario/85"
-            >
-              {miCupo.pendientes.length > 0 ? "Revisar solicitudes" : "Ver mi cupo"}
-            </Link>
-          </>
-        ) : (
-          <>
-            <p className="text-sm text-texto-suave">Publica tu recorrido con hora de salida y deja que los estudiantes se suban en el camino.</p>
-            <Link
-              href="/conductor/cupo/nuevo"
-              className="flex min-h-12 w-full items-center justify-center rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-fondo"
-            >
-              Publicar un cupo
-            </Link>
-          </>
-        )}
-      </section>
-
-      <InterruptorDisponible disponible={perfil.disponible} tieneVehiculo={!!vehiculo} verificado={verificado} />
-
-      {!vehiculo && (
-        <Link
-          href="/conductor/vehiculo"
-          className="flex min-h-12 w-full items-center justify-center rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-superficie"
-        >
-          Registrar mi vehículo
+      {miCupo ? (
+        <Link href="/conductor/cupo" className={FILA_ENLACE}>
+          <span className="font-titulo text-lg font-bold tabular-nums">{horaCorta(miCupo.cupo.sale_en).hora}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold">{miCupo.cupo.estado === "en_curso" ? "Tu cupo va en camino" : "Tu cupo publicado"}</span>
+            <span className="block text-[13px] text-texto-suave">
+              {miCupo.aprobados.length} de {miCupo.cupo.puestos} puestos
+              {miCupo.pendientes.length > 0 &&
+                ` · ${miCupo.pendientes.length} ${miCupo.pendientes.length === 1 ? "solicitud" : "solicitudes"} por aprobar`}
+            </span>
+          </span>
+          <IconoSiguiente className="size-5 text-texto-suave" />
         </Link>
+      ) : (
+        verificado && (
+          <Link href="/conductor/cupo/nuevo" className={FILA_ENLACE}>
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold">¿Vas a la U a una hora fija?</span>
+              <span className="block text-[13px] text-texto-suave">Publica un cupo y que se suban en el camino</span>
+            </span>
+            <IconoSiguiente className="size-5 text-texto-suave" />
+          </Link>
+        )
       )}
 
-      <section aria-label="Resumen" className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-superficie p-4">
-          <p className="font-titulo text-2xl font-bold">{resumen.viajesEstaSemana}</p>
-          <p className="text-sm text-texto-suave">viajes esta semana</p>
-        </div>
-        <div className="rounded-2xl bg-superficie p-4">
-          <p className="font-titulo text-2xl font-bold">
-            {resumen.totalCalificaciones > 0 ? `★ ${calificacionTexto(resumen.calificacion)}` : "Nuevo"}
-          </p>
-          <p className="text-sm text-texto-suave">calificación</p>
-        </div>
-      </section>
-
-      <section aria-labelledby="titulo-solicitudes" className="space-y-3">
-        <h2 id="titulo-solicitudes" className="text-lg">
-          Solicitudes de viaje
+      <section aria-labelledby="titulo-solicitudes" className="pt-4">
+        <h2 id="titulo-solicitudes" className="flex items-baseline gap-2 text-lg">
+          Solicitudes
+          {perfil.disponible && !activo && <span className="font-texto text-[13px] font-semibold text-texto-suave">llegan en vivo</span>}
         </h2>
         {activo ? (
-          <p className="text-sm text-texto-suave">Termina tu viaje actual para ver nuevas solicitudes.</p>
+          <p className="mt-2 text-sm text-texto-suave">Termina tu viaje actual para ver nuevas solicitudes.</p>
         ) : !perfil.disponible ? (
-          <p className="text-sm text-texto-suave">Ponte disponible para ver las solicitudes de los estudiantes.</p>
+          <p className="mt-2 text-sm text-texto-suave">Ponte disponible para ver las solicitudes de los estudiantes.</p>
         ) : solicitudes.length === 0 ? (
-          <p role="status" className="rounded-2xl border border-texto-suave/25 p-5 text-center text-texto-suave">
+          <p role="status" className="mt-2 text-sm text-texto-suave">
             No hay solicitudes por ahora. Las nuevas aparecen aquí sin recargar.
           </p>
         ) : (
-          <ul className="space-y-3">
+          <ul className="mt-1">
             {solicitudes.map(({ viaje, estudiante, miOferta }) => (
-              <li key={viaje.id} className="space-y-3 rounded-2xl bg-superficie p-4">
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="min-w-0 truncate font-bold">{estudiante ? nombreCorto(estudiante.nombre) : "Estudiante"}</p>
-                  <p className="shrink-0 text-xs text-texto-suave">hace {hace(Date.parse(viaje.creado_en), ahora)}</p>
+              <li key={viaje.id} className="flex items-center gap-3 border-b border-texto-suave/15 py-3.5 last:border-b-0">
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold">
+                    {estudiante ? nombreCorto(estudiante.nombre) : "Estudiante"}{" "}
+                    <span className="text-[13px] font-medium text-texto-suave">· hace {hace(Date.parse(viaje.creado_en), ahora)}</span>
+                  </p>
+                  {miOferta ? (
+                    <p className="text-[13px] text-secundario tabular-nums">Ofertaste {pesos(miOferta.precio)} · esperando</p>
+                  ) : (
+                    <p className="truncate text-[13px] text-texto-suave">{viaje.origen_texto} → U</p>
+                  )}
                 </div>
-                <p className="text-sm text-texto-suave">
-                  {viaje.origen_texto} → {viaje.destino_texto}
-                </p>
                 {miOferta ? (
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      Tu oferta: <span className="font-titulo font-bold">{pesos(miOferta.precio)}</span> · esperando respuesta
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Link
-                        href={`/conductor/ofertar/${viaje.id}`}
-                        className="flex min-h-12 items-center justify-center rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-fondo"
-                      >
-                        Cambiar precio
-                      </Link>
-                      <BotonAccion accion={retirarOferta} campos={{ viaje: viaje.id }} estilo="peligro" enviando="Retirando…">
-                        Retirar
-                      </BotonAccion>
-                    </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Link
+                      href={`/conductor/ofertar/${viaje.id}`}
+                      className="flex min-h-11 items-center rounded-xl border border-texto-suave/30 px-3.5 text-sm font-semibold text-texto hover:bg-superficie"
+                    >
+                      Cambiar
+                    </Link>
+                    <BotonAccion
+                      accion={retirarOferta}
+                      campos={{ viaje: viaje.id }}
+                      estilo="pequenoBorde"
+                      enviando="…"
+                      etiqueta={`Retirar tu oferta a ${estudiante ? nombreCorto(estudiante.nombre) : "el estudiante"}`}
+                    >
+                      Retirar
+                    </BotonAccion>
                   </div>
                 ) : (
                   <Link
                     href={`/conductor/ofertar/${viaje.id}`}
-                    className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto transition-colors hover:bg-primario/85"
+                    className="flex min-h-11 shrink-0 items-center rounded-xl bg-primario px-[18px] font-titulo text-[15px] font-semibold text-texto hover:bg-primario/85"
                   >
                     Ofertar
                   </Link>

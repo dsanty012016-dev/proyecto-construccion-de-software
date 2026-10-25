@@ -69,3 +69,30 @@ export function etiquetaEstado(estado: "solicitado" | "aceptado" | "en_curso" | 
   };
   return etiquetas[estado];
 }
+
+/** Fecha local de Colombia (UTC-5) como número de día, para comparar días sin reloj propio. */
+function diaLocal(ms: number): number {
+  return Math.floor((ms - 5 * 3600 * 1000) / 86_400_000);
+}
+
+/** "2026-10-22T11:30:00Z" → { hora: "6:30", periodo: "a. m." } en hora de Colombia. */
+export function horaCorta(iso: string): { hora: string; periodo: string } {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return { hora: "", periodo: "" };
+  const local = new Date(ms - 5 * 3600 * 1000);
+  const hora24 = local.getUTCHours();
+  const hora12 = hora24 % 12 === 0 ? 12 : hora24 % 12;
+  return { hora: `${hora12}:${String(local.getUTCMinutes()).padStart(2, "0")}`, periodo: hora24 < 12 ? "a. m." : "p. m." };
+}
+
+/** Nombre del día de algo frente a "ahora": "Hoy", "Mañana", "Ayer" o "21 oct". */
+export function diaRelativo(iso: string, ahoraMs: number): string {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return "";
+  const diferencia = diaLocal(ms) - diaLocal(ahoraMs);
+  if (diferencia === 0) return "Hoy";
+  if (diferencia === 1) return "Mañana";
+  if (diferencia === -1) return "Ayer";
+  const local = new Date(ms - 5 * 3600 * 1000);
+  return `${local.getUTCDate()} ${MESES[local.getUTCMonth()]}`;
+}

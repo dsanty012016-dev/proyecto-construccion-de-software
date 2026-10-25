@@ -43,9 +43,9 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
           <p className="font-titulo text-lg font-bold">Sale {fechaCorta(cupo.sale_en)}</p>
           <p className="font-titulo text-lg font-bold">{pesos(cupo.precio)}</p>
         </div>
-        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} />
+        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} etiquetaOrigen="Sale de" />
         <div className="flex items-center gap-3 border-t border-texto-suave/20 pt-4">
-          <Avatar nombre={conductor?.nombre ?? "Conductor"} />
+          <Avatar nombre={conductor?.nombre ?? "Conductor"} sobreTarjeta />
           <div className="min-w-0 flex-1">
             <p className="font-bold">{conductor ? nombreCorto(conductor.nombre) : "Conductor"}</p>
             <p className="flex items-center gap-1 text-sm text-texto-suave">

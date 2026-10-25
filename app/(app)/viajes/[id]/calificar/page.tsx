@@ -29,7 +29,7 @@ export default async function PaginaCalificar({ params }: { params: Promise<{ id
       </div>
       <div className="w-full space-y-5 rounded-2xl bg-superficie p-5">
         <div className="flex items-center gap-3">
-          <Avatar nombre={otro?.nombre ?? "?"} />
+          <Avatar nombre={otro?.nombre ?? "?"} sobreTarjeta />
           <p className="font-bold">{nombre}</p>
         </div>
         <FormularioCalificar viajeId={viaje.id} aQuien={nombre} />

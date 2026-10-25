@@ -23,7 +23,7 @@ function Persona({ solicitud, salida, destino }: { solicitud: SolicitudDePuesto;
   const desvio = distanciaATramoKm({ lat: puesto.recogida_lat, lng: puesto.recogida_lng }, salida, destino);
   return (
     <div className="flex items-start gap-3">
-      <Avatar nombre={estudiante?.nombre ?? "Estudiante"} />
+      <Avatar nombre={estudiante?.nombre ?? "Estudiante"} sobreTarjeta />
       <div className="min-w-0 flex-1">
         <p className="font-bold">{estudiante ? nombreCorto(estudiante.nombre) : "Estudiante"}</p>
         {estudiante && (
@@ -64,7 +64,7 @@ export default async function PaginaCupoConductor() {
             {aprobados.length}/{cupo.puestos} {cupo.puestos === 1 ? "puesto" : "puestos"}
           </p>
         </div>
-        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} />
+        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} etiquetaOrigen="Sales de" />
         <p className="text-sm text-texto-suave">
           {pesos(cupo.precio)} por puesto · recibes {pesos(gananciaConductor(cupo.precio))} por cada estudiante que pague, al llegar
         </p>

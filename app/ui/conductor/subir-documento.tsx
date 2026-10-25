@@ -6,7 +6,7 @@ import { ayudaDocumento, nombreDocumento, problemaConArchivo, rutaDocumento, typ
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { crearClienteNavegador } from "@/app/lib/supabase/client";
 import { Aviso } from "@/app/ui/auth/campos";
-import { IconoCheck } from "@/app/ui/comun/iconos-app";
+import { IconoAlerta, IconoCheck, IconoSubir } from "@/app/ui/comun/iconos-app";
 
 // Subir un documento del conductor. El archivo va directo del navegador al
 // bucket privado "documentos" (en la carpeta del conductor, que es lo único
@@ -65,22 +65,31 @@ export function SubirDocumento({ tipo, conductorId, estado, motivo }: Props) {
     startTransition(() => despachar(datos));
   }
 
+  const textoEstado = estado ? ETIQUETAS[estado] : "Sin enviar";
   return (
-    <section aria-labelledby={`${idArchivo}-titulo`} className="space-y-3 rounded-2xl bg-superficie p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 id={`${idArchivo}-titulo`} className="text-base">
-            {nombreDocumento(tipo)}
-          </h2>
-          <p className="text-sm text-texto-suave">{ayudaDocumento(tipo)}</p>
-        </div>
+    <section aria-labelledby={`${idArchivo}-titulo`} className="space-y-3 border-b border-texto-suave/15 py-4 last:border-b-0">
+      <div className="flex items-center gap-3.5">
         <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-            estado === "aprobado" ? "bg-primario text-texto" : estado === "rechazado" ? "bg-error/15 text-error" : "bg-fondo text-texto-suave"
+          aria-hidden="true"
+          className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+            estado === "aprobado"
+              ? "bg-secundario/15 text-secundario"
+              : estado === "rechazado"
+                ? "bg-error/15 text-error"
+                : "border-2 border-dashed border-texto-suave/50"
           }`}
         >
-          {estado ? ETIQUETAS[estado] : "Sin enviar"}
+          {estado === "aprobado" && <IconoCheck className="size-5" />}
+          {estado === "rechazado" && <IconoAlerta className="size-5" />}
         </span>
+        <div className="min-w-0 flex-1">
+          <h2 id={`${idArchivo}-titulo`} className="font-texto text-base font-bold">
+            {nombreDocumento(tipo)}
+          </h2>
+          <p className={`text-[13px] ${estado === "aprobado" ? "text-secundario" : estado === "rechazado" ? "text-error" : "text-texto-suave"}`}>
+            {estado === "rechazado" ? `${textoEstado} · súbelo de nuevo` : estado === "pendiente" ? `${textoEstado} · te avisamos aquí` : textoEstado}
+          </p>
+        </div>
       </div>
 
       {estado === "rechazado" && motivo && <Aviso tipo="error">Motivo: {motivo}</Aviso>}
@@ -89,34 +98,31 @@ export function SubirDocumento({ tipo, conductorId, estado, motivo }: Props) {
         <Aviso tipo="error">{problema ?? resultado.mensaje}</Aviso>
       )}
 
-      {estado === "aprobado" ? (
-        <p className="flex items-center gap-2 text-sm text-texto">
-          <IconoCheck className="size-5 text-secundario" />
-          Listo. Si necesitas cambiarlo, escríbenos.
-        </p>
-      ) : (
+      {estado !== "aprobado" && (
         <form onSubmit={alEnviar} className="space-y-3" noValidate>
           <div>
             <label htmlFor={idArchivo} className="mb-1.5 block text-sm font-medium">
-              {estado ? "Subir de nuevo" : "Archivo"} (foto o PDF, hasta 5 MB)
+              {estado ? "Subir otro archivo" : "Archivo"} <span className="text-texto-suave">(foto o PDF, hasta 5 MB)</span>
             </label>
+            <p className="mb-2 text-[13px] text-texto-suave">{ayudaDocumento(tipo)}</p>
             <input
               id={idArchivo}
               name="archivo"
               type="file"
               accept="image/jpeg,image/png,image/webp,application/pdf"
-              className="block w-full text-sm text-texto-suave file:mr-3 file:min-h-11 file:rounded-xl file:border-0 file:bg-fondo file:px-4 file:font-semibold file:text-texto"
+              className="block w-full text-sm text-texto-suave file:mr-3 file:min-h-11 file:rounded-xl file:border-0 file:bg-superficie file:px-4 file:font-semibold file:text-texto"
             />
           </div>
-          <label htmlFor={idAutorizo} className="flex items-start gap-3 text-sm text-texto-suave">
+          <label htmlFor={idAutorizo} className="flex items-start gap-3 text-[13px] text-texto-suave">
             <input id={idAutorizo} name="autorizo" value="si" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-primario" />
             Autorizo a UniGo a guardar y revisar este documento solo para verificar que puedo conducir (Ley 1581 de 2012).
           </label>
           <button
             type="submit"
             disabled={ocupado}
-            className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-semibold text-texto transition-colors hover:bg-primario/85 disabled:opacity-70"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primario font-titulo font-semibold text-texto transition-colors hover:bg-primario/85 disabled:opacity-70"
           >
+            <IconoSubir className="size-[18px]" />
             {subiendo ? "Subiendo…" : enviando ? "Enviando…" : "Enviar documento"}
           </button>
         </form>

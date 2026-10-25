@@ -98,7 +98,8 @@ export interface CupoDisponible {
 }
 
 /** Cupos publicados de su universidad que todavía no han salido, del más próximo al más lejano. */
-export async function cuposDisponibles(): Promise<CupoDisponible[]> {
+/** Cupos abiertos, con la hora de la consulta para agrupar por día en pantalla. */
+export async function cuposDisponibles(): Promise<{ cupos: CupoDisponible[]; ahora: number }> {
   const supabase = await crearClienteServidor();
   const { data } = await supabase
     .from("cupos")
@@ -114,12 +115,15 @@ export async function cuposDisponibles(): Promise<CupoDisponible[]> {
     vehiculosDe(conductores),
     libresDe(cupos.map((c) => c.id)),
   ]);
-  return cupos.map((cupo) => ({
-    cupo,
-    conductor: perfiles.get(cupo.conductor_id) ?? null,
-    vehiculo: vehiculos.find((v) => v.conductor_id === cupo.conductor_id) ?? null,
-    libres: libres.get(cupo.id) ?? 0,
-  }));
+  return {
+    cupos: cupos.map((cupo) => ({
+      cupo,
+      conductor: perfiles.get(cupo.conductor_id) ?? null,
+      vehiculo: vehiculos.find((v) => v.conductor_id === cupo.conductor_id) ?? null,
+      libres: libres.get(cupo.id) ?? 0,
+    })),
+    ahora: Date.now(),
+  };
 }
 
 export interface CupoParaEstudiante extends CupoDisponible {

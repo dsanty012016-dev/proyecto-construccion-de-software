@@ -1,44 +1,56 @@
+import Link from "next/link";
 import { aceptarOferta } from "@/app/lib/acciones-viaje";
 import type { ConductorConOferta } from "@/app/lib/consultas-viaje";
-import Link from "next/link";
 import { calificacionTexto, nombreCorto, pesos } from "@/app/lib/formato";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
-import { IconoEstrella } from "@/app/ui/comun/iconos-app";
 
-// Una oferta de un conductor: quién es, su precio y su vehículo. Aceptarla
-// cierra la búsqueda (la regla la hace cumplir aceptar_oferta en la base).
-export function TarjetaOferta({ oferta, saldo }: { oferta: ConductorConOferta; saldo: number }) {
+// Una oferta de un conductor, como fila de la lista: quién es, su vehículo y
+// su precio. Aceptarla paga en ese momento y cierra la búsqueda (la regla la
+// hace cumplir aceptar_oferta en la base). La más barata va resaltada.
+export function TarjetaOferta({ oferta, saldo, destacada }: { oferta: ConductorConOferta; saldo: number; destacada?: boolean }) {
   const { conductor, vehiculo } = oferta;
   const nombre = nombreCorto(conductor.nombre);
+  const alcanza = saldo >= oferta.precio;
   return (
-    <li className="space-y-4 rounded-2xl bg-superficie p-4">
+    <li className="space-y-3 border-b border-texto-suave/15 py-4 last:border-b-0">
       <div className="flex items-center gap-3">
         <Avatar nombre={conductor.nombre} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-bold">{nombre}</p>
-          <p className="flex items-center gap-1 text-sm text-texto-suave">
-            <IconoEstrella llena className="size-4 text-secundario" />
-            {conductor.total_calificaciones > 0 ? calificacionTexto(conductor.calificacion) : "Nuevo"} · {conductor.viajes_terminados}{" "}
+          <p className="truncate font-bold">{nombre}</p>
+          <p className="text-[13px] text-texto-suave">
+            {conductor.total_calificaciones > 0 ? `★ ${calificacionTexto(conductor.calificacion)}` : "Nuevo"} · {conductor.viajes_terminados}{" "}
             {conductor.viajes_terminados === 1 ? "viaje" : "viajes"}
           </p>
         </div>
-        <p className="font-titulo text-xl font-bold">{pesos(oferta.precio)}</p>
+        <p className="font-titulo text-[22px] font-bold tabular-nums">{pesos(oferta.precio)}</p>
       </div>
-      <div className="flex items-center justify-between gap-3">
-        <p className="min-w-0 text-sm text-texto-suave">
-          {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} · ${vehiculo.color} · ${vehiculo.placa}` : "Vehículo sin registrar"}
-        </p>
-        <BotonAccion accion={aceptarOferta} campos={{ oferta: oferta.ofertaId }} estilo="pequeno" enviando="Aceptando…">
-          <span aria-hidden="true">Aceptar</span>
-          <span className="sr-only">
-            Aceptar la oferta de {nombre} por {pesos(oferta.precio)}
-          </span>
+      <p className="text-[13px] text-texto-suave">
+        {vehiculo ? (
+          <>
+            {vehiculo.marca} {vehiculo.modelo} · {vehiculo.color} ·{" "}
+            <span className="font-semibold tracking-wider text-texto">{vehiculo.placa}</span>
+          </>
+        ) : (
+          "Vehículo sin registrar"
+        )}
+      </p>
+      {alcanza ? (
+        <BotonAccion
+          accion={aceptarOferta}
+          campos={{ oferta: oferta.ofertaId }}
+          estilo={destacada ? "primario" : "borde"}
+          enviando="Aceptando…"
+          etiqueta={`Aceptar la oferta de ${nombre} y pagar ${pesos(oferta.precio)}`}
+        >
+          Aceptar y pagar {pesos(oferta.precio)}
         </BotonAccion>
-      </div>
-      {saldo < oferta.precio && (
-        <p className="text-sm text-texto-suave">
-          Te faltan {pesos(oferta.precio - saldo)} para aceptarla. <Link href="/billetera">Recargar</Link>
+      ) : (
+        <p className="text-sm">
+          Te faltan <strong className="tabular-nums">{pesos(oferta.precio - saldo)}</strong> de saldo.{" "}
+          <Link href="/billetera" className="font-bold">
+            Recargar
+          </Link>
         </p>
       )}
     </li>

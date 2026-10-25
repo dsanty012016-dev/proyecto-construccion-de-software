@@ -11,6 +11,10 @@
   --color-texto: #f8fafc; /* títulos y texto principal */
   --color-texto-suave: #94a3b8; /* descripciones y texto secundario */
   --color-error: #fca5a5; /* mensajes de error y campos inválidos (9,6:1 sobre fondo) */
+  /* Solo para teñir el mapa como en los diseños (ui/comun/mapa.tsx). */
+  --color-mapa-tierra: #0e1729; /* manzanas y terreno, un punto más claro que el fondo */
+  --color-mapa-via: #1a2740; /* avenidas y vías principales */
+  --color-mapa-via-menor: #152036; /* calles y edificios */
 }
 
 /* Las fuentes las carga app/layout.tsx con next/font y dejan estas variables. */

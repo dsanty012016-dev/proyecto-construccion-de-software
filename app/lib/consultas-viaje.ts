@@ -64,10 +64,13 @@ export async function viajeActivoDelEstudiante(estudianteId: string): Promise<Vi
       .eq("estado", "activa")
       .order("precio", { ascending: true });
     const lista = ofertas ?? [];
-    const perfiles = await perfilesPublicos(lista.map((o) => o.conductor_id));
-    const { data: vehiculos } = lista.length
-      ? await supabase.from("vehiculos").select("*").in("conductor_id", lista.map((o) => o.conductor_id))
-      : { data: [] as FilaVehiculo[] };
+    // Perfiles y vehículos a la vez (antes iban uno detrás del otro).
+    const [perfiles, { data: vehiculos }] = await Promise.all([
+      perfilesPublicos(lista.map((o) => o.conductor_id)),
+      lista.length
+        ? supabase.from("vehiculos").select("*").in("conductor_id", lista.map((o) => o.conductor_id))
+        : Promise.resolve({ data: [] as FilaVehiculo[] }),
+    ]);
 
     const conOferta: ConductorConOferta[] = [];
     for (const oferta of lista) {
