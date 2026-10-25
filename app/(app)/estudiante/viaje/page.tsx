@@ -112,7 +112,7 @@ export default async function PaginaViajeEstudiante() {
             Tu conductor
           </h2>
           <div className="flex items-center gap-3">
-            <Avatar nombre={perfil?.nombre ?? "Conductor"} />
+            <Avatar nombre={perfil?.nombre ?? "Conductor"} sobreTarjeta />
             <div className="min-w-0 flex-1">
               <p className="truncate font-bold">
                 {nombre}

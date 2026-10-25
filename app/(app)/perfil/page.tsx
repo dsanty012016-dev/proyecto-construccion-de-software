@@ -15,7 +15,7 @@ export default async function PaginaPerfil() {
       <h1 className="text-3xl tracking-tight">Perfil</h1>
       <section aria-label="Tus datos" className="space-y-4 rounded-2xl bg-superficie p-5">
         <div className="flex items-center gap-3">
-          <Avatar nombre={perfil?.nombre ?? "?"} grande />
+          <Avatar nombre={perfil?.nombre ?? "?"} grande sobreTarjeta />
           <div className="min-w-0">
             <p className="truncate text-lg font-bold">{perfil?.nombre}</p>
             <p className="text-sm text-secundario">{perfil?.rol === "conductor" ? "Conductor" : "Estudiante"}</p>

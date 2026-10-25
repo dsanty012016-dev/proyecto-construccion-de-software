@@ -23,7 +23,7 @@ function Persona({ solicitud, salida, destino }: { solicitud: SolicitudDePuesto;
   const desvio = distanciaATramoKm({ lat: puesto.recogida_lat, lng: puesto.recogida_lng }, salida, destino);
   return (
     <div className="flex items-start gap-3">
-      <Avatar nombre={estudiante?.nombre ?? "Estudiante"} />
+      <Avatar nombre={estudiante?.nombre ?? "Estudiante"} sobreTarjeta />
       <div className="min-w-0 flex-1">
         <p className="font-bold">{estudiante ? nombreCorto(estudiante.nombre) : "Estudiante"}</p>
         {estudiante && (

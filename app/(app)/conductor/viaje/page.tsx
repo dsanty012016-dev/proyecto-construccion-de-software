@@ -52,7 +52,7 @@ export default async function PaginaViajeConductor() {
         <RutaViaje origen={viaje.origen_texto} destino={viaje.destino_texto} etiquetaOrigen="Recoges en" etiquetaDestino="Llevas a" />
         {estudiante && (
           <div className="flex items-center gap-3 border-t border-texto-suave/20 pt-4">
-            <Avatar nombre={estudiante.nombre} />
+            <Avatar nombre={estudiante.nombre} sobreTarjeta />
             <p className="min-w-0 flex-1 truncate font-bold">{nombre}</p>
             {estudiante.telefono && (
               <a

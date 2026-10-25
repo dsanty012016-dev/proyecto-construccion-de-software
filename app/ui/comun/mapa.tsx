@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { type Coordenada, coordenadaValida, distanciaTexto, ESTILO_MAPA, limites } from "@/app/lib/mapa";
 import { buscarRuta, CREDITO_RUTAS } from "@/app/lib/ruta-vial";
 
-// Mapa de la app (MapLibre con el estilo oscuro de OpenFreeMap). Dos usos:
+// Mapa de la app (MapLibre con el estilo oscuro de OpenFreeMap, teñido con la
+// paleta de UniGo para que se vea como en los diseños). Dos usos:
 // - Mostrar: recogida y destino con la ruta por las vías (FOSSGIS OSRM, ver
 //   ruta-vial.ts); mientras llega, o si el servicio falla, una línea recta punteada.
 // - Elegir (si se pasa alElegir): un pin fijo en el centro; la persona mueve el
@@ -38,18 +39,67 @@ interface Props {
 function elementoMarcador(tipo: "origen" | "destino" | "parada") {
   const elemento = document.createElement("div");
   elemento.setAttribute("aria-hidden", "true");
+  // Como en los diseños: recogida = punto azul con halo; sede = la "U" blanca.
   const clases = {
-    origen: "size-5 rounded-full border-[3px] border-texto bg-primario shadow-lg",
-    destino: "size-5 rounded-sm border-[3px] border-texto bg-secundario shadow-lg",
+    origen:
+      "size-[18px] rounded-full border-[3px] border-texto bg-primario shadow-[0_0_0_10px_color-mix(in_srgb,var(--color-primario)_22%,transparent)]",
+    destino: "flex size-6 items-center justify-center rounded-md bg-texto font-titulo text-sm font-bold text-fondo shadow-lg",
     parada: "size-3.5 rounded-full border-2 border-primario bg-texto shadow",
   };
   elemento.className = clases[tipo];
+  if (tipo === "destino") elemento.textContent = "U";
   return elemento;
 }
 
 /** Color de un token de globals.css (los colores no se escriben sueltos). */
 function colorDeToken(nombre: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim() || "currentColor";
+}
+
+/**
+ * Tiñe el estilo oscuro de OpenFreeMap con la paleta de UniGo (los diseños):
+ * terreno azul noche, vías en dos tonos de azul, agua del color del fondo,
+ * etiquetas en gris suave y sin puntos de interés que distraigan. Si una capa
+ * no acepta un cambio, se deja como venía.
+ */
+function pintarEstilo(mapa: MapaLibre) {
+  const c = {
+    fondo: colorDeToken("--color-fondo"),
+    tierra: colorDeToken("--color-mapa-tierra"),
+    via: colorDeToken("--color-mapa-via"),
+    viaMenor: colorDeToken("--color-mapa-via-menor"),
+    textoSuave: colorDeToken("--color-texto-suave"),
+  };
+  const poner = (id: string, propiedad: string, valor: unknown) => {
+    try {
+      mapa.setPaintProperty(id, propiedad, valor);
+    } catch {
+      // Propiedad que esta capa no tiene.
+    }
+  };
+  for (const capa of mapa.getStyle().layers ?? []) {
+    const id = capa.id;
+    const fuente = "source-layer" in capa ? capa["source-layer"] : undefined;
+    if (capa.type === "background") {
+      poner(id, "background-color", c.tierra);
+    } else if (fuente === "poi" || fuente === "aerodrome_label" || fuente === "boundary" || fuente === "housenumber" || /oneway/.test(id)) {
+      mapa.setLayoutProperty(id, "visibility", "none");
+    } else if (capa.type === "symbol") {
+      poner(id, "text-color", c.textoSuave);
+      poner(id, "text-halo-color", c.fondo);
+    } else if (fuente === "water" || fuente === "waterway") {
+      poner(id, capa.type === "line" ? "line-color" : "fill-color", c.fondo);
+    } else if (fuente === "building") {
+      poner(id, "fill-color", c.viaMenor);
+      poner(id, "fill-outline-color", c.viaMenor);
+    } else if (fuente === "transportation") {
+      const principal = /motorway|trunk|primary|major|secondary/.test(id);
+      poner(id, "line-color", /casing/.test(id) ? c.tierra : principal ? c.via : c.viaMenor);
+    } else if (capa.type === "fill") {
+      poner(id, "fill-color", c.tierra);
+      poner(id, "fill-outline-color", c.tierra);
+    }
+  }
 }
 
 /** Crea o actualiza una línea del mapa (vacía = sin coordenadas). */
@@ -141,6 +191,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
         if (conControles.current) instancia.addControl(new lib.NavigationControl({ showCompass: false }), "top-right");
         instancia.on("load", () => {
           cargado = true;
+          pintarEstilo(instancia);
           libRef.current = lib;
           mapaRef.current = instancia;
           setEstado("listo");
