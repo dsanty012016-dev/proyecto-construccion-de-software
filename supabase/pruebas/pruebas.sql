@@ -1049,6 +1049,30 @@ select prueba.ok((
 ), 'todas las tablas tienen RLS activado');
 
 -- ---------------------------------------------------------------------------
+-- 11. Política de privacidad (016)
+-- ---------------------------------------------------------------------------
+\echo '== Política de privacidad'
+
+reset role;
+\set olga '00000000-0000-0000-0000-0000000000f1'
+insert into auth.users (id, email, raw_user_meta_data) values
+  (:'olga', 'olga@ustavillavo.edu.co', '{"nombre":"Olga Ríos","rol":"estudiante","politica":"2026-10-25"}');
+select prueba.ok((select politica_version = '2026-10-25' and politica_aceptada_en is not null from public.perfiles where id = :'olga'),
+                 'al registrarse queda guardado qué versión de la política aceptó y cuándo');
+select prueba.ok((select politica_version is null from public.perfiles where id = :'ana'), 'quien se registró antes no la ha aceptado');
+
+set role authenticated;
+select prueba.como(:'ana');
+select prueba.falla($$update public.perfiles set politica_version = '2026-10-25' where id = auth.uid()$$, 'permission denied', 'nadie marca la aceptación a mano');
+select prueba.falla($$select public.aceptar_politica('cualquier cosa')$$, 'no existe', 'solo se aceptan versiones con fecha');
+select public.aceptar_politica('2026-10-25');
+reset role;
+select prueba.ok((select politica_version = '2026-10-25' and politica_aceptada_en is not null from public.perfiles where id = :'ana'), 'quien ya tenía cuenta la acepta desde la app');
+set role anon;
+select prueba.falla($$select public.aceptar_politica('2026-10-25')$$, 'permission denied', 'sin sesión no se acepta nada');
+reset role;
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'

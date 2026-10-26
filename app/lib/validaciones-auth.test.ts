@@ -61,7 +61,7 @@ describe("registro", () => {
     expect(erroresDe({ ...registroValido, rol: "admin" }).rol).toMatch(/estudiante o conductor/);
     const sinTerminos: Record<string, string> = { ...registroValido };
     delete sinTerminos.terminos;
-    expect(erroresDe(sinTerminos).terminos).toMatch(/términos/);
+    expect(erroresDe(sinTerminos).terminos).toMatch(/política de privacidad/);
   });
 });
 

@@ -20,7 +20,7 @@ export const perfilActual = cache(async () => {
   // RLS: cada quien solo puede leer su propio perfil.
   const { data: perfil } = await supabase
     .from("perfiles")
-    .select("id, nombre, rol, telefono, disponible, universidad_id, es_admin")
+    .select("id, nombre, rol, telefono, disponible, universidad_id, es_admin, politica_version")
     .eq("id", usuario.id)
     .single();
 
