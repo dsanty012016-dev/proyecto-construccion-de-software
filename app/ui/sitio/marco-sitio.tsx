@@ -30,16 +30,19 @@ export function PieSitio() {
     <footer className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-8 gap-y-4 px-5 pt-12 pb-10 text-sm text-texto-suave">
       <Image src="/brand/logo-oscuro.png" alt="UniGo" width={80} height={28} className="h-7 w-auto" />
       <p>Proyecto académico · Universidad Santo Tomás, seccional Villavicencio</p>
-      <nav aria-label="Pie de página" className="flex gap-5">
-        <a href="#como-funciona" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
+      <nav aria-label="Pie de página" className="flex flex-wrap gap-x-5">
+        <a href="/#como-funciona" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
           Cómo funciona
         </a>
-        <a href="#seguridad" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
+        <a href="/#seguridad" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
           Seguridad
         </a>
-        <a href="#precios" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
+        <a href="/#precios" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
           Precios
         </a>
+        <Link href="/privacidad" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
+          Privacidad
+        </Link>
       </nav>
     </footer>
   );

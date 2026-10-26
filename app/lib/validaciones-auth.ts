@@ -49,7 +49,7 @@ export const esquemaRegistro = z
     clave,
     confirmacion: z.string(),
     terminos: z.literal("on", {
-      errorMap: () => ({ message: "Debes aceptar los términos para continuar." }),
+      errorMap: () => ({ message: "Debes aceptar la política de privacidad para continuar." }),
     }),
   })
   .refine((datos) => datos.clave === datos.confirmacion, {

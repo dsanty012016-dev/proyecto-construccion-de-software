@@ -27,9 +27,9 @@ Todo esto quedó como prueba en `supabase/pruebas/pruebas.sql` (sección 10) y c
 
 ## Lo que queda (no es código)
 
-1. **Activar la protección de contraseñas filtradas** en Supabase (Authentication → Policies). Es el único aviso de seguridad del revisor que no es intencional.
-2. **Aplicar `015-revision-seguridad.sql`** en Supabase.
-3. **Política de privacidad** (Ley 1581): la app guarda documentos de conductores y la ubicación durante los viajes.
+1. **Protección de contraseñas filtradas:** necesita el plan Pro de Supabase. En el plan gratis se pide mínimo 8 caracteres con letras y números (Authentication → Policies).
+2. ~~Aplicar `015-revision-seguridad.sql`~~: aplicada.
+3. ~~Política de privacidad~~ (Ley 1581): lista en la fase 8 (`/privacidad`, migración 016).
 4. Al publicar en Vercel: revisar en el panel de Supabase que **Site URL** y **Redirect URLs** sean solo el dominio de UniGo, y correr `npm audit`.
 5. Más adelante, una **CSP completa**: hoy solo se bloquea meter la app en un iframe, porque el mapa y el 3D cargan de varios dominios y hay que probarla en Vercel.
 

@@ -18,6 +18,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
 ## Avance
+- Fase 8: política de privacidad (Ley 1581) en `/privacidad`, casilla obligatoria al registrarse y aceptación al entrar para quien ya tenía cuenta, con la versión y la fecha guardadas en el perfil (rama `fase-8-privacidad`, migración 016).
 - Fase 0: lista (rama `fase-0-base`).
 - Fase 1: lista (rama `fase-1-reglas`). `viaje.ts` con 25 pruebas; 5 migraciones con 85 comprobaciones de RLS y RPC que GitHub corre en cada subida. Falta aplicarlas en un proyecto de Supabase real.
 

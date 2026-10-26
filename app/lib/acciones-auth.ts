@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "./estado-formulario";
+import { VERSION_POLITICA } from "./privacidad";
 import { destinoSeguro } from "./rutas";
 import { crearClienteServidor } from "./supabase/server";
 import {
@@ -79,8 +80,9 @@ export async function registrarse(
     email: correo,
     password: clave,
     options: {
-      // Estos datos los lee el trigger que crea el perfil (002-perfiles.sql).
-      data: { nombre, telefono, rol },
+      // Estos datos los lee el trigger que crea el perfil (002 y 016): también
+      // queda guardada la versión de la política de privacidad que aceptó.
+      data: { nombre, telefono, rol, politica: VERSION_POLITICA },
       emailRedirectTo: `${await origen()}/auth/confirmar`,
     },
   });
@@ -181,5 +183,16 @@ export async function elegirRol(
   if (error && !error.message.includes("ya está definido")) {
     return { resultado: "error", mensaje: MENSAJE_GENERICO };
   }
+  redirect("/inicio");
+}
+
+/** Quien ya tenía cuenta (o una versión vieja) acepta la política vigente (016). */
+export async function aceptarPolitica(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
+  if (formulario.get("acepto") !== "on") {
+    return { resultado: "error", errores: { acepto: "Para seguir usando UniGo debes aceptar la política." } };
+  }
+  const supabase = await crearClienteServidor();
+  const { error } = await supabase.rpc("aceptar_politica", { p_version: VERSION_POLITICA });
+  if (error) return { resultado: "error", mensaje: MENSAJE_GENERICO };
   redirect("/inicio");
 }

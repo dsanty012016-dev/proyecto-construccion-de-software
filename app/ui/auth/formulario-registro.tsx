@@ -118,8 +118,12 @@ export function FormularioRegistro() {
             className="mt-0.5 size-5 shrink-0 accent-primario"
           />
           <label htmlFor={idTerminos} className="text-sm leading-relaxed text-texto-suave">
-            Acepto los términos y condiciones y la política de tratamiento de
-            datos de UniGo.
+            Leí y acepto la{" "}
+            <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="font-semibold">
+              política de privacidad
+              <span className="sr-only"> (se abre en otra pestaña)</span>
+            </a>{" "}
+            de UniGo y autorizo el tratamiento de mis datos.
           </label>
         </div>
         {e.terminos && (

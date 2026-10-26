@@ -77,7 +77,7 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - Los archivos van a un almacenamiento **privado** de Supabase: solo los ven su dueño y los administradores, con enlaces que vencen en 5 minutos.
 - Al subirlos, el conductor **autoriza el tratamiento de sus datos** (Ley 1581 de 2012); queda la fecha.
 - Si un documento se rechaza (con motivo) o se vuelve a subir, el conductor deja de estar disponible hasta que lo aprueben otra vez. Si cambia la placa, la tarjeta de propiedad vuelve a revisión.
-- Pendiente: política de privacidad escrita, borrar archivos viejos y vencimiento de la licencia.
+- Pendiente: borrar archivos viejos y vencimiento de la licencia.
 
 ## Billetera, cancelaciones y strikes (fase 4b, migración 012)
 **Decidido por el equipo**
@@ -106,6 +106,13 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - **Compartir:** cada estudiante con el puesto pagado tiene su propio enlace: muestra al conductor, el vehículo, **su** recogida (no la de los demás) y, desde que salen, la ubicación en vivo. Se apaga al terminar o cancelar el cupo, o si pierde el puesto.
 - **Orden de recogida:** el conductor ve a sus estudiantes aprobados numerados de la salida hacia la U (según qué tan avanzada queda cada recogida en el camino); el estudiante solo ve su propia recogida.
 - **Historial:** "Mis viajes" muestra viajes por pedido y cupos (terminados y cancelados) de los dos roles, con el botón para calificar lo que falte.
+
+## Política de privacidad (fase 8, migración 016)
+- Página pública `/privacidad` (Ley 1581 de 2012 y Decreto 1377 de 2013). Responsables: los dos estudiantes del equipo (la universidad no administra UniGo).
+- Contacto: dsanty012016@gmail.com y davidedu.durana@gmail.com (el enlace escribe a los dos). Consultas en máximo 10 días hábiles, reclamos en 15.
+- Se guardan mientras exista la cuenta y dure el piloto; si alguien pide borrar, en máximo 15 días hábiles; al terminar el proyecto se borra todo.
+- Aceptarla es **obligatorio** al registrarse (casilla). Cada perfil guarda la versión aceptada y la fecha. Quien ya tenía cuenta, o aceptó una versión vieja, la acepta al entrar (`/aceptar-politica`) antes de usar la app.
+- Si cambia cómo se usan los datos: se cambia el texto y `VERSION_POLITICA` en `app/lib/privacidad.ts`, y todos la vuelven a aceptar.
 
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |
