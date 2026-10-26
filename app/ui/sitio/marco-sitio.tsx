@@ -31,15 +31,15 @@ export function PieSitio() {
       <Image src="/brand/logo-oscuro.png" alt="UniGo" width={80} height={28} className="h-7 w-auto" />
       <p>Proyecto académico · Universidad Santo Tomás, seccional Villavicencio</p>
       <nav aria-label="Pie de página" className="flex flex-wrap gap-x-5">
-        <a href="/#como-funciona" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
+        <Link href="/#como-funciona" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
           Cómo funciona
-        </a>
-        <a href="/#seguridad" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
+        </Link>
+        <Link href="/#seguridad" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
           Seguridad
-        </a>
-        <a href="/#precios" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
+        </Link>
+        <Link href="/#precios" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
           Precios
-        </a>
+        </Link>
         <Link href="/privacidad" className="inline-flex min-h-11 items-center text-texto-suave hover:text-texto">
           Privacidad
         </Link>
