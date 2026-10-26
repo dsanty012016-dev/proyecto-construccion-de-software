@@ -8,17 +8,18 @@ import { FormularioPedir } from "@/app/ui/estudiante/formulario-pedir";
 
 export const metadata: Metadata = { title: "Pedir viaje" };
 
-export default async function PaginaPedir() {
+export default async function PaginaPedir({ searchParams }: { searchParams: Promise<{ sentido?: string }> }) {
   const { usuario, perfil } = await exigirRol("estudiante");
   // Solo un viaje a la vez: si ya tiene uno, se va a verlo.
   if (await viajeActivoDelEstudiante(usuario.id)) redirect("/estudiante/viaje");
   const sede = await sedeDeUniversidad(perfil.universidad_id);
+  const { sentido } = await searchParams;
 
   return (
     <main className="space-y-6 px-5 pt-6">
       <EncabezadoPantalla titulo="Pedir viaje" volverA="/estudiante" />
       {sede && sede.lat !== null && sede.lng !== null ? (
-        <FormularioPedir sede={{ nombre: sede.nombre, lat: sede.lat, lng: sede.lng }} />
+        <FormularioPedir sede={{ nombre: sede.nombre, lat: sede.lat, lng: sede.lng }} sentidoInicial={sentido === "regreso" ? "regreso" : "ida"} />
       ) : (
         <Aviso tipo="error">Tu universidad todavía no tiene la ubicación de la sede configurada. Avísale al equipo.</Aviso>
       )}

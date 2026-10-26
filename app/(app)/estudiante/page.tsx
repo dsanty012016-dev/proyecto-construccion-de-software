@@ -5,6 +5,7 @@ import { historialDeViajes, sedeDeUniversidad, viajeActivoDelEstudiante } from "
 import { etiquetaPuesto } from "@/app/lib/cupo";
 import { etiquetaEstado, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { estadoDeCuenta, miSaldo } from "@/app/lib/consultas-billetera";
+import { puntoDeLaCasa, recorridoDelPuesto } from "@/app/lib/sentido";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
@@ -18,9 +19,11 @@ export const metadata: Metadata = { title: "Inicio" };
 
 const BOTON_PRINCIPAL =
   "flex h-14 w-full items-center justify-center rounded-2xl bg-primario font-titulo text-base font-semibold text-texto transition-colors hover:bg-primario/85";
+const BOTON_BORDE =
+  "flex h-14 w-full items-center justify-center rounded-2xl border border-texto-suave/40 font-titulo text-base font-semibold text-texto transition-colors hover:bg-superficie";
 
 // Inicio del estudiante (rediseño): el mapa arriba y, abajo, una sola cosa:
-// pedir un viaje o volver al que ya tiene en marcha.
+// pedir un viaje (a la U o de vuelta a casa) o volver al que ya tiene en marcha.
 export default async function PaginaEstudiante({ searchParams }: { searchParams: Promise<{ clave?: string }> }) {
   const { usuario, perfil } = await exigirRol("estudiante");
   const { clave } = await searchParams;
@@ -39,7 +42,6 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
   const ultimo = historial.find((h) => h.viaje.estado === "terminado");
   const porCalificar = ultimo && !ultimo.calificado ? ultimo : null;
   const puntoSede = sede && sede.lat !== null && sede.lng !== null ? { lat: sede.lat, lng: sede.lng } : null;
-  const nombreSede = sede?.nombre ?? "Tu universidad";
 
   return (
     <main>
@@ -56,7 +58,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
       </div>
 
       <div className="relative -mt-5 space-y-5 rounded-t-3xl bg-fondo px-5 pt-5">
-        <h1 className="text-2xl tracking-tight">Hola, {perfil.nombre.split(" ")[0]}. ¿Vamos a la U?</h1>
+        <h1 className="text-2xl tracking-tight">Hola, {perfil.nombre.split(" ")[0]}. ¿Para dónde vamos?</h1>
 
         {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
         <EstadoCuenta personaId={usuario.id} />
@@ -86,7 +88,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
               </h2>
               <p className="text-sm text-texto-suave">Sale {fechaCorta(miPuesto.cupo.sale_en)}</p>
             </div>
-            <RutaViaje origen={miPuesto.puesto.recogida_texto} destino={nombreSede} />
+            <RutaViaje {...recorridoDelPuesto(miPuesto.cupo, miPuesto.puesto.recogida_texto)} />
             <Link href={`/estudiante/cupos/${miPuesto.cupo.id}`} className={BOTON_PRINCIPAL}>
               Ver mi cupo
             </Link>
@@ -96,7 +98,6 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
             <h2 id="titulo-pedir" className="sr-only">
               Pedir un viaje
             </h2>
-            <RutaViaje origen="El punto que elijas en el mapa" destino={nombreSede} />
             <nav aria-label="Cuándo sales" className="grid grid-cols-2 gap-1 rounded-2xl bg-superficie p-1">
               <span aria-current="page" className="flex min-h-11 items-center justify-center rounded-xl bg-fondo text-sm font-bold">
                 Salir ahora
@@ -106,9 +107,14 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
               </Link>
             </nav>
             <div className="space-y-2">
-              <Link href="/estudiante/pedir" className={BOTON_PRINCIPAL}>
-                Pedir viaje
-              </Link>
+              <div className="grid gap-2 min-[380px]:grid-cols-2">
+                <Link href="/estudiante/pedir" className={BOTON_PRINCIPAL}>
+                  Ir a la U
+                </Link>
+                <Link href="/estudiante/pedir?sentido=regreso" className={BOTON_BORDE}>
+                  Volver a casa
+                </Link>
+              </div>
               <p className="text-center text-[13px] text-texto-suave">Los conductores te ofrecen precio y tú eliges.</p>
             </div>
           </section>
@@ -147,7 +153,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
                 <Link href="/viajes" className="flex min-h-14 items-center gap-3 py-2 text-texto">
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13px] text-texto-suave">Tu último viaje</span>
-                    <span className="block truncate font-semibold">{ultimo.viaje.origen_texto}</span>
+                    <span className="block truncate font-semibold">{puntoDeLaCasa(ultimo.viaje)}</span>
                   </span>
                   {ultimo.viaje.precio !== null && <span className="font-titulo font-semibold tabular-nums">{pesos(ultimo.viaje.precio)}</span>}
                   <IconoSiguiente className="size-5 text-texto-suave" />

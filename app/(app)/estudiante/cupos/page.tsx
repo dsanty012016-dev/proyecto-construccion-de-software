@@ -4,6 +4,7 @@ import { cuposDisponibles, puestoActivoDelEstudiante, type CupoDisponible } from
 import { esMoto, etiquetaPuesto } from "@/app/lib/cupo";
 import { diaRelativo, fechaCorta, horaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { MINUTOS_CUPO_SIN_COBRO, MINUTOS_LIMITE_PAGO, COBRO_CUPO_TARDE } from "@/app/lib/pagos";
+import { PALABRAS, SENTIDOS, type Sentido } from "@/app/lib/sentido";
 import { exigirRol } from "@/app/lib/sesion";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
@@ -14,9 +15,12 @@ export const metadata: Metadata = { title: "Cupos publicados" };
 
 // Cupos de los conductores de su universidad (rediseño): un tablero de
 // salidas agrupado por día, con la hora grande y los puestos libres a la vista.
-export default async function PaginaCupos() {
+// Arriba se elige si se ven los que van a la U o los que salen de ella (017).
+export default async function PaginaCupos({ searchParams }: { searchParams: Promise<{ sentido?: string }> }) {
   const { usuario } = await exigirRol("estudiante");
-  const [{ cupos, ahora }, miPuesto] = await Promise.all([cuposDisponibles(), puestoActivoDelEstudiante(usuario.id)]);
+  const sentido: Sentido = (await searchParams).sentido === "regreso" ? "regreso" : "ida";
+  const [{ cupos: todos, ahora }, miPuesto] = await Promise.all([cuposDisponibles(), puestoActivoDelEstudiante(usuario.id)]);
+  const cupos = todos.filter((item) => item.cupo.sentido === sentido);
 
   // Ya vienen ordenados por hora de salida; se agrupan seguidos por día.
   const dias: { dia: string; cupos: CupoDisponible[] }[] = [];
@@ -30,7 +34,19 @@ export default async function PaginaCupos() {
   return (
     <main className="flex min-h-[calc(100dvh-6rem)] flex-col px-5 pt-4">
       <EnVivo escuchas={[{ tabla: "cupos" }]} />
-      <EncabezadoPantalla titulo="Salidas hacia la U" texto="Conductores que van a una hora fija" volverA="/estudiante" />
+      <EncabezadoPantalla titulo="Salidas con hora fija" texto="Conductores que van a la U o salen de ella a una hora fija" volverA="/estudiante" />
+      <nav aria-label="Sentido de los cupos" className="mt-4 grid grid-cols-2 gap-1 rounded-2xl bg-superficie p-1">
+        {SENTIDOS.map((s) => (
+          <Link
+            key={s}
+            href={s === "ida" ? "/estudiante/cupos" : "/estudiante/cupos?sentido=regreso"}
+            aria-current={s === sentido ? "page" : undefined}
+            className={`flex min-h-11 items-center justify-center rounded-xl text-sm font-semibold ${s === sentido ? "bg-primario text-texto" : "text-texto-suave hover:text-texto"}`}
+          >
+            {PALABRAS[s].corto}
+          </Link>
+        ))}
+      </nav>
 
       {miPuesto && (
         <Link
@@ -47,7 +63,7 @@ export default async function PaginaCupos() {
 
       {cupos.length === 0 ? (
         <p role="status" className="mt-8 text-center text-texto-suave">
-          No hay cupos publicados por ahora. Aparecen aquí sin recargar.
+          {sentido === "regreso" ? "No hay cupos saliendo de la U por ahora." : "No hay cupos hacia la U por ahora."} Aparecen aquí sin recargar.
         </p>
       ) : (
         dias.map(({ dia, cupos: delDia }) => (
@@ -65,7 +81,7 @@ export default async function PaginaCupos() {
       )}
 
       <p className="mt-auto border-t border-texto-suave/15 py-4 text-[13px] leading-relaxed text-texto-suave">
-        Pides el puesto con tu punto de recogida y el conductor lo aprueba. Pagas hasta {MINUTOS_LIMITE_PAGO} min antes de salir. Si te retiras con
+        Pides el puesto con tu punto ({sentido === "regreso" ? "donde te bajas" : "donde te recogen"}) y el conductor lo aprueba. Pagas hasta {MINUTOS_LIMITE_PAGO} min antes de salir. Si te retiras con
         menos de {MINUTOS_CUPO_SIN_COBRO} min, se cobra el {COBRO_CUPO_TARDE} % y suma un strike.
       </p>
     </main>
@@ -95,7 +111,9 @@ function FilaCupo({ item }: { item: CupoDisponible }) {
         </span>
         <span className="flex min-w-0 flex-col gap-1">
           <span className="font-bold">{quien}</span>
-          <span className="truncate text-[13px] text-texto-suave">Desde {cupo.salida_texto}</span>
+          <span className="truncate text-[13px] text-texto-suave">
+            {cupo.sentido === "regreso" ? `Hasta ${cupo.destino_texto}` : `Desde ${cupo.salida_texto}`}
+          </span>
           {lleno ? (
             <span className="text-[13px]">Sin puestos libres</span>
           ) : (

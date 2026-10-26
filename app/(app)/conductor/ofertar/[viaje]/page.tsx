@@ -28,11 +28,11 @@ export default async function PaginaOfertar({ params }: { params: Promise<{ viaj
     <main className="space-y-6 px-5 pt-4">
       <EncabezadoPantalla
         titulo={`${miOferta ? "Cambiar oferta a" : "Ofertar a"} ${estudiante ? nombreCorto(estudiante.nombre) : "un estudiante"}`}
-        texto="Solicitud de viaje a la U"
+        texto={viaje.sentido === "regreso" ? "Solicitud de la U a casa" : "Solicitud de viaje a la U"}
         volverA="/conductor"
       />
       <RutaViaje origen={viaje.origen_texto} destino={viaje.destino_texto} etiquetaOrigen="Recoges en" etiquetaDestino="Llevas a" />
-      <Mapa etiqueta="Mapa de la solicitud" centro={origen} origen={origen} destino={destino} className="h-40" />
+      <Mapa etiqueta="Mapa de la solicitud" centro={origen} origen={origen} destino={destino} uEnElOrigen={viaje.sentido === "regreso"} className="h-40" />
       <FormularioOferta viajeId={viaje.id} precioActual={miOferta?.precio} />
     </main>
   );

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { horaLocalAIso, PUESTOS_MAXIMOS_CARRO } from "./cupo";
 import { pesos } from "./formato";
+import { coordenadaOpcional, esquemaSentido } from "./validaciones-viaje";
 import { PRECIO_MAXIMO, PRECIO_MINIMO } from "./viaje";
 
 // Validación de los formularios de cupos. Corre en el servidor antes de llamar
@@ -33,10 +34,19 @@ const referencia = z
 
 const idCupo = z.string({ required_error: "Falta el cupo." }).uuid("Ese cupo no existe.");
 
+/**
+ * Publicar cupo (017). "punto" es el del conductor: de donde sale en la ida o
+ * hasta donde va en el regreso. "u" es la salida en la U (regreso); si no
+ * viene, es la sede.
+ */
 export const esquemaPublicarCupo = z.object({
-  salida_lat: latitud("Elige en el mapa desde dónde sales."),
-  salida_lng: longitud("Elige en el mapa desde dónde sales."),
+  sentido: esquemaSentido,
+  punto_lat: latitud("Elige tu punto en el mapa."),
+  punto_lng: longitud("Elige tu punto en el mapa."),
   direccion,
+  u_lat: coordenadaOpcional(90),
+  u_lng: coordenadaOpcional(180),
+  referencia_u: referencia,
   sale_en: z
     .string({ required_error: "Elige la fecha y la hora de salida." })
     .transform((valor, ctx) => {
@@ -58,8 +68,8 @@ export const esquemaPublicarCupo = z.object({
 
 export const esquemaPedirPuesto = z.object({
   cupo: idCupo,
-  recogida_lat: latitud("Elige en el mapa dónde te recogen."),
-  recogida_lng: longitud("Elige en el mapa dónde te recogen."),
+  recogida_lat: latitud("Elige tu punto en el mapa."),
+  recogida_lng: longitud("Elige tu punto en el mapa."),
   direccion,
   referencia,
 });

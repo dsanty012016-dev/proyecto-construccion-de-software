@@ -27,10 +27,12 @@ export default async function PaginaViajeConductor() {
   if (!activo) redirect("/conductor");
   const { viaje, estudiante } = activo;
   const enCurso = viaje.estado === "en_curso";
+  const regreso = viaje.sentido === "regreso";
   const nombre = estudiante ? nombreCorto(estudiante.nombre) : "el estudiante";
   const origen = { lat: viaje.origen_lat, lng: viaje.origen_lng };
   const destino = { lat: viaje.destino_lat, lng: viaje.destino_lng };
-  // Navegación paso a paso: se abre Google Maps hacia la recogida o hacia la U.
+  // Navegación paso a paso: se abre Google Maps hacia la recogida o hacia el
+  // destino (en el regreso, la recogida es en la U).
   const haciaDonde = enCurso ? destino : origen;
   const navegar = `https://www.google.com/maps/dir/?api=1&destination=${haciaDonde.lat},${haciaDonde.lng}`;
 
@@ -39,7 +41,7 @@ export default async function PaginaViajeConductor() {
       <EnVivo escuchas={[{ tabla: "viajes", filtro: `id=eq.${viaje.id}` }]} />
       <EncabezadoPantalla titulo={enCurso ? `Llevando a ${nombre}` : `Ve a recoger a ${nombre}`} volverA="/conductor" />
       <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} />
-      <Mapa etiqueta="Mapa del viaje" centro={origen} origen={origen} destino={destino} className="h-52" />
+      <Mapa etiqueta="Mapa del viaje" centro={origen} origen={origen} destino={destino} uEnElOrigen={regreso} className="h-52" />
       <TransmisorUbicacion enviar={reportarUbicacion.bind(null, viaje.id)} clave={viaje.id} />
       <a
         href={navegar}
@@ -48,7 +50,7 @@ export default async function PaginaViajeConductor() {
         className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-superficie"
       >
         <IconoUbicacion className="size-5" />
-        {enCurso ? "Cómo llegar a la universidad" : "Cómo llegar a la recogida"}
+        {enCurso ? (regreso ? "Cómo llegar al destino" : "Cómo llegar a la universidad") : regreso ? "Cómo llegar a la universidad" : "Cómo llegar a la recogida"}
         <span className="sr-only">(abre Google Maps)</span>
       </a>
 

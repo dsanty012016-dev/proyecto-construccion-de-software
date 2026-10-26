@@ -7,6 +7,7 @@ import { TIPOS_DOCUMENTO } from "@/app/lib/documentos";
 import { resumenDelConductor, solicitudesAbiertas, vehiculoDe, viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
 import { etiquetaEstado, hace, horaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { estadoDeCuenta, miSaldo } from "@/app/lib/consultas-billetera";
+import { puntoDeLaCasa } from "@/app/lib/sentido";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
@@ -98,7 +99,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
           <h2 id="titulo-viaje-activo" className="text-[22px] tracking-tight">
             {etiquetaEstado(activo.viaje.estado)}
           </h2>
-          <p className="text-sm">{activo.estudiante ? `Llevas a ${nombreCorto(activo.estudiante.nombre)} · ${activo.viaje.origen_texto}` : "Tienes un viaje asignado."}</p>
+          <p className="text-sm">{activo.estudiante ? `Llevas a ${nombreCorto(activo.estudiante.nombre)} · ${puntoDeLaCasa(activo.viaje)}` : "Tienes un viaje asignado."}</p>
           <Link
             href="/conductor/viaje"
             className="flex h-12 w-full items-center justify-center rounded-xl bg-texto font-titulo font-semibold text-fondo hover:bg-texto/90"
@@ -127,7 +128,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
         verificado && (
           <Link href="/conductor/cupo/nuevo" className={FILA_ENLACE}>
             <span className="min-w-0 flex-1">
-              <span className="block font-bold">¿Vas a la U a una hora fija?</span>
+              <span className="block font-bold">¿Vas o sales de la U a una hora fija?</span>
               <span className="block text-[13px] text-texto-suave">Publica un cupo y que se suban en el camino</span>
             </span>
             <IconoSiguiente className="size-5 text-texto-suave" />
@@ -160,7 +161,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
                   {miOferta ? (
                     <p className="text-[13px] text-secundario tabular-nums">Ofertaste {pesos(miOferta.precio)} · esperando</p>
                   ) : (
-                    <p className="truncate text-[13px] text-texto-suave">{viaje.origen_texto} → U</p>
+                    <p className="truncate text-[13px] text-texto-suave">{viaje.sentido === "regreso" ? `U → ${viaje.destino_texto}` : `${viaje.origen_texto} → U`}</p>
                   )}
                 </div>
                 {miOferta ? (

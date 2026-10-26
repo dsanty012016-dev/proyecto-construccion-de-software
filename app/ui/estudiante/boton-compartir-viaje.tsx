@@ -26,7 +26,7 @@ export function BotonCompartirViaje({ compartir: pedirEnlace }: { compartir: () 
       setEnlace(url);
       if (navigator.share) {
         try {
-          await navigator.share({ title: "Mi viaje en UniGo", text: "Sigue mi viaje a la U en vivo:", url });
+          await navigator.share({ title: "Mi viaje en UniGo", text: "Sigue mi viaje en vivo:", url });
           return;
         } catch (fallo) {
           // Si la persona cerró el menú, no pasa nada.

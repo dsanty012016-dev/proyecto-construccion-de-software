@@ -13,6 +13,7 @@ type EstadoPuesto = Database["public"]["Enums"]["estado_puesto"];
 type TipoDocumento = Database["public"]["Enums"]["tipo_documento"];
 type EstadoDocumento = Database["public"]["Enums"]["estado_documento"];
 type TipoMovimiento = Database["public"]["Enums"]["tipo_movimiento"];
+type Sentido = Database["public"]["Enums"]["sentido_viaje"];
 
 type Relacion = {
   foreignKeyName: string;
@@ -120,11 +121,13 @@ export type Database = {
           salida_lat: number;
           salida_lng: number;
           salida_texto: string;
+          sentido: Sentido;
           terminado_en: string | null;
           universidad_id: number;
         };
         Insert: {
           conductor_id: string;
+          sentido?: Sentido;
           destino_lat: number;
           destino_lng: number;
           destino_texto: string;
@@ -301,11 +304,13 @@ export type Database = {
           origen_texto: string;
           pago_retenido: number;
           precio: number | null;
+          sentido: Sentido;
           terminado_en: string | null;
           universidad_id: number;
         };
         Insert: {
           aceptado_en?: string | null;
+          sentido?: Sentido;
           cancelado_en?: string | null;
           cancelado_por?: string | null;
           conductor_id?: string | null;
@@ -351,6 +356,7 @@ export type Database = {
           ubicacion_lat: number | null;
           ubicacion_lng: number | null;
           ubicacion_en: string | null;
+          sentido: Sentido;
         }[];
       };
       calificar: {
@@ -379,6 +385,7 @@ export type Database = {
           ubicacion_lat: number | null;
           ubicacion_lng: number | null;
           ubicacion_en: string | null;
+          sentido: Sentido;
         }[];
       };
       cambiar_disponibilidad: { Args: { p_disponible: boolean }; Returns: undefined };
@@ -400,6 +407,10 @@ export type Database = {
           p_sale_en: string;
           p_puestos: number;
           p_precio: number;
+          p_sentido?: Sentido;
+          p_destino_lat?: number;
+          p_destino_lng?: number;
+          p_destino_texto?: string;
         };
         Returns: string;
       };
@@ -432,6 +443,7 @@ export type Database = {
           p_origen_lat: number;
           p_origen_lng: number;
           p_origen_texto: string;
+          p_sentido?: Sentido;
         };
         Returns: string;
       };
@@ -445,6 +457,7 @@ export type Database = {
       tipo_movimiento: "recarga" | "pago_viaje" | "reembolso_viaje" | "ganancia" | "pago_puesto" | "reembolso_puesto";
       estado_viaje: "solicitado" | "aceptado" | "en_curso" | "terminado" | "cancelado";
       rol_usuario: "estudiante" | "conductor";
+      sentido_viaje: "ida" | "regreso";
       tipo_documento: "cedula" | "licencia" | "tarjeta_propiedad";
     };
     CompositeTypes: { [_ in never]: never };

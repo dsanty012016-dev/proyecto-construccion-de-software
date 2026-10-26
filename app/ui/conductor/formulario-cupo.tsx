@@ -6,16 +6,19 @@ import { gananciaConductor, PORCENTAJE_COMISION } from "@/app/lib/comision";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { pesos } from "@/app/lib/formato";
 import { type Coordenada, distanciaKm, redondear } from "@/app/lib/mapa";
+import { cercaDeLaU, DISTANCIA_MINIMA_KM, esSentido, type Sentido } from "@/app/lib/sentido";
 import { PRECIO_MAXIMO, PRECIO_MINIMO } from "@/app/lib/viaje";
 import { Aviso, BotonEnviar, Campo } from "@/app/ui/auth/campos";
 import { IconoCheck, IconoUbicacion } from "@/app/ui/comun/iconos-app";
 import { Mapa } from "@/app/ui/comun/mapa";
+import { PuntoEnLaU } from "@/app/ui/comun/punto-en-la-u";
+import { SelectorSentido } from "@/app/ui/comun/selector-sentido";
 import { useUbicacion } from "@/app/ui/comun/use-ubicacion";
 
-// Publicar un cupo: desde dónde sale el conductor (en el mapa), a qué hora,
-// cuántos puestos ofrece y a qué precio cada uno. El destino es la sede.
-
-const DISTANCIA_MINIMA_KM = 0.1;
+// Publicar un cupo: a la U (ida) o de la U a la casa (regreso, 017). En la
+// ida el conductor marca de dónde sale y el destino es la sede; en el regreso
+// sale de la U (la sede o un punto cercano) y marca hasta dónde va. Luego la
+// hora, cuántos puestos ofrece y el precio de cada uno.
 
 interface Props {
   sede: { nombre: string; lat: number; lng: number };
@@ -24,7 +27,12 @@ interface Props {
 
 export function FormularioCupo({ sede, puestosMaximos }: Props) {
   const [estado, accion] = useActionState(publicarCupo, ESTADO_INICIAL);
+  const [sentido, setSentido] = useState<Sentido>(() => {
+    const guardado = estado.valores?.sentido;
+    return esSentido(guardado) ? guardado : "ida";
+  });
   const [punto, setPunto] = useState<Coordenada | null>(null);
+  const [puntoU, setPuntoU] = useState<Coordenada | null>(null);
   const [irA, setIrA] = useState<Coordenada | null>(null);
   const [precio, setPrecio] = useState(estado.valores?.precio ?? "");
   const ubicacion = useUbicacion((aqui) => {
@@ -37,8 +45,11 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
   const errores = estado.errores ?? {};
   const valores = estado.valores ?? {};
 
-  const destino = { lat: sede.lat, lng: sede.lng };
-  const muyCerca = punto !== null && distanciaKm(punto, destino) < DISTANCIA_MINIMA_KM;
+  const centroSede = { lat: sede.lat, lng: sede.lng };
+  const regreso = sentido === "regreso";
+  const enLaU = regreso && puntoU ? puntoU : centroSede;
+  const muyCerca = punto !== null && distanciaKm(punto, enLaU) < DISTANCIA_MINIMA_KM;
+  const uValido = !regreso || puntoU === null || cercaDeLaU(puntoU, centroSede);
   const guardado = punto ? redondear(punto) : null;
   const numero = Number(precio);
   const precioValido = precio !== "" && Number.isInteger(numero) && numero >= PRECIO_MINIMO && numero <= PRECIO_MAXIMO;
@@ -47,20 +58,42 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
     <form action={accion} className="space-y-6" noValidate>
       {estado.resultado === "error" && estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
 
+      <SelectorSentido valor={sentido} alCambiar={setSentido} pregunta="¿Para dónde vas?" />
+      {errores.sentido && <Aviso tipo="error">{errores.sentido}</Aviso>}
+
       <section aria-labelledby="titulo-salida" className="space-y-3">
         <div>
           <h2 id="titulo-salida" className="text-base">
-            1. ¿Desde dónde sales?
+            1. {regreso ? "¿Hasta dónde vas?" : "¿Desde dónde sales?"}
           </h2>
-          <p className="text-sm text-texto-suave">Mueve el mapa hasta que el pin quede en tu punto de salida. Vas hacia {sede.nombre}.</p>
+          <p className="text-sm text-texto-suave">
+            {regreso
+              ? `Sales de ${sede.nombre}. Mueve el mapa hasta que el pin quede en el final de tu recorrido; los estudiantes se bajan en el camino.`
+              : `Mueve el mapa hasta que el pin quede en tu punto de salida. Vas hacia ${sede.nombre}.`}
+          </p>
         </div>
-        <Mapa etiqueta="Mapa para elegir el punto de salida" centro={destino} destino={destino} alElegir={setPunto} irA={irA} className="h-64" />
+        <Mapa
+          etiqueta={regreso ? "Mapa para elegir hasta dónde vas" : "Mapa para elegir el punto de salida"}
+          centro={centroSede}
+          destino={centroSede}
+          alElegir={setPunto}
+          irA={irA}
+          className="h-64"
+        />
         <p role="status" className={`flex items-center gap-2 text-sm ${muyCerca ? "text-error" : "text-texto"}`}>
           {punto && !muyCerca && <IconoCheck className="size-5 shrink-0 text-secundario" />}
-          {!punto ? "Todavía no has elegido el punto de salida." : muyCerca ? "Ese punto es la universidad. Mueve el mapa hasta donde sales." : "Punto de salida elegido."}
+          {!punto
+            ? regreso
+              ? "Todavía no has elegido hasta dónde vas."
+              : "Todavía no has elegido el punto de salida."
+            : muyCerca
+              ? "Ese punto es la universidad. Mueve el mapa más lejos."
+              : regreso
+                ? "Final del recorrido elegido."
+                : "Punto de salida elegido."}
         </p>
         {ubicacion.estado.paso === "error" && <Aviso tipo="error">{ubicacion.estado.mensaje}</Aviso>}
-        {errores.salida_lat && <Aviso tipo="error">{errores.salida_lat}</Aviso>}
+        {errores.punto_lat && <Aviso tipo="error">{errores.punto_lat}</Aviso>}
         <button
           type="button"
           onClick={ubicacion.pedir}
@@ -70,10 +103,10 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
           <IconoUbicacion className="size-5" />
           {ubicacion.estado.paso === "buscando" ? "Buscando tu ubicación…" : "Usar mi ubicación actual"}
         </button>
-        <input type="hidden" name="salida_lat" value={guardado?.lat ?? ""} />
-        <input type="hidden" name="salida_lng" value={guardado?.lng ?? ""} />
+        <input type="hidden" name="punto_lat" value={guardado?.lat ?? ""} />
+        <input type="hidden" name="punto_lng" value={guardado?.lng ?? ""} />
         <Campo
-          etiqueta="Dirección o barrio de salida"
+          etiqueta={regreso ? "Dirección o barrio hasta donde vas" : "Dirección o barrio de salida"}
           name="direccion"
           placeholder="Ej.: Barzal, Cra. 33 con Calle 15"
           defaultValue={valores.direccion}
@@ -81,6 +114,19 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
           maxLength={120}
         />
       </section>
+
+      {regreso && (
+        <PuntoEnLaU
+          sede={sede}
+          titulo="¿De dónde sales en la U?"
+          ayuda="De la sede, o de otra portería o esquina cercana (máximo 500 m). Ahí se suben todos."
+          punto={puntoU}
+          alCambiar={setPuntoU}
+          referencia={valores.referencia_u}
+          errorReferencia={errores.referencia_u}
+          errorPunto={errores.u_lat}
+        />
+      )}
 
       <section aria-labelledby="titulo-detalles" className="space-y-4">
         <h2 id="titulo-detalles" className="text-base">
@@ -150,10 +196,14 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
         </div>
       </section>
 
-      <BotonEnviar enviando="Publicando…" deshabilitado={!punto || muyCerca}>
+      <BotonEnviar enviando="Publicando…" deshabilitado={!punto || muyCerca || !uValido}>
         Publicar cupo
       </BotonEnviar>
-      {!punto && <p className="text-center text-sm text-texto-suave">Primero elige en el mapa desde dónde sales.</p>}
+      {!punto && (
+        <p className="text-center text-sm text-texto-suave">
+          {regreso ? "Primero elige en el mapa hasta dónde vas." : "Primero elige en el mapa desde dónde sales."}
+        </p>
+      )}
     </form>
   );
 }

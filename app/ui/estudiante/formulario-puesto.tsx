@@ -8,18 +8,22 @@ import { type Coordenada, distanciaTexto, redondear } from "@/app/lib/mapa";
 import { Aviso, BotonEnviar, Campo } from "@/app/ui/auth/campos";
 import { IconoCheck, IconoUbicacion } from "@/app/ui/comun/iconos-app";
 import { Mapa } from "@/app/ui/comun/mapa";
+import type { Sentido } from "@/app/lib/sentido";
 import { useUbicacion } from "@/app/ui/comun/use-ubicacion";
 
 // Pedir un puesto en un cupo: el estudiante elige en el mapa dónde subirse
-// (ve la ruta del conductor) y la describe. El conductor aprueba o rechaza.
+// (ida) o dónde bajarse (regreso, 017), viendo la ruta del conductor, y lo
+// describe. El conductor aprueba o rechaza.
 
 interface Props {
   cupoId: string;
   salida: Coordenada;
   destino: Coordenada;
+  sentido: Sentido;
 }
 
-export function FormularioPuesto({ cupoId, salida, destino }: Props) {
+export function FormularioPuesto({ cupoId, salida, destino, sentido }: Props) {
+  const regreso = sentido === "regreso";
   const [estado, accion] = useActionState(pedirPuesto, ESTADO_INICIAL);
   const [punto, setPunto] = useState<Coordenada | null>(null);
   const [irA, setIrA] = useState<Coordenada | null>(null);
@@ -40,24 +44,31 @@ export function FormularioPuesto({ cupoId, salida, destino }: Props) {
       <section aria-labelledby="titulo-recogida" className="space-y-3">
         <div>
           <h2 id="titulo-recogida" className="text-base">
-            ¿Dónde te subes?
+            {regreso ? "¿Dónde te bajas?" : "¿Dónde te subes?"}
           </h2>
-          <p className="text-sm text-texto-suave">Mueve el mapa hasta dejar el pin en un punto del camino del conductor.</p>
+          <p className="text-sm text-texto-suave">
+            {regreso
+              ? "Todos se suben en la U. Mueve el mapa hasta dejar el pin donde te bajas, en el camino del conductor."
+              : "Mueve el mapa hasta dejar el pin en un punto del camino del conductor."}
+          </p>
         </div>
         <Mapa
-          etiqueta="Mapa para elegir dónde subirte"
+          etiqueta={regreso ? "Mapa para elegir dónde bajarte" : "Mapa para elegir dónde subirte"}
           centro={salida}
           origen={salida}
           destino={destino}
           alElegir={setPunto}
           irA={irA}
+          uEnElOrigen={regreso}
           className="h-64"
         />
         <p role="status" className="flex items-center gap-2 text-sm text-texto">
           {punto && <IconoCheck className="size-5 shrink-0 text-secundario" />}
           {punto && desvio !== null
             ? `Punto elegido · a unos ${distanciaTexto(desvio)} del camino del conductor.`
-            : "Todavía no has elegido dónde subirte."}
+            : regreso
+              ? "Todavía no has elegido dónde bajarte."
+              : "Todavía no has elegido dónde subirte."}
         </p>
         {ubicacion.estado.paso === "error" && <Aviso tipo="error">{ubicacion.estado.mensaje}</Aviso>}
         {errores.recogida_lat && <Aviso tipo="error">{errores.recogida_lat}</Aviso>}

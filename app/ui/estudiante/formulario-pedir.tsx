@@ -4,27 +4,20 @@ import { useActionState, useState } from "react";
 import { pedirViaje } from "@/app/lib/acciones-viaje";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { type Coordenada, distanciaKm, distanciaTexto, redondear } from "@/app/lib/mapa";
+import { cercaDeLaU, DISTANCIA_MINIMA_KM, esSentido, PALABRAS, type Sentido } from "@/app/lib/sentido";
 import { Aviso, BotonEnviar, Campo } from "@/app/ui/auth/campos";
 import { IconoCheck, IconoUbicacion } from "@/app/ui/comun/iconos-app";
 import { Mapa } from "@/app/ui/comun/mapa";
+import { PuntoEnLaU } from "@/app/ui/comun/punto-en-la-u";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
+import { SelectorSentido } from "@/app/ui/comun/selector-sentido";
+import { useUbicacion } from "@/app/ui/comun/use-ubicacion";
 
-// Formulario para pedir un viaje. El punto de recogida se elige en el mapa
-// (moviendo el mapa hasta dejar el pin encima, o tocando un sitio). La
-// ubicación del celular es solo un atajo para llevar el mapa hasta ahí.
-
-/** Menos de esto ya es la universidad: no tiene sentido pedir el viaje. */
-const DISTANCIA_MINIMA_KM = 0.1;
-
-type EstadoGps = { paso: "quieto" } | { paso: "buscando" } | { paso: "error"; mensaje: string };
-
-/** Códigos de GeolocationPositionError: 1 permiso, 2 sin señal, 3 tardó demasiado. */
-function mensajeDeFallo(codigo: number): string {
-  if (codigo === 1) return "El navegador no nos dejó leer tu ubicación. Elige el punto moviendo el mapa.";
-  if (codigo === 2) return "Tu dispositivo no pudo calcular dónde estás. Elige el punto moviendo el mapa.";
-  if (codigo === 3) return "La ubicación tardó demasiado. Elige el punto moviendo el mapa o inténtalo de nuevo.";
-  return "No pudimos leer tu ubicación. Elige el punto moviendo el mapa.";
-}
+// Formulario para pedir un viaje a la U (ida) o de la U a la casa (regreso).
+// El punto del estudiante se elige en el mapa (moviendo el mapa hasta dejar
+// el pin encima, o tocando un sitio): en la ida es donde lo recogen y en el
+// regreso donde se baja. En el regreso, además, el punto en la U (la sede o
+// uno cercano). La ubicación del celular es solo un atajo.
 
 interface Sede {
   nombre: string;
@@ -32,57 +25,52 @@ interface Sede {
   lng: number;
 }
 
-export function FormularioPedir({ sede }: { sede: Sede }) {
+export function FormularioPedir({ sede, sentidoInicial = "ida" }: { sede: Sede; sentidoInicial?: Sentido }) {
   const [estado, accion] = useActionState(pedirViaje, ESTADO_INICIAL);
-  const [punto, setPunto] = useState<Coordenada | null>(null);
-  const [irA, setIrA] = useState<Coordenada | null>(null);
-  const [gps, setGps] = useState<EstadoGps>({ paso: "quieto" });
   const errores = estado.errores ?? {};
   const valores = estado.valores ?? {};
+  const [sentido, setSentido] = useState<Sentido>(esSentido(valores.sentido) ? valores.sentido : sentidoInicial);
+  const [punto, setPunto] = useState<Coordenada | null>(null);
+  const [puntoU, setPuntoU] = useState<Coordenada | null>(null);
+  const [irA, setIrA] = useState<Coordenada | null>(null);
+  const ubicacion = useUbicacion((aqui) => {
+    setIrA(aqui);
+    setPunto(aqui);
+  });
 
-  const destino = { lat: sede.lat, lng: sede.lng };
-  const distancia = punto ? distanciaKm(punto, destino) : null;
+  const centroSede = { lat: sede.lat, lng: sede.lng };
+  const regreso = sentido === "regreso";
+  const enLaU = regreso && puntoU ? puntoU : centroSede;
+  const distancia = punto ? distanciaKm(punto, enLaU) : null;
   const muyCerca = distancia !== null && distancia < DISTANCIA_MINIMA_KM;
-  const listo = punto !== null && !muyCerca;
+  const uValido = !regreso || puntoU === null || cercaDeLaU(puntoU, centroSede);
+  const listo = punto !== null && !muyCerca && uValido;
   const guardado = punto ? redondear(punto) : null;
-
-  function usarMiUbicacion() {
-    if (!("geolocation" in navigator)) {
-      setGps({ paso: "error", mensaje: "Este navegador no puede darnos tu ubicación. Elige el punto moviendo el mapa." });
-      return;
-    }
-    setGps({ paso: "buscando" });
-    navigator.geolocation.getCurrentPosition(
-      (posicion) => {
-        const aqui = { lat: posicion.coords.latitude, lng: posicion.coords.longitude };
-        setIrA(aqui);
-        setPunto(aqui);
-        setGps({ paso: "quieto" });
-      },
-      (fallo) => setGps({ paso: "error", mensaje: mensajeDeFallo(fallo.code) }),
-      // Sin "alta precisión": responde rápido en computadores sin GPS.
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
-    );
-  }
+  const palabras = PALABRAS[sentido];
 
   return (
     <form action={accion} className="space-y-6" noValidate>
       {estado.resultado === "error" && estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
 
+      <SelectorSentido valor={sentido} alCambiar={setSentido} pregunta="¿Para dónde vas?" />
+      {errores.sentido && <Aviso tipo="error">{errores.sentido}</Aviso>}
+
       <section aria-labelledby="titulo-punto" className="space-y-3">
         <div>
           <h2 id="titulo-punto" className="text-base">
-            1. ¿Dónde te recogemos?
+            1. {palabras.preguntaEstudiante}
           </h2>
           <p id="ayuda-mapa" className="text-sm text-texto-suave">
-            Mueve el mapa hasta que el pin quede en tu punto de recogida, o toca el sitio.
+            {regreso
+              ? "Mueve el mapa hasta que el pin quede donde te bajas, o toca el sitio."
+              : "Mueve el mapa hasta que el pin quede en tu punto de recogida, o toca el sitio."}
           </p>
         </div>
 
         <Mapa
-          etiqueta="Mapa para elegir el punto de recogida"
-          centro={destino}
-          destino={destino}
+          etiqueta={regreso ? "Mapa para elegir dónde te bajas" : "Mapa para elegir el punto de recogida"}
+          centro={centroSede}
+          destino={centroSede}
           alElegir={setPunto}
           irA={irA}
           className="h-72"
@@ -93,28 +81,30 @@ export function FormularioPedir({ sede }: { sede: Sede }) {
           {!punto
             ? "Todavía no has elegido el punto."
             : muyCerca
-              ? "Ese punto es la universidad. Mueve el mapa hasta donde estás."
+              ? regreso
+                ? "Ese punto es la universidad. Mueve el mapa hasta a donde vas."
+                : "Ese punto es la universidad. Mueve el mapa hasta donde estás."
               : `Punto elegido · a ${distanciaTexto(distancia ?? 0)} de la universidad en línea recta.`}
         </p>
-        {gps.paso === "error" && <Aviso tipo="error">{gps.mensaje}</Aviso>}
-        {errores.origen_lat && <Aviso tipo="error">{errores.origen_lat}</Aviso>}
+        {ubicacion.estado.paso === "error" && <Aviso tipo="error">{ubicacion.estado.mensaje}</Aviso>}
+        {errores.punto_lat && <Aviso tipo="error">{errores.punto_lat}</Aviso>}
 
         <button
           type="button"
-          onClick={usarMiUbicacion}
-          disabled={gps.paso === "buscando"}
+          onClick={ubicacion.pedir}
+          disabled={ubicacion.estado.paso === "buscando"}
           className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-texto-suave/30 font-semibold text-texto transition-colors hover:bg-superficie disabled:opacity-70"
         >
           <IconoUbicacion className="size-5" />
-          {gps.paso === "buscando" ? "Buscando tu ubicación…" : "Usar mi ubicación actual"}
+          {ubicacion.estado.paso === "buscando" ? "Buscando tu ubicación…" : "Usar mi ubicación actual"}
         </button>
-        <input type="hidden" name="origen_lat" value={guardado?.lat ?? ""} />
-        <input type="hidden" name="origen_lng" value={guardado?.lng ?? ""} />
+        <input type="hidden" name="punto_lat" value={guardado?.lat ?? ""} />
+        <input type="hidden" name="punto_lng" value={guardado?.lng ?? ""} />
       </section>
 
       <section aria-labelledby="titulo-direccion" className="space-y-4">
         <h2 id="titulo-direccion" className="text-base">
-          2. Ayuda al conductor a encontrarte
+          2. {regreso ? "Dile al conductor a dónde vas" : "Ayuda al conductor a encontrarte"}
         </h2>
         <Campo
           etiqueta="Dirección o barrio"
@@ -135,18 +125,39 @@ export function FormularioPedir({ sede }: { sede: Sede }) {
         />
       </section>
 
+      {regreso && (
+        <PuntoEnLaU
+          sede={sede}
+          titulo="3. ¿Dónde te recogen en la U?"
+          ayuda="En la sede, o en otra portería o esquina cercana (máximo 500 m)."
+          punto={puntoU}
+          alCambiar={setPuntoU}
+          referencia={valores.referencia_u}
+          errorReferencia={errores.referencia_u}
+          errorPunto={errores.u_lat}
+        />
+      )}
+
       <section aria-labelledby="titulo-destino" className="space-y-3 rounded-2xl bg-superficie p-4">
         <h2 id="titulo-destino" className="text-base">
           Tu viaje
         </h2>
-        <RutaViaje origen="El punto que elegiste en el mapa" destino={sede.nombre} />
+        {regreso ? (
+          <RutaViaje origen={puntoU ? `Cerca de ${sede.nombre}` : sede.nombre} destino="El punto que elegiste en el mapa" />
+        ) : (
+          <RutaViaje origen="El punto que elegiste en el mapa" destino={sede.nombre} />
+        )}
         <p className="text-sm text-texto-suave">Los conductores te enviarán su precio. Tú eliges la oferta que más te sirva.</p>
       </section>
 
       <BotonEnviar enviando="Buscando conductores…" deshabilitado={!listo}>
         Buscar conductores
       </BotonEnviar>
-      {!punto && <p className="text-center text-sm text-texto-suave">Primero elige tu punto de recogida en el mapa.</p>}
+      {!punto && (
+        <p className="text-center text-sm text-texto-suave">
+          {regreso ? "Primero elige en el mapa a dónde vas." : "Primero elige tu punto de recogida en el mapa."}
+        </p>
+      )}
     </form>
   );
 }

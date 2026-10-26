@@ -18,13 +18,15 @@ import { PasosViaje } from "@/app/ui/comun/pasos-viaje";
 import { RutaCorta } from "@/app/ui/comun/ruta-viaje";
 import { BotonCompartirViaje } from "@/app/ui/estudiante/boton-compartir-viaje";
 import { MapaEnVivo } from "@/app/ui/estudiante/mapa-en-vivo";
+import { PALABRAS } from "@/app/lib/sentido";
 import { TarjetaOferta } from "@/app/ui/estudiante/tarjeta-oferta";
 import { Nota } from "@/app/ui/comun/nota";
 
 export const metadata: Metadata = { title: "Tu viaje" };
 
 // El viaje del estudiante (rediseño): primero elige entre las ofertas; cuando
-// acepta una, ve al conductor con su placa grande hasta llegar a la U.
+// acepta una, ve al conductor con su placa grande hasta llegar a la U (o a
+// casa, en el regreso).
 export default async function PaginaViajeEstudiante() {
   const { usuario } = await exigirRol("estudiante");
   const [activo, saldo] = await Promise.all([viajeActivoDelEstudiante(usuario.id), miSaldo(usuario.id)]);
@@ -87,7 +89,7 @@ export default async function PaginaViajeEstudiante() {
   const perfil = conductor?.perfil;
   const vehiculo = conductor?.vehiculo;
   const nombre = perfil ? nombreCorto(perfil.nombre) : "Tu conductor";
-  const titulo = viaje.estado === "aceptado" ? `${nombre} va por ti` : "Rumbo a la U";
+  const titulo = viaje.estado === "aceptado" ? `${nombre} va por ti` : PALABRAS[viaje.sentido].titulo;
   return (
     <main>
       {enVivo}
@@ -98,6 +100,7 @@ export default async function PaginaViajeEstudiante() {
           destino={destino}
           inicial={ubicacion ? { lat: ubicacion.lat, lng: ubicacion.lng, actualizado_en: ubicacion.actualizado_en } : null}
           ahoraInicial={ahora}
+          uEnElOrigen={viaje.sentido === "regreso"}
         />
         <Link
           href="/estudiante"

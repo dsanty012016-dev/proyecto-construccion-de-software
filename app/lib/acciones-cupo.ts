@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "./estado-formulario";
 import { redondear } from "./mapa";
+import { textoEnLaU } from "./sentido";
 import { crearClienteServidor } from "./supabase/server";
 import { datosDelFormulario, erroresPorCampo } from "./validaciones-auth";
 import { esquemaIdCupo, esquemaPedirPuesto, esquemaPublicarCupo, esquemaResponderPuesto } from "./validaciones-cupo";
@@ -28,22 +29,59 @@ function refrescar() {
   revalidatePath("/", "layout");
 }
 
+/** Sede de la universidad de quien tiene la sesión (el punto de la U en el regreso). */
+async function sedeDeMiUniversidad(supabase: Awaited<ReturnType<typeof crearClienteServidor>>) {
+  const { data } = await supabase.auth.getClaims();
+  const id = data?.claims?.sub;
+  if (!id) return null;
+  const { data: perfil } = await supabase.from("perfiles").select("universidad_id").eq("id", id).single();
+  if (!perfil) return null;
+  const { data: sede } = await supabase.from("universidades").select("nombre, lat, lng").eq("id", perfil.universidad_id).single();
+  if (!sede || sede.lat === null || sede.lng === null) return null;
+  return { nombre: sede.nombre, lat: sede.lat, lng: sede.lng };
+}
+
 export async function publicarCupo(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
   const datos = datosDelFormulario(formulario);
   const validado = esquemaPublicarCupo.safeParse(datos);
   if (!validado.success) {
     return { resultado: "error", errores: erroresPorCampo(validado.error), valores: datos };
   }
-  const salida = redondear({ lat: validado.data.salida_lat, lng: validado.data.salida_lng });
+  const { sentido, punto_lat, punto_lng, u_lat, u_lng, referencia_u, direccion } = validado.data;
+  const punto = redondear({ lat: punto_lat, lng: punto_lng });
 
   const supabase = await crearClienteServidor();
+  let parametros: {
+    p_salida_lat: number;
+    p_salida_lng: number;
+    p_salida_texto: string;
+    p_destino_lat?: number;
+    p_destino_lng?: number;
+    p_destino_texto?: string;
+  };
+  if (sentido === "ida") {
+    // La base pone la sede como destino.
+    parametros = { p_salida_lat: punto.lat, p_salida_lng: punto.lng, p_salida_texto: direccion };
+  } else {
+    // Sale de la U (la sede o un punto cercano) y va hasta donde marcó el conductor.
+    const sede = await sedeDeMiUniversidad(supabase);
+    if (!sede) return falla("Tu universidad todavía no tiene la ubicación de la sede configurada. Avísale al equipo.", datos);
+    const salida = u_lat !== undefined && u_lng !== undefined ? redondear({ lat: u_lat, lng: u_lng }) : sede;
+    parametros = {
+      p_salida_lat: salida.lat,
+      p_salida_lng: salida.lng,
+      p_salida_texto: textoEnLaU(sede.nombre, referencia_u),
+      p_destino_lat: punto.lat,
+      p_destino_lng: punto.lng,
+      p_destino_texto: direccion,
+    };
+  }
   const { error } = await supabase.rpc("publicar_cupo", {
-    p_salida_lat: salida.lat,
-    p_salida_lng: salida.lng,
-    p_salida_texto: validado.data.direccion,
+    ...parametros,
     p_sale_en: validado.data.sale_en,
     p_puestos: validado.data.puestos,
     p_precio: validado.data.precio,
+    p_sentido: sentido,
   });
   if (error) return falla(mensajeDeError(error), datos);
 
