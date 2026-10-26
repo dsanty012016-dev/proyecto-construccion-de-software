@@ -49,7 +49,7 @@ export function Paradas() {
         </div>
 
         <ol className="flex flex-col gap-[clamp(3rem,6vw,5rem)]">
-          <Parada numero={1} titulo="Pides tu viaje" texto="Marcas en el mapa dónde te recogen. El destino ya es tu sede.">
+          <Parada numero={1} titulo="Pides tu viaje" texto="Marcas en el mapa dónde te recogen. A tu sede, o de la U de vuelta a casa.">
             <div className="grid grid-cols-[20px_minmax(0,1fr)] gap-x-3.5 p-5">
               <span className="flex flex-col items-center pt-1.5">
                 <span className="size-3 rounded-full border-2 border-texto bg-primario" />

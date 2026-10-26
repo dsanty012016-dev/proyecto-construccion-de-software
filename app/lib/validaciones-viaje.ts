@@ -9,7 +9,7 @@ import { PRECIO_MAXIMO, PRECIO_MINIMO } from "./viaje";
 const LARGO_DIRECCION = 120;
 const LARGO_REFERENCIA = 70;
 // "dirección (referencia)" tiene que caber en el texto del viaje (200):
-// 120 + 70 + 3 = 193.
+// 120 + 70 + 3 = 193. En la U: nombre de la sede + 70 + 3.
 
 /** Número que llega como texto del formulario. Vacío o raro = inválido (no 0). */
 function numeroDeTexto(mensaje: string) {
@@ -23,32 +23,51 @@ function numeroDeTexto(mensaje: string) {
 
 const idViaje = z.string({ required_error: "Falta el viaje." }).uuid("Ese viaje no existe.");
 
-export const esquemaPedirViaje = z.object({
-  origen_lat: numeroDeTexto("Necesitamos tu ubicación para recogerte.").refine(
-    (v) => v >= -90 && v <= 90,
-    "Esa ubicación no es válida.",
-  ),
-  origen_lng: numeroDeTexto("Necesitamos tu ubicación para recogerte.").refine(
-    (v) => v >= -180 && v <= 180,
-    "Esa ubicación no es válida.",
-  ),
-  direccion: z
-    .string({ required_error: "Escribe dónde te recogemos." })
-    .trim()
-    .min(3, "Escribe dónde te recogemos (dirección o barrio).")
-    .max(LARGO_DIRECCION, `Máximo ${LARGO_DIRECCION} caracteres.`),
-  referencia: z
+const sentido = z.enum(["ida", "regreso"], { errorMap: () => ({ message: "Elige si vas a la U o sales de la U." }) });
+
+/** Coordenada que puede no venir (el punto en la U: si no viene, es la sede). */
+function coordenadaOpcional(limite: number) {
+  return z
     .string()
     .trim()
-    .max(LARGO_REFERENCIA, `Máximo ${LARGO_REFERENCIA} caracteres.`)
     .optional()
-    .transform((valor) => valor || undefined),
+    .transform((valor) => (valor ? Number(valor.replace(",", ".")) : undefined))
+    .refine((v) => v === undefined || (Number.isFinite(v) && Math.abs(v) <= limite), "Esa ubicación no es válida.");
+}
+
+const referencia = z
+  .string()
+  .trim()
+  .max(LARGO_REFERENCIA, `Máximo ${LARGO_REFERENCIA} caracteres.`)
+  .optional()
+  .transform((valor) => valor || undefined);
+
+/**
+ * Pedir viaje (017). "punto" es el del estudiante: donde lo recogen en la ida
+ * o donde se baja en el regreso. "u" es el punto en la universidad; si no
+ * viene, es la sede.
+ */
+export const esquemaPedirViaje = z.object({
+  sentido,
+  punto_lat: numeroDeTexto("Elige tu punto en el mapa.").refine((v) => v >= -90 && v <= 90, "Esa ubicación no es válida."),
+  punto_lng: numeroDeTexto("Elige tu punto en el mapa.").refine((v) => v >= -180 && v <= 180, "Esa ubicación no es válida."),
+  direccion: z
+    .string({ required_error: "Escribe la dirección o el barrio." })
+    .trim()
+    .min(3, "Escribe la dirección o el barrio.")
+    .max(LARGO_DIRECCION, `Máximo ${LARGO_DIRECCION} caracteres.`),
+  referencia,
+  u_lat: coordenadaOpcional(90),
+  u_lng: coordenadaOpcional(180),
+  referencia_u: referencia,
 });
 
-/** Texto del punto de recogida tal como se guarda: "dirección (referencia)". */
+/** Texto del punto del estudiante tal como se guarda: "dirección (referencia)". */
 export function textoDeRecogida(datos: { direccion: string; referencia?: string }): string {
   return datos.referencia ? `${datos.direccion} (${datos.referencia})` : datos.direccion;
 }
+
+export { coordenadaOpcional, sentido as esquemaSentido };
 
 export const esquemaIdViaje = z.object({ viaje: idViaje });
 

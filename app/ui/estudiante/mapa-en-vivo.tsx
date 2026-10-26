@@ -32,6 +32,7 @@ export function MapaEnVivo({
   paradas,
   inicial,
   ahoraInicial,
+  uEnElOrigen,
   className,
 }: {
   fuente: FuenteUbicacion;
@@ -42,6 +43,8 @@ export function MapaEnVivo({
   inicial: UbicacionEnVivo | null;
   /** Hora del servidor al cargar, para que el texto coincida al hidratar. */
   ahoraInicial: number;
+  /** Regreso (017): la "U" va en el origen. */
+  uEnElOrigen?: boolean;
   className?: string;
 }) {
   const [enVivo, setEnVivo] = useState<UbicacionEnVivo | null>(null);
@@ -101,6 +104,7 @@ export function MapaEnVivo({
         destino={destino}
         paradas={paradas}
         vehiculo={actual ? { lat: actual.lat, lng: actual.lng } : null}
+        uEnElOrigen={uEnElOrigen}
         aRas
         className="h-full"
       />

@@ -18,13 +18,14 @@ function errores(esquema: ZodTypeAny, datos: unknown) {
 }
 
 describe("pedir viaje", () => {
-  const valido = { origen_lat: "4.142", origen_lng: "-73.626", direccion: " Cra 33 #15-20 ", referencia: " portón azul " };
+  const valido = { sentido: "ida", punto_lat: "4.142", punto_lng: "-73.626", direccion: " Cra 33 #15-20 ", referencia: " portón azul " };
 
   it("acepta datos válidos y los limpia", () => {
     const r = esquemaPedirViaje.safeParse(valido);
     expect(r.success).toBe(true);
     if (!r.success) return;
-    expect(r.data.origen_lat).toBeCloseTo(4.142);
+    expect(r.data.punto_lat).toBeCloseTo(4.142);
+    expect(r.data.u_lat).toBeUndefined();
     expect(r.data.direccion).toBe("Cra 33 #15-20");
     expect(textoDeRecogida(r.data)).toBe("Cra 33 #15-20 (portón azul)");
   });
@@ -36,14 +37,36 @@ describe("pedir viaje", () => {
   });
 
   it("sin ubicación no hay viaje (vacío no cuenta como 0)", () => {
-    expect(errores(esquemaPedirViaje, { ...valido, origen_lat: "" }).origen_lat).toMatch(/ubicación/);
-    expect(errores(esquemaPedirViaje, { ...valido, origen_lng: "abc" }).origen_lng).toMatch(/ubicación/);
-    expect(errores(esquemaPedirViaje, { ...valido, origen_lat: "95" }).origen_lat).toMatch(/no es válida/);
+    expect(errores(esquemaPedirViaje, { ...valido, punto_lat: "" }).punto_lat).toMatch(/en el mapa/);
+    expect(errores(esquemaPedirViaje, { ...valido, punto_lng: "abc" }).punto_lng).toMatch(/en el mapa/);
+    expect(errores(esquemaPedirViaje, { ...valido, punto_lat: "95" }).punto_lat).toMatch(/no es válida/);
   });
 
   it("exige dirección razonable", () => {
-    expect(errores(esquemaPedirViaje, { ...valido, direccion: "ab" }).direccion).toMatch(/dónde te recogemos/);
+    expect(errores(esquemaPedirViaje, { ...valido, direccion: "ab" }).direccion).toMatch(/dirección o el barrio/);
     expect(errores(esquemaPedirViaje, { ...valido, direccion: "x".repeat(121) }).direccion).toMatch(/Máximo/);
+  });
+});
+
+describe("pedir viaje de regreso", () => {
+  const regreso = { sentido: "regreso", punto_lat: "4.15", punto_lng: "-73.64", direccion: "Barzal", u_lat: "4.1225", u_lng: "-73.616", referencia_u: " portería de atrás " };
+
+  it("acepta el punto en la U y su referencia", () => {
+    const r = esquemaPedirViaje.safeParse(regreso);
+    expect(r.success).toBe(true);
+    if (!r.success) return;
+    expect(r.data.u_lat).toBeCloseTo(4.1225);
+    expect(r.data.referencia_u).toBe("portería de atrás");
+  });
+
+  it("el punto en la U es opcional, pero si viene debe ser válido", () => {
+    expect(esquemaPedirViaje.safeParse({ ...regreso, u_lat: "", u_lng: "" }).success).toBe(true);
+    expect(errores(esquemaPedirViaje, { ...regreso, u_lat: "abc" }).u_lat).toMatch(/no es válida/);
+  });
+
+  it("el sentido es obligatorio", () => {
+    expect(errores(esquemaPedirViaje, { ...regreso, sentido: "vuelta" }).sentido).toMatch(/Elige si vas/);
+    expect(errores(esquemaPedirViaje, { ...regreso, sentido: undefined }).sentido).toMatch(/Elige si vas/);
   });
 });
 

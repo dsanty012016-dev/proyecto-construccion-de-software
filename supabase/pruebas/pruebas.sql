@@ -155,19 +155,19 @@ select public.cambiar_disponibilidad(true);
 \echo '== Pedir viaje'
 
 select prueba.como(:'ana');
-select public.solicitar_viaje(4.142, -73.626, ' Barrio La Esperanza ', 4.08, -73.58, 'USTA Villavicencio') as viaje_ana \gset
+select public.solicitar_viaje(4.142, -73.626, ' Barrio La Esperanza ', 4.121686, -73.615496, 'USTA Villavicencio') as viaje_ana \gset
 select prueba.ok((select estado = 'solicitado' and origen_texto = 'Barrio La Esperanza' from public.viajes where id = :'viaje_ana'), 'el viaje queda solicitado y sin espacios sobrantes');
-select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'Otra casa', 4.08, -73.58, 'USTA')$$, 'Ya tienes un viaje activo', 'un estudiante no tiene dos viajes activos');
+select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'Otra casa', 4.121686, -73.615496, 'USTA')$$, 'Ya tienes un viaje activo', 'un estudiante no tiene dos viajes activos');
 select prueba.falla($$insert into public.viajes (estudiante_id, universidad_id, origen_lat, origen_lng, origen_texto, destino_lat, destino_lng, destino_texto) select id, 1, 1, 1, 'a', 2, 2, 'b' from public.perfiles$$, 'permission denied', 'no se insertan viajes a mano');
 
 select prueba.como(:'beto');
-select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'Casa', 4.1, -73.6, 'Casa')$$, 'Revisa el origen', 'origen y destino no pueden ser el mismo punto');
-select prueba.falla($$select public.solicitar_viaje(95, -73.6, 'Casa', 4.08, -73.58, 'USTA')$$, 'Revisa el origen', 'coordenadas fuera de rango');
+select prueba.falla($$select public.solicitar_viaje(4.121686, -73.615496, 'Casa', 4.1217, -73.6155, 'Casa')$$, 'Revisa el origen', 'origen y destino no pueden ser el mismo punto');
+select prueba.falla($$select public.solicitar_viaje(95, -73.6, 'Casa', 4.121686, -73.615496, 'USTA')$$, 'Revisa el origen', 'coordenadas fuera de rango');
 select prueba.ok((select count(*) = 0 from public.viajes), 'un estudiante no ve los viajes de otros');
-select public.solicitar_viaje(4.15, -73.64, 'Barrio El Buque', 4.08, -73.58, 'USTA Villavicencio') as viaje_beto \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barrio El Buque', 4.121686, -73.615496, 'USTA Villavicencio') as viaje_beto \gset
 
 select prueba.como(:'carlos');
-select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'Casa', 4.08, -73.58, 'USTA')$$, 'Solo los estudiantes', 'un conductor no pide viajes');
+select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'Casa', 4.121686, -73.615496, 'USTA')$$, 'Solo los estudiantes', 'un conductor no pide viajes');
 select prueba.ok((select count(*) = 2 from public.viajes), 'un conductor disponible ve las solicitudes');
 
 select prueba.como(:'eva');
@@ -290,7 +290,7 @@ select prueba.ok((select count(*) = 0 from public.viajes where estado = 'solicit
 select prueba.como(:'beto');
 select public.cancelar_viaje(:'viaje_beto');
 select prueba.ok((select estado = 'cancelado' and cancelado_por = :'beto' from public.viajes where id = :'viaje_beto'), 'el estudiante cancela su solicitud');
-select public.solicitar_viaje(4.15, -73.64, 'Barrio El Buque', 4.08, -73.58, 'USTA Villavicencio') as viaje_beto_2 \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barrio El Buque', 4.121686, -73.615496, 'USTA Villavicencio') as viaje_beto_2 \gset
 
 select prueba.como(:'carlos');
 select public.ofertar(:'viaje_beto_2', 6500) as oferta_carlos_beto_2 \gset
@@ -316,12 +316,12 @@ select public.cambiar_modo('conductor');
 reset role;
 select prueba.ok((select rol = 'conductor' and not disponible from public.perfiles where id = :'beto'), 'un estudiante sin viaje activo pasa a conductor');
 set role authenticated;
-select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'X', 4.08, -73.58, 'U')$$, 'Solo los estudiantes', 'en modo conductor no pide viajes');
+select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'X', 4.121686, -73.615496, 'U')$$, 'Solo los estudiantes', 'en modo conductor no pide viajes');
 select public.cambiar_modo('conductor');
 select prueba.ok((select rol = 'conductor' from public.perfiles), 'pedir el mismo modo no hace nada');
 select public.cambiar_modo('estudiante');
 select prueba.ok((select rol = 'estudiante' from public.perfiles), 'y puede volver a estudiante');
-select public.solicitar_viaje(4.15, -73.64, 'Barrio El Buque', 4.08, -73.58, 'USTA Villavicencio') as viaje_beto_3 \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barrio El Buque', 4.121686, -73.615496, 'USTA Villavicencio') as viaje_beto_3 \gset
 select prueba.falla($$select public.cambiar_modo('conductor')$$, 'Termina o cancela tu viaje', 'con un viaje pedido no cambia de modo');
 
 -- Conductora con una oferta activa pasa a estudiante.
@@ -359,7 +359,7 @@ select prueba.falla($$select public.cambiar_modo('conductor')$$, 'Inicia sesión
 
 -- Los triggers respaldan el modo aunque alguien llegue a la tabla por otro lado.
 reset role;
-select prueba.falla(format('insert into public.viajes (estudiante_id, universidad_id, origen_lat, origen_lng, origen_texto, destino_lat, destino_lng, destino_texto) values (%L, 1, 4.1, -73.6, %L, 4.08, -73.58, %L)', :'carlos', 'a', 'b'), 'Solo los estudiantes', 'un conductor no queda como estudiante de un viaje');
+select prueba.falla(format('insert into public.viajes (estudiante_id, universidad_id, origen_lat, origen_lng, origen_texto, destino_lat, destino_lng, destino_texto) values (%L, 1, 4.1, -73.6, %L, 4.121686, -73.615496, %L)', :'carlos', 'a', 'b'), 'Solo los estudiantes', 'un conductor no queda como estudiante de un viaje');
 select prueba.falla(format('insert into public.ofertas (viaje_id, conductor_id, precio) select id, %L, 5000 from public.viajes limit 1', :'ana'), 'Ponte disponible', 'un estudiante no queda como conductor de una oferta');
 set role authenticated;
 
@@ -402,7 +402,7 @@ select prueba.ok((select count(*) = 1 from public.vehiculos where conductor_id =
 select prueba.ok((select count(*) = 0 from public.perfiles where id = :'eva'), 'pero no el teléfono del conductor');
 select public.pedir_puesto(:'cupo_eva', 4.14, -73.63, 'Cra 30 #10') as puesto_ana \gset
 select prueba.falla(format('select public.pedir_puesto(%L, 4.14, -73.63, %L)', :'cupo_eva', 'x'), 'Ya pediste puesto en este cupo', 'no pide dos veces');
-select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'X', 4.08, -73.58, 'U')$$, 'Ya pediste puesto en un cupo', 'con puesto pedido no pide viaje');
+select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'X', 4.121686, -73.615496, 'U')$$, 'Ya pediste puesto en un cupo', 'con puesto pedido no pide viaje');
 select prueba.falla($$select public.cambiar_modo('conductor')$$, 'cupo antes de cambiar', 'con puesto pedido no cambia de modo');
 
 select prueba.como(:'gabo');
@@ -472,7 +472,7 @@ set role authenticated;
 -- Con un cupo publicado no se oferta en viajes por pedido.
 select public.cambiar_disponibilidad(true);
 select prueba.como(:'ana');
-select public.solicitar_viaje(4.15, -73.64, 'Barrio Centro', 4.08, -73.58, 'USTA Villavicencio') as viaje_ana_9 \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Centro', 4.121686, -73.615496, 'USTA Villavicencio') as viaje_ana_9 \gset
 select prueba.como(:'eva');
 select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 1, 5000) as cupo_eva_3 \gset
 select prueba.falla(format('select public.ofertar(%L, 5000)', :'viaje_ana_9'), 'cupo publicado', 'con cupo publicado no oferta en otros viajes');
@@ -588,7 +588,7 @@ select prueba.ok((select count(*) = 0 from public.billeteras), 'cada quien ve so
 
 -- A. Pago al aceptar y cobro al terminar
 select prueba.como(:'jose');
-select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_a \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.121686, -73.615496, 'USTA') as viaje_a \gset
 select prueba.como(:'kike');
 select public.ofertar(:'viaje_a', 30000);
 select prueba.como(:'jose');
@@ -611,7 +611,7 @@ set role authenticated;
 
 -- B. El estudiante cancela con el conductor en camino: 20 % y un strike
 select prueba.como(:'jose');
-select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_b \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.121686, -73.615496, 'USTA') as viaje_b \gset
 select prueba.como(:'kike');
 select public.ofertar(:'viaje_b', 5000) as oferta_b \gset
 select prueba.como(:'jose');
@@ -624,7 +624,7 @@ select prueba.ok((select saldo = 8100 from public.billeteras), 'el conductor rec
 
 -- C. Cancelar reportando mal comportamiento: sin cobro ni strike
 select prueba.como(:'jose');
-select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_c \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.121686, -73.615496, 'USTA') as viaje_c \gset
 select prueba.como(:'kike');
 select public.ofertar(:'viaje_c', 5000) as oferta_c \gset
 select prueba.como(:'jose');
@@ -641,7 +641,7 @@ select prueba.ok((select count(*) = 1 from public.reportes where viaje_id = :'vi
 
 -- D. El conductor cancela: devolución completa y strike para él
 select prueba.como(:'jose');
-select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_d \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.121686, -73.615496, 'USTA') as viaje_d \gset
 select prueba.como(:'kike');
 select public.ofertar(:'viaje_d', 5000) as oferta_d \gset
 select prueba.como(:'jose');
@@ -731,7 +731,7 @@ select public.cancelar_cupo(:'cupo_f4');
 
 -- E. Tres strikes: suspensión
 select prueba.como(:'jose');
-select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.08, -73.58, 'USTA') as viaje_e \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barrio Porfía', 4.121686, -73.615496, 'USTA') as viaje_e \gset
 select prueba.como(:'kike');
 select public.ofertar(:'viaje_e', 3000) as oferta_e \gset
 select prueba.como(:'jose');
@@ -739,7 +739,7 @@ select public.aceptar_oferta(:'oferta_e');
 select public.cancelar_viaje(:'viaje_e');
 select prueba.ok((select count(*) = 1 and min(nivel) = 1 and max(hasta - desde) = interval '3 days' from public.suspensiones), 'con 3 strikes queda suspendido 3 días');
 select prueba.ok((select count(*) = 0 from public.strikes where vigente), 'y los strikes vuelven a cero');
-select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'X', 4.08, -73.58, 'U')$$, 'suspendida', 'suspendido no pide viajes');
+select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'X', 4.121686, -73.615496, 'U')$$, 'suspendida', 'suspendido no pide viajes');
 select prueba.falla(format('select public.pedir_puesto(%L, 4.1, -73.6, %L)', :'cupo_f4', 'x'), 'suspendida', 'ni pide puestos');
 
 -- Cada peso cuadra: lo que José recargó = su saldo + lo que ganó Kike + comisiones de sus viajes y puestos.
@@ -794,7 +794,7 @@ set role authenticated;
 
 select prueba.como(:'lia');
 select public.recargar(10000);
-select public.solicitar_viaje(4.15, -73.64, 'Barzal Alto', 4.12, -73.61, 'USTA') as viaje_s \gset
+select public.solicitar_viaje(4.15, -73.64, 'Barzal Alto', 4.121686, -73.615496, 'USTA') as viaje_s \gset
 select prueba.falla(format('select public.compartir_viaje(%L)', :'viaje_s'), 'cuando un conductor lo acepte', 'no se comparte un viaje que nadie ha aceptado');
 select prueba.como(:'memo');
 select public.cambiar_disponibilidad(true);
@@ -1073,6 +1073,63 @@ select prueba.falla($$select public.aceptar_politica('2026-10-25')$$, 'permissio
 reset role;
 
 -- ---------------------------------------------------------------------------
+-- 12. Viaje de regreso: de la U a la casa (017)
+-- ---------------------------------------------------------------------------
+\echo '== Viaje de regreso'
+
+reset role;
+\set rita  '00000000-0000-0000-0000-0000000000f2'
+\set tomas '00000000-0000-0000-0000-0000000000f3'
+insert into auth.users (id, email, raw_user_meta_data) values
+  (:'rita', 'rita@ustavillavo.edu.co', '{"nombre":"Rita Gómez","rol":"estudiante","politica":"2026-10-25"}'),
+  (:'tomas', 'tomas@ustavillavo.edu.co', '{"nombre":"Tomás León","rol":"conductor","politica":"2026-10-25"}');
+insert into public.documentos_conductor (conductor_id, tipo, ruta, estado, autorizado_en)
+select :'tomas', t.tipo, :'tomas' || '/' || t.tipo || '.jpg', 'aprobado', now()
+from unnest(enum_range(null::public.tipo_documento)) as t(tipo);
+insert into public.billeteras (persona_id, saldo) values (:'rita', 200000), (:'tomas', 200000);
+insert into public.vehiculos (conductor_id, placa, marca, modelo, color) values (:'tomas', 'TOM123', 'Kia', 'Picanto', 'Rojo');
+select prueba.ok((select bool_and(sentido = 'ida') from public.viajes where estudiante_id <> :'rita'), 'los viajes de antes quedan de ida');
+select prueba.ok(privado.distancia_km(4.121686, -73.615496, 4.121686, -73.615496) = 0, 'la distancia de un punto a sí mismo es 0');
+select prueba.ok(round(privado.distancia_km(4.0, -73.6, 4.1, -73.6)::numeric, 1) = 11.1, 'la distancia en línea recta da lo mismo que en la app (0,1° de latitud ≈ 11,1 km)');
+
+set role authenticated;
+select prueba.como(:'rita');
+select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'Casa', 4.08, -73.58, 'Otro lado')$$, 'debe terminar en la universidad', 'la ida termina en la U');
+select prueba.falla($$select public.solicitar_viaje(4.15, -73.64, 'Barzal', 4.14, -73.63, 'Casa', 'regreso')$$, 'máximo 500 m de la sede', 'el regreso sale de la U');
+select prueba.falla($$select public.solicitar_viaje(4.121686, -73.615496, 'USTA', 4.1220, -73.6158, 'Al lado', 'regreso')$$, 'menos de 100 m', 'el regreso no termina pegado a la U');
+select prueba.falla($$select public.solicitar_viaje(4.121686, -73.615496, 'USTA', 4.15, -73.64, 'Casa', null)$$, 'Elige si vas', 'el sentido es obligatorio');
+select public.solicitar_viaje(4.1240, -73.6160, 'USTA Villavicencio (portería de atrás)', 4.15, -73.64, 'Barzal', 'regreso') as viaje_rita \gset
+reset role;
+select prueba.ok((select sentido = 'regreso' and origen_texto like 'USTA%' and destino_texto = 'Barzal' from public.viajes where id = :'viaje_rita'),
+                 'el regreso guarda la recogida cerca de la U y el destino en la casa');
+set role authenticated;
+select public.cancelar_viaje(:'viaje_rita');
+
+select prueba.como(:'tomas');
+select prueba.falla($$select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 6000, 'regreso', 4.16, -73.65, 'Lejos')$$, 'sale de la universidad', 'el cupo de regreso sale de la U');
+select prueba.falla($$select public.publicar_cupo(4.121686, -73.615496, 'USTA', now() + interval '1 day', 2, 6000, 'regreso')$$, 'hasta dónde vas', 'el cupo de regreso necesita destino');
+select prueba.falla($$select public.publicar_cupo(4.121686, -73.615496, 'USTA', now() + interval '1 day', 2, 6000, 'regreso', 4.1218, -73.6156, 'Al lado')$$, 'menos de 100 m', 'el destino no queda pegado a la salida');
+select public.publicar_cupo(4.121686, -73.615496, 'USTA Villavicencio', now() + interval '1 day', 2, 6000, 'regreso', 4.15, -73.64, ' Barzal ') as cupo_tomas \gset
+select prueba.ok((select sentido = 'regreso' and destino_texto = 'Barzal' and destino_lat = 4.15 from public.cupos where id = :'cupo_tomas'),
+                 'el cupo de regreso va hasta donde marcó el conductor');
+
+select prueba.como(:'rita');
+select public.pedir_puesto(:'cupo_tomas', 4.14, -73.63, 'Mi casa') as puesto_rita \gset
+select prueba.como(:'tomas');
+select public.responder_puesto(:'puesto_rita', true);
+select prueba.como(:'rita');
+select public.pagar_puesto(:'cupo_tomas');
+select public.compartir_puesto(:'cupo_tomas') as token_rita \gset
+set role anon;
+select prueba.ok((select sentido = 'regreso' and recogida_texto = 'USTA Villavicencio' and destino_texto = 'Mi casa'
+                  from public.cupo_compartido(:'token_rita')),
+                 'el enlace de un cupo de regreso va de la U hasta donde se baja el estudiante');
+set role authenticated;
+select prueba.como(:'tomas');
+select public.cancelar_cupo(:'cupo_tomas');
+reset role;
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'
@@ -1084,7 +1141,7 @@ select prueba.ok((select count(*) = 2 from public.universidades), 'sin sesión s
 select prueba.falla($$select * from public.viajes$$, 'permission denied', 'sin sesión no se ven viajes');
 select prueba.falla($$select * from public.cupos$$, 'permission denied', 'sin sesión no se ven cupos');
 select prueba.falla($$select * from public.perfiles$$, 'permission denied', 'sin sesión no se ven perfiles');
-select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'a', 4.08, -73.58, 'b')$$, 'permission denied', 'sin sesión no se llaman las funciones');
+select prueba.falla($$select public.solicitar_viaje(4.1, -73.6, 'a', 4.121686, -73.615496, 'b')$$, 'permission denied', 'sin sesión no se llaman las funciones');
 select prueba.falla($$select privado.mi_perfil()$$, 'permission denied', 'sin sesión no se usa el esquema privado');
 
 reset role;

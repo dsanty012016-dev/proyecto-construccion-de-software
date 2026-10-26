@@ -4,6 +4,7 @@ import { gananciaConductor } from "@/app/lib/comision";
 import { historialDeCupos, type CupoEnHistorial } from "@/app/lib/consultas-cupo";
 import { historialDeViajes } from "@/app/lib/consultas-viaje";
 import { etiquetaEstado, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
+import { recorridoDelPuesto } from "@/app/lib/sentido";
 import { perfilActual } from "@/app/lib/sesion";
 
 export const metadata: Metadata = { title: "Mis viajes" };
@@ -37,7 +38,7 @@ export default async function PaginaViajes() {
 
       {items.length === 0 ? (
         <p role="status" className="text-texto-suave">
-          Aún no tienes viajes terminados. Cuando llegues a la U, aparecen aquí para calificarlos.
+          Aún no tienes viajes terminados. Cuando termines uno, aparece aquí para calificarlo.
         </p>
       ) : (
         <ul>
@@ -89,7 +90,10 @@ function FilaCupo({ item }: { item: CupoEnHistorial }) {
         <p className={`text-[13px] font-semibold ${terminado ? "text-secundario" : "text-texto-suave"}`}>{terminado ? "Terminado" : "Cancelado"}</p>
       </div>
       <p className="font-semibold">
-        {soyConductor ? cupo.salida_texto : (puesto?.recogida_texto ?? cupo.salida_texto)} → {cupo.destino_texto}
+        {(() => {
+          const ruta = soyConductor ? { origen: cupo.salida_texto, destino: cupo.destino_texto } : recorridoDelPuesto(cupo, puesto?.recogida_texto ?? null);
+          return `${ruta.origen} → ${ruta.destino}`;
+        })()}
       </p>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-texto-suave">

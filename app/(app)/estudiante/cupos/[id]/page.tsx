@@ -37,6 +37,8 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
   const puedePedir = cupo.estado === "publicado" && libres > 0 && !tengoPuesto && miPuesto?.estado !== "rechazado";
   const nombre = conductor ? nombreCorto(conductor.nombre) : "el conductor";
   const pagado = aprobado && (miPuesto?.pagado ?? 0) > 0;
+  const regreso = cupo.sentido === "regreso";
+  // Mi punto: donde me recogen (ida) o donde me bajo (regreso).
   const miRecogida = miPuesto ? { lat: miPuesto.recogida_lat, lng: miPuesto.recogida_lng } : salida;
   // Con el cupo en camino y el puesto pagado, la ubicación del conductor (014).
   const enVivo = cupo.estado === "en_curso" && pagado ? await ubicacionDelCupoConHora(cupo.id) : null;
@@ -51,7 +53,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
           <p className="font-titulo text-lg font-bold">Sale {fechaCorta(cupo.sale_en)}</p>
           <p className="font-titulo text-lg font-bold">{pesos(cupo.precio)}</p>
         </div>
-        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} etiquetaOrigen="Sale de" />
+        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} etiquetaOrigen="Sale de" etiquetaDestino={regreso ? "Va hasta" : "Vas a"} />
         <div className="flex items-center gap-3 border-t border-texto-suave/20 pt-4">
           <Avatar nombre={conductor?.nombre ?? "Conductor"} sobreTarjeta />
           <div className="min-w-0 flex-1">
@@ -78,7 +80,9 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
           <h2 id="titulo-mi-puesto" className="text-lg">
             {cupo.estado === "en_curso" ? "El conductor ya salió" : etiquetaPuesto(miPuesto.estado)}
           </h2>
-          <p className="text-sm">Te subes en: {miPuesto.recogida_texto}</p>
+          <p className="text-sm">
+            {regreso ? `Te subes en ${cupo.salida_texto} y te bajas en ${miPuesto.recogida_texto}` : `Te subes en: ${miPuesto.recogida_texto}`}
+          </p>
           {enVivo ? (
             // El conductor ya salió: se ve moverse en vivo (014). Solo tu recogida en el mapa.
             <div className="-mx-4 overflow-hidden">
@@ -89,16 +93,18 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
                 paradas={[miRecogida]}
                 inicial={enVivo.ubicacion ? { lat: enVivo.ubicacion.lat, lng: enVivo.ubicacion.lng, actualizado_en: enVivo.ubicacion.actualizado_en } : null}
                 ahoraInicial={enVivo.ahora}
+                uEnElOrigen={regreso}
                 className="h-64"
               />
             </div>
           ) : (
             <Mapa
-              etiqueta="Mapa del cupo con tu punto de recogida"
+              etiqueta={regreso ? "Mapa del cupo con el punto donde te bajas" : "Mapa del cupo con tu punto de recogida"}
               centro={salida}
               origen={salida}
               destino={destino}
               paradas={[miRecogida]}
+              uEnElOrigen={regreso}
               className="h-52"
             />
           )}
@@ -145,14 +151,14 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
           )}
         </section>
       ) : puedePedir ? (
-        <FormularioPuesto cupoId={cupo.id} salida={salida} destino={destino} />
+        <FormularioPuesto cupoId={cupo.id} salida={salida} destino={destino} sentido={cupo.sentido} />
       ) : (
         <>
           {miPuesto?.estado === "rechazado" && <Aviso tipo="info">El conductor no aprobó tu solicitud en este cupo. Puedes buscar otro.</Aviso>}
           {miPuesto?.estado === "sin_pago" && <Aviso tipo="info">Perdiste el puesto porque no se pagó a tiempo.</Aviso>}
           {cupo.estado === "cancelado" && <Aviso tipo="info">El conductor canceló este cupo.</Aviso>}
-          {cupo.estado === "terminado" && <Aviso tipo="info">Este cupo ya llegó a la universidad.</Aviso>}
-          <Mapa etiqueta="Mapa del cupo" centro={salida} origen={salida} destino={destino} className="h-52" />
+          {cupo.estado === "terminado" && <Aviso tipo="info">{regreso ? "Este cupo ya terminó su recorrido." : "Este cupo ya llegó a la universidad."}</Aviso>}
+          <Mapa etiqueta="Mapa del cupo" centro={salida} origen={salida} destino={destino} uEnElOrigen={regreso} className="h-52" />
         </>
       )}
     </main>

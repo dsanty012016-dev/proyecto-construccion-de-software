@@ -24,7 +24,7 @@ export default async function PaginaNuevoCupo() {
 
   return (
     <main className="space-y-6 px-5 pt-6">
-      <EncabezadoPantalla titulo="Publicar cupo" texto="Tu recorrido hacia la U, con hora de salida." volverA="/conductor" />
+      <EncabezadoPantalla titulo="Publicar cupo" texto="Tu recorrido a la U o de vuelta, con hora de salida." volverA="/conductor" />
       {!vehiculo ? (
         <div className="space-y-3">
           <Aviso tipo="info">Para publicar un cupo primero registra tu vehículo.</Aviso>

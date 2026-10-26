@@ -37,6 +37,8 @@ interface Props {
   vehiculo?: Coordenada | null;
   /** De borde a borde (arriba de una pantalla): sin esquinas redondeadas ni botones de zoom. */
   aRas?: boolean;
+  /** Regreso (017): la "U" va en el origen y el punto azul (la casa) en el destino. */
+  uEnElOrigen?: boolean;
   className?: string;
 }
 
@@ -154,11 +156,11 @@ function encuadrar(mapa: MapaLibre, caja: [[number, number], [number, number]], 
   }, 1500);
 }
 
-export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, numerarParadas, vehiculo, aRas, className }: Props) {
+export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, numerarParadas, vehiculo, aRas, uEnElOrigen, className }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<MapaLibre | null>(null);
   const libRef = useRef<Libreria | null>(null);
-  const marcadores = useRef<{ origen?: Marker; destino?: Marker }>({});
+  const marcadores = useRef<{ origen?: { marcador: Marker; estilo: "origen" | "destino" }; destino?: { marcador: Marker; estilo: "origen" | "destino" } }>({});
   const marcadoresParadas = useRef<Marker[]>([]);
   const marcadorVehiculo = useRef<Marker | null>(null);
   // Cuando la app mueve la cámara para encuadrar la ruta, ese movimiento no
@@ -258,18 +260,26 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     const o = oLat !== undefined && oLng !== undefined ? { lat: oLat, lng: oLng } : null;
     const d = dLat !== undefined && dLng !== undefined ? { lat: dLat, lng: dLng } : null;
 
+    // Estilo de cada punta: la "U" va donde está la universidad.
+    const estilos = uEnElOrigen ? ({ origen: "destino", destino: "origen" } as const) : ({ origen: "origen", destino: "destino" } as const);
     for (const [tipo, punto] of [
       ["origen", o],
       ["destino", d],
     ] as const) {
       const actual = marcadores.current[tipo];
-      if (coordenadaValida(punto)) {
-        if (actual) actual.setLngLat([punto.lng, punto.lat]);
-        else marcadores.current[tipo] = new lib.Marker({ element: elementoMarcador(tipo) }).setLngLat([punto.lng, punto.lat]).addTo(mapa);
-      } else if (actual) {
-        actual.remove();
+      const estilo = estilos[tipo];
+      if (actual && (!coordenadaValida(punto) || actual.estilo !== estilo)) {
+        actual.marcador.remove();
         delete marcadores.current[tipo];
       }
+      if (!coordenadaValida(punto)) continue;
+      const vigenteMarcador = marcadores.current[tipo];
+      if (vigenteMarcador) vigenteMarcador.marcador.setLngLat([punto.lng, punto.lat]);
+      else
+        marcadores.current[tipo] = {
+          marcador: new lib.Marker({ element: elementoMarcador(estilo) }).setLngLat([punto.lng, punto.lat]).addTo(mapa),
+          estilo,
+        };
     }
 
     if (!coordenadaValida(o) || !coordenadaValida(d)) return;
@@ -294,7 +304,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     return () => {
       vigente = false;
     };
-  }, [estado, oLat, oLng, dLat, dLng]);
+  }, [estado, oLat, oLng, dLat, dLng, uEnElOrigen]);
 
   // Paradas de los estudiantes (se comparan por contenido).
   const claveParadas = JSON.stringify(paradas ?? []);

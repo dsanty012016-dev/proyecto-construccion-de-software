@@ -114,10 +114,17 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - Aceptarla es **obligatorio** al registrarse (casilla). Cada perfil guarda la versión aceptada y la fecha. Quien ya tenía cuenta, o aceptó una versión vieja, la acepta al entrar (`/aceptar-politica`) antes de usar la app.
 - Si cambia cómo se usan los datos: se cambia el texto y `VERSION_POLITICA` en `app/lib/privacidad.ts`, y todos la vuelven a aceptar.
 
+## Viaje de regreso (fase 9, migración 017)
+- Viajes por pedido y cupos tienen **sentido**: ida (a la U) o regreso (de la U a la casa). Los de antes quedan en ida.
+- **Punto en la U:** en la ida es el destino y en el regreso la recogida. Por defecto es la sede; se puede mover a otra portería o esquina a máximo **500 m** de la sede (provisional, se puede ajustar).
+- El punto de la casa debe quedar a 100 m o más del punto en la U.
+- **Cupo de regreso:** sale de la U (máximo 500 m de la sede, ahí se suben todos) y el conductor marca hasta dónde va. Cada estudiante marca dónde se baja; el conductor los ve numerados en orden de bajada, de la U hacia afuera.
+- Pago, cancelación, strikes, seguimiento en vivo, compartir y calificaciones: **las mismas reglas** que la ida.
+- Los estudiantes ven los cupos separados en "A la U" y "De la U a casa".
+
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |
 |---|---|---|
-| 1 | ¿Solo de ida a la universidad o también de regreso? | El viaje guarda origen y destino libres; no se obliga a que uno sea la universidad. |
 | 4 | "IA para la mejor ruta": ¿modelo de IA o algoritmo? | No aplica con viajes de una persona; queda para cuando haya viajes compartidos. |
 | 5 | ¿Las solicitudes vencen si nadie oferta? | No vencen; el estudiante las cancela. |
 

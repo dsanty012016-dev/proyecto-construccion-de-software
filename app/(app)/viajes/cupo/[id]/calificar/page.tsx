@@ -27,7 +27,7 @@ export default async function PaginaCalificarCupo({ params }: { params: Promise<
         <IconoCheck className="size-8" />
       </span>
       <div className="space-y-1 text-center">
-        <h1 className="text-2xl tracking-tight">¡Llegaron a la U!</h1>
+        <h1 className="text-2xl tracking-tight">{cupo.sentido === "regreso" ? "¡Llegaron!" : "¡Llegaron a la U!"}</h1>
         <p className="text-texto-suave">Cupo del {fechaCorta(cupo.sale_en)}</p>
       </div>
       {soyConductor && pendientes.length > 1 && (

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "./estado-formulario";
+import { redondear } from "./mapa";
+import { extremos, textoEnLaU } from "./sentido";
 import { crearClienteServidor } from "./supabase/server";
 import { datosDelFormulario, erroresPorCampo } from "./validaciones-auth";
 import {
@@ -58,7 +60,7 @@ export async function pedirViaje(_anterior: EstadoFormulario, formulario: FormDa
   const { supabase, usuario } = await conSesion();
   if (!usuario) return falla("Inicia sesión primero.");
 
-  // El destino es la sede de la universidad de la persona (por ahora siempre la misma).
+  // El punto de la U es la sede o uno cercano que eligió el estudiante (017).
   const { data: perfil } = await supabase.from("perfiles").select("universidad_id").eq("id", usuario.id).single();
   const { data: sede } = perfil
     ? await supabase.from("universidades").select("nombre, lat, lng").eq("id", perfil.universidad_id).single()
@@ -67,13 +69,24 @@ export async function pedirViaje(_anterior: EstadoFormulario, formulario: FormDa
     return { ...falla("Tu universidad todavía no tiene la ubicación de la sede configurada. Avísale al equipo."), valores: datos };
   }
 
+  const { sentido, punto_lat, punto_lng, u_lat, u_lng, referencia_u } = validado.data;
+  const enLaU =
+    sentido === "regreso" && u_lat !== undefined && u_lng !== undefined ? redondear({ lat: u_lat, lng: u_lng }) : { lat: sede.lat, lng: sede.lng };
+  const casa = redondear({ lat: punto_lat, lng: punto_lng });
+  const { origen, destino } = extremos(
+    sentido,
+    { ...casa, texto: textoDeRecogida(validado.data) },
+    { ...enLaU, texto: sentido === "regreso" ? textoEnLaU(sede.nombre, referencia_u) : sede.nombre },
+  );
+
   const { error } = await supabase.rpc("solicitar_viaje", {
-    p_origen_lat: validado.data.origen_lat,
-    p_origen_lng: validado.data.origen_lng,
-    p_origen_texto: textoDeRecogida(validado.data),
-    p_destino_lat: sede.lat,
-    p_destino_lng: sede.lng,
-    p_destino_texto: sede.nombre,
+    p_origen_lat: origen.lat,
+    p_origen_lng: origen.lng,
+    p_origen_texto: origen.texto,
+    p_destino_lat: destino.lat,
+    p_destino_lng: destino.lng,
+    p_destino_texto: destino.texto,
+    p_sentido: sentido,
   });
   if (error) return { ...falla(mensajeDeError(error)), valores: datos };
 

@@ -39,6 +39,8 @@ interface Vista {
   placa: string | null;
   estudiante: string;
   ubicacionEn: string | null;
+  /** Regreso (017): la U es el origen. */
+  regreso: boolean;
 }
 
 function punto(lat: number | null, lng: number | null): Coordenada | null {
@@ -55,7 +57,7 @@ async function cargar(token: string): Promise<{ vista: Vista; ahora: number } | 
       vista: {
         activo: viajeSeSigue(v.estado),
         terminado: v.estado === "terminado",
-        titulo: v.estado === "aceptado" ? `${v.conductor ?? "El conductor"} va por ${estudiante}` : `${estudiante} va camino a la U`,
+        titulo: v.estado === "aceptado" ? `${v.conductor ?? "El conductor"} va por ${estudiante}` : v.sentido === "regreso" ? `${estudiante} va camino a casa` : `${estudiante} va camino a la U`,
         detalle: null,
         pasos: v.estado === "aceptado" || v.estado === "en_curso" ? v.estado : null,
         origen: punto(v.origen_lat, v.origen_lng),
@@ -68,6 +70,7 @@ async function cargar(token: string): Promise<{ vista: Vista; ahora: number } | 
         placa: v.placa,
         estudiante,
         ubicacionEn: v.ubicacion_en,
+        regreso: v.sentido === "regreso",
       },
     };
   }
@@ -95,6 +98,7 @@ async function cargar(token: string): Promise<{ vista: Vista; ahora: number } | 
       placa: c.placa,
       estudiante,
       ubicacionEn: enCamino ? c.ubicacion_en : null,
+      regreso: c.sentido === "regreso",
     },
   };
 }
@@ -141,6 +145,7 @@ export default async function PaginaViajeCompartido({ params }: { params: Promis
             origen={vista.origen}
             destino={vista.destino}
             vehiculo={vista.vehiculo}
+            uEnElOrigen={vista.regreso}
             aRas
             className="h-full"
           />

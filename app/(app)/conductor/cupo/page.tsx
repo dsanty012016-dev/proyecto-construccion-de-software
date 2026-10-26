@@ -19,7 +19,7 @@ import { TransmisorUbicacion } from "@/app/ui/conductor/transmisor-ubicacion";
 
 export const metadata: Metadata = { title: "Tu cupo" };
 
-/** Quién pidió puesto, dónde se sube y qué tan lejos queda del camino. */
+/** Quién pidió puesto, dónde se sube (o se baja, en el regreso) y qué tan lejos queda del camino. */
 function Persona({ solicitud, salida, destino }: { solicitud: SolicitudDePuesto; salida: Coordenada; destino: Coordenada }) {
   const { puesto, estudiante } = solicitud;
   const desvio = distanciaATramoKm({ lat: puesto.recogida_lat, lng: puesto.recogida_lng }, salida, destino);
@@ -42,7 +42,7 @@ function Persona({ solicitud, salida, destino }: { solicitud: SolicitudDePuesto;
 }
 
 // El cupo publicado del conductor: solicitudes por aprobar, estudiantes
-// aprobados en orden de recogida (con su teléfono) y los botones para salir,
+// aprobados en orden de recogida o de bajada (con su teléfono) y los botones para salir,
 // llegar o cancelar. Mientras va en camino, transmite su ubicación (014).
 export default async function PaginaCupoConductor() {
   const { usuario } = await exigirRol("conductor");
@@ -51,7 +51,9 @@ export default async function PaginaCupoConductor() {
   const { cupo, libres, pendientes, aprobados } = datos;
   const salida = { lat: cupo.salida_lat, lng: cupo.salida_lng };
   const destino = { lat: cupo.destino_lat, lng: cupo.destino_lng };
-  // Orden de recogida (014): de la salida hacia la U. En el mapa van numeradas.
+  const regreso = cupo.sentido === "regreso";
+  // Orden (014): de la salida hacia el destino. En la ida es el orden de
+  // recogida; en el regreso todos se suben en la U y es el orden de bajada.
   const enOrden = ordenarRecogidas(
     salida,
     destino,
@@ -73,19 +75,26 @@ export default async function PaginaCupoConductor() {
             {aprobados.length}/{cupo.puestos} {cupo.puestos === 1 ? "puesto" : "puestos"}
           </p>
         </div>
-        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} etiquetaOrigen="Sales de" />
+        <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} etiquetaOrigen="Sales de" etiquetaDestino={regreso ? "Vas hasta" : "Vas a"} />
         <p className="text-sm text-texto-suave">
           {pesos(cupo.precio)} por puesto · recibes {pesos(gananciaConductor(cupo.precio))} por cada estudiante que pague, al llegar
         </p>
       </section>
 
       <Mapa
-        etiqueta={enOrden.length > 0 ? "Mapa del cupo con las recogidas numeradas en orden" : "Mapa del cupo con las solicitudes"}
+        etiqueta={
+          enOrden.length > 0
+            ? regreso
+              ? "Mapa del cupo con las bajadas numeradas en orden"
+              : "Mapa del cupo con las recogidas numeradas en orden"
+            : "Mapa del cupo con las solicitudes"
+        }
         centro={salida}
         origen={salida}
         destino={destino}
         paradas={paradas}
         numerarParadas={enOrden.length > 0}
+        uEnElOrigen={regreso}
         className="h-56"
       />
       {!publicado && <TransmisorUbicacion enviar={reportarUbicacionCupo.bind(null, cupo.id)} clave={cupo.id} quienVe="Tus estudiantes" />}
@@ -121,7 +130,7 @@ export default async function PaginaCupoConductor() {
 
       <section aria-labelledby="titulo-aprobados" className="space-y-3">
         <h2 id="titulo-aprobados" className="text-lg">
-          {enOrden.length > 1 ? "Orden de recogida" : "Van contigo"}
+          {enOrden.length > 1 ? (regreso ? "Orden de bajada" : "Orden de recogida") : "Van contigo"}
         </h2>
         {enOrden.length === 0 ? (
           <p className="text-sm text-texto-suave">Todavía no has aprobado a nadie.</p>
@@ -136,7 +145,9 @@ export default async function PaginaCupoConductor() {
                   {i + 1}
                 </span>
                 <div className="min-w-0 flex-1 space-y-3">
-                  <span className="sr-only">Recogida {i + 1}: </span>
+                  <span className="sr-only">
+                    {regreso ? "Bajada" : "Recogida"} {i + 1}:{" "}
+                  </span>
                   <Persona solicitud={solicitud} salida={salida} destino={destino} />
                   <p className={`text-sm font-semibold ${solicitud.puesto.pagado > 0 ? "text-secundario" : "text-texto-suave"}`}>
                     {solicitud.puesto.pagado > 0 ? `Pagó ${pesos(solicitud.puesto.pagado)}` : "Aún no ha pagado (tiene hasta 10 minutos antes de salir)"}
@@ -171,7 +182,7 @@ export default async function PaginaCupoConductor() {
           </BotonAccion>
         </>
       ) : (
-        <BotonAccion accion={terminarCupo} campos={{ cupo: cupo.id }} enviando="Terminando…" textoSi="Sí, llegamos" confirmar="¿Llegaron a la universidad?">
+        <BotonAccion accion={terminarCupo} campos={{ cupo: cupo.id }} enviando="Terminando…" textoSi="Sí, llegamos" confirmar={regreso ? "¿Terminaste el recorrido?" : "¿Llegaron a la universidad?"}>
           Llegamos · Terminar cupo
         </BotonAccion>
       )}
