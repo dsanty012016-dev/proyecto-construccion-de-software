@@ -2,9 +2,11 @@
 
 App web (PWA) de movilidad estudiantil universitaria para Villavicencio: estudiantes y conductores verificados comparten el viaje hacia la universidad. Proyecto académico.
 
-**Estado:** fase 1 (reglas del viaje y base de datos). Ver `docs/plan.md`.
+**En línea:** https://unigoproject.vercel.app (se publica solo con cada merge a `main`).
 
-## Cómo correrlo
+**Estado:** piloto académico, fases 0 a 9. Ver `docs/plan.md`.
+
+## Cómo correrlo en el computador
 Requiere Node 22 o superior.
 
 ```bash
@@ -15,7 +17,7 @@ npm test         # pruebas de las reglas del viaje
 npm run build
 ```
 
-Las variables de entorno van en `.env.local` (nunca se sube). El archivo `.env.example` lista sus nombres, sin valores.
+Las variables de entorno van en `.env.local` (nunca se sube) y, para producción, en Vercel (Settings → Environment Variables). El archivo `.env.example` lista sus nombres, sin valores. La configuración de Supabase Auth está en `docs/supabase-auth.md`.
 
 ## Documentación
 - `AGENTS.md`: reglas de código y organización.

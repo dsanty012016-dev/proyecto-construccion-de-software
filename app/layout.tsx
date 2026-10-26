@@ -15,7 +15,15 @@ const manrope = Manrope({
   display: "swap",
 });
 
+// Dirección pública: la de producción en Vercel (Vercel da la variable al
+// compilar); en el computador, localhost. Sirve para los enlaces absolutos
+// de las vistas previas al compartir.
+const SITIO = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITIO),
   title: {
     default: "UniGo · Tu viaje, tu universidad",
     template: "%s · UniGo",

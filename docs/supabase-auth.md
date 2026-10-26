@@ -1,11 +1,15 @@
 # Configuración de Supabase Auth (proyecto Unigo)
 
+La app vive en **https://unigoproject.vercel.app** (Vercel, proyecto del equipo UniGo, se publica solo con cada merge a `main`). Las variables de Vercel son las mismas dos de `.env.example`.
+
+Los enlaces de los correos (confirmar cuenta, recuperar contraseña) usan la dirección desde donde se pidió. Supabase solo la acepta si está en "Redirect URLs"; si no, manda a la "Site URL". Por eso la Site URL es la de Vercel: así un correo nunca lleva a `localhost`.
+
 Hecho en el panel (no vive en migraciones):
 
 | Dónde | Valor |
 |---|---|
-| Authentication → URL Configuration → Site URL | `http://localhost:3000` (cambiar a la URL de Vercel al publicar) |
-| Authentication → URL Configuration → Redirect URLs | `http://localhost:3000/**` (agregar la de Vercel al publicar) |
+| Authentication → URL Configuration → Site URL | `https://unigoproject.vercel.app` |
+| Authentication → URL Configuration → Redirect URLs | `https://unigoproject.vercel.app/**`, `https://unigoproject-*.vercel.app/**` (vistas previas de Vercel) y `http://localhost:3000/**` (para desarrollar) |
 | Sign In / Providers → Confirm email | Activado |
 | Sign In / Providers → Email → Minimum password length | 8 |
 
