@@ -42,6 +42,9 @@ interface Props {
   className?: string;
 }
 
+/** Cuánto se ven los créditos del mapa antes de plegarse en el botón "i". */
+const SEGUNDOS_CREDITOS = 4;
+
 function elementoMarcador(tipo: "origen" | "destino" | "parada" | "paradaNumerada" | "vehiculo", texto?: string) {
   const elemento = document.createElement("div");
   elemento.setAttribute("aria-hidden", "true");
@@ -184,6 +187,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   useEffect(() => {
     let cancelado = false;
     let mapa: MapaLibre | null = null;
+    let plegar: ReturnType<typeof setTimeout> | undefined;
     animar.current = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     import("maplibre-gl")
@@ -217,6 +221,14 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
           libRef.current = lib;
           mapaRef.current = instancia;
           setEstado("listo");
+          // Los créditos (licencia de OpenStreetMap) se ven al abrir el mapa
+          // y a los pocos segundos se pliegan en el botón "i"; con tocarlo
+          // vuelven a salir. MapLibre ya los pliega al arrastrar el mapa.
+          plegar = setTimeout(() => {
+            const creditos = instancia.getContainer().querySelector(".maplibregl-ctrl-attrib.maplibregl-compact-show");
+            creditos?.classList.remove("maplibregl-compact-show");
+            creditos?.removeAttribute("open");
+          }, SEGUNDOS_CREDITOS * 1000);
         });
         // Si el estilo no carga (sin internet o el servicio caído), se avisa.
         instancia.on("error", () => {
@@ -240,6 +252,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
 
     return () => {
       cancelado = true;
+      clearTimeout(plegar);
       mapa?.remove();
       mapaRef.current = null;
       marcadores.current = {};
