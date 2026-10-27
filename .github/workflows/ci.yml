@@ -24,10 +24,6 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
-      # Dependencias de la app con fallas de seguridad conocidas (altas o críticas).
-      - name: Auditoría de dependencias
-        run: npm audit --omit=dev --audit-level=high
-
       - name: Lint
         run: npm run lint
 
@@ -36,6 +32,23 @@ jobs:
 
       - name: Build (incluye revisión de tipos)
         run: npm run build
+
+      # Dependencias de la app con fallas de seguridad conocidas (altas o críticas).
+      # Cada falla sale como aviso en el resumen de GitHub (paquete, gravedad y arreglo).
+      - name: Auditoría de dependencias
+        run: |
+          npm audit --omit=dev --json > auditoria.json || true
+          node -e '
+            const r = require("./auditoria.json");
+            const v = Object.values(r.vulnerabilities ?? {});
+            for (const x of v) {
+              const via = x.via.map((y) => (typeof y === "string" ? y : y.title)).join(" / ");
+              const arreglo = x.fixAvailable === true ? "npm audit fix" : x.fixAvailable ? `${x.fixAvailable.name}@${x.fixAvailable.version}` : "sin arreglo";
+              console.log(`::warning::${x.severity} · ${x.name} ${x.range} · ${via} · ${arreglo}`);
+            }
+            const graves = v.filter((x) => x.severity === "high" || x.severity === "critical");
+            if (graves.length > 0) { console.log(`::error::${graves.length} dependencias con fallas altas o críticas`); process.exit(1); }
+          '
 
   base-de-datos:
     # Corre las migraciones y las pruebas de seguridad (RLS y RPC) en un
