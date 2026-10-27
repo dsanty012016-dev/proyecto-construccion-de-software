@@ -8,7 +8,9 @@ import { crearClienteServidor } from "@/app/lib/supabase/server";
 // y manda a la persona a donde corresponde.
 // Acepta los dos formatos de enlace de Supabase:
 //  - token_hash + type: funciona aunque el correo se abra en otro dispositivo
-//    (plantillas de correo configuradas en docs/supabase-auth.md).
+//    (plantillas de correo configuradas en docs/supabase-auth.md). Se confirma
+//    con un botón en /continuar, para que los revisores de enlaces del correo
+//    no lo gasten antes que la persona.
 //  - code: el formato por defecto; solo funciona en el mismo navegador.
 export async function GET(peticion: NextRequest) {
   const parametros = peticion.nextUrl.searchParams;
@@ -21,9 +23,15 @@ export async function GET(peticion: NextRequest) {
   let valido = false;
 
   if (tokenHash && tipo) {
-    const { error } = await supabase.auth.verifyOtp({ type: tipo, token_hash: tokenHash });
-    valido = !error;
-  } else if (codigo) {
+    // No se usa el enlace aquí: Outlook y otros correos "abren" los enlaces
+    // solos para revisarlos y eso lo gastaría. Se pide un toque en /continuar.
+    const continuar = new URL("/continuar", peticion.url);
+    continuar.searchParams.set("token_hash", tokenHash);
+    continuar.searchParams.set("type", tipo);
+    continuar.searchParams.set("siguiente", siguiente);
+    return NextResponse.redirect(continuar);
+  }
+  if (codigo) {
     const { error } = await supabase.auth.exchangeCodeForSession(codigo);
     valido = !error;
   }

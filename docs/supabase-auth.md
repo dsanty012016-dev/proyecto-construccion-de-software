@@ -37,7 +37,9 @@ El servidor de correo de prueba de Supabase solo entrega a los miembros del equi
 - "Confirm signup" → `confirmar-cuenta.html`
 - "Reset Password" → `recuperar-clave.html`
 
-El enlace de las plantillas usa `token_hash`, así que funciona aunque el correo se abra en otro dispositivo o navegador (lo recibe `/auth/confirmar`).
+El enlace de las plantillas usa `token_hash`, así que funciona aunque el correo se abra en otro dispositivo, navegador o en la app de Outlook o Gmail. `/auth/confirmar` lo pasa a `/continuar`, donde se usa al tocar un botón: Outlook y otros correos abren los enlaces solos para revisarlos y, si se usara al abrirlo, llegaría gastado ("Ese enlace ya se usó o venció").
+
+**Sin estas plantillas** Supabase manda su enlace por defecto, que solo funciona si se abre en el mismo navegador donde se pidió; desde la app del correo en el celular falla.
 
 **Para probar:** crear una cuenta con un correo institucional y pedir "Recuperar contraseña" desde https://unigoproject.vercel.app. Los dos correos deben llegar en español, desde "UniGo", y abrir la página de Vercel. Si no llegan, revisar en Supabase → Logs → Auth.
 
