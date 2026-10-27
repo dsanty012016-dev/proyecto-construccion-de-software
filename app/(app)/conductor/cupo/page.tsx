@@ -15,6 +15,7 @@ import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoEstrella, IconoTelefono } from "@/app/ui/comun/iconos-app";
 import { Mapa } from "@/app/ui/comun/mapa";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
+import { horaDe, venceCupo } from "@/app/lib/vencimientos";
 import { TransmisorUbicacion } from "@/app/ui/conductor/transmisor-ubicacion";
 
 export const metadata: Metadata = { title: "Tu cupo" };
@@ -170,6 +171,10 @@ export default async function PaginaCupoConductor() {
 
       {publicado ? (
         <>
+          <p className="text-center text-[13px] text-texto-suave">
+            Si no sales antes de las {horaDe(venceCupo(Date.parse(cupo.sale_en)))}, el cupo se cancela solo: a quien pagó se le devuelve todo
+            {hayPagos ? " y sumas 1 strike" : ""}.
+          </p>
           <BotonAccion accion={iniciarCupo} campos={{ cupo: cupo.id }} enviando="Saliendo…" textoSi="Sí, salir" confirmar="¿Sales ahora? Solo van quienes pagaron; los que no, pierden el puesto y las solicitudes pendientes quedan rechazadas.">
             Salir ahora · Iniciar cupo
           </BotonAccion>

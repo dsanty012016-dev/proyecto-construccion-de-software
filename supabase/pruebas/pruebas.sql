@@ -1130,6 +1130,64 @@ select public.cancelar_cupo(:'cupo_tomas');
 reset role;
 
 -- ---------------------------------------------------------------------------
+-- 13. Solicitudes y cupos que vencen (018)
+-- ---------------------------------------------------------------------------
+\echo '== Vencimientos'
+
+set role authenticated;
+select prueba.como(:'rita');
+select public.solicitar_viaje(4.15, -73.64, 'Barzal', 4.121686, -73.615496, 'USTA') as viaje_vence \gset
+select prueba.como(:'tomas');
+select public.cambiar_disponibilidad(true);
+select public.ofertar(:'viaje_vence', 7000) as oferta_vence \gset
+select prueba.falla($$select privado.vencer_pendientes()$$, 'permission denied', 'nadie llama a mano la función que vence');
+reset role;
+
+select prueba.ok(privado.vencer_pendientes() = 0, 'una solicitud recién hecha no vence');
+update public.viajes set creado_en = now() - interval '14 minutes' where id = :'viaje_vence';
+select prueba.ok(privado.vencer_pendientes() = 0, 'a los 14 minutos todavía no vence');
+update public.viajes set creado_en = now() - interval '16 minutes' where id = :'viaje_vence';
+select prueba.ok(privado.vencer_pendientes() = 1, 'a los 15 minutos sin aceptar oferta, la solicitud vence');
+select prueba.ok((select estado = 'cancelado' and vencio and cancelado_por = :'rita' from public.viajes where id = :'viaje_vence'),
+                 'la solicitud vencida queda cancelada y marcada como vencida');
+select prueba.ok((select estado = 'rechazada' from public.ofertas where id = :'oferta_vence'), 'sus ofertas quedan rechazadas');
+select prueba.ok((select count(*) = 0 from public.strikes where viaje_id = :'viaje_vence'), 'vencer una solicitud no da strike');
+
+-- Cupo con un puesto pagado que no sale.
+set role authenticated;
+select prueba.como(:'tomas');
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 6000) as cupo_vence \gset
+select prueba.como(:'rita');
+select public.pedir_puesto(:'cupo_vence', 4.14, -73.63, 'Cra 30') as puesto_vence \gset
+select prueba.como(:'tomas');
+select public.responder_puesto(:'puesto_vence', true);
+select prueba.como(:'rita');
+select public.pagar_puesto(:'cupo_vence');
+reset role;
+select saldo as saldo_rita from public.billeteras where persona_id = :'rita' \gset
+select count(*) as strikes_tomas from public.strikes where persona_id = :'tomas' \gset
+
+update public.cupos set sale_en = now() - interval '3 minutes' where id = :'cupo_vence';
+select prueba.ok(privado.vencer_pendientes() = 0, 'un cupo que salía hace 3 minutos todavía no vence');
+update public.cupos set sale_en = now() - interval '6 minutes' where id = :'cupo_vence';
+select prueba.ok(privado.vencer_pendientes() = 1, 'a los 5 minutos de la hora sin salir, el cupo vence');
+select prueba.ok((select estado = 'cancelado' and vencio from public.cupos where id = :'cupo_vence'), 'el cupo vencido queda cancelado y marcado como vencido');
+select prueba.ok((select estado = 'cancelado' and pagado = 0 from public.puestos where id = :'puesto_vence'), 'el puesto queda cancelado');
+select prueba.ok((select saldo = :saldo_rita + 6000 from public.billeteras where persona_id = :'rita'), 'a quien pagó se le devuelve todo');
+select prueba.ok((select count(*) = :strikes_tomas + 1 from public.strikes where persona_id = :'tomas'), 'el conductor que no salió suma 1 strike');
+
+-- Cupo sin pagos que no sale: se cierra sin strike.
+set role authenticated;
+select prueba.como(:'tomas');
+select public.publicar_cupo(4.15, -73.64, 'Barzal', now() + interval '1 day', 2, 6000) as cupo_vacio \gset
+reset role;
+select count(*) as strikes_tomas from public.strikes where persona_id = :'tomas' \gset
+update public.cupos set sale_en = now() - interval '10 minutes' where id = :'cupo_vacio';
+select privado.vencer_pendientes();
+select prueba.ok((select estado = 'cancelado' and vencio from public.cupos where id = :'cupo_vacio'), 'un cupo sin estudiantes también vence');
+select prueba.ok((select count(*) = :strikes_tomas from public.strikes where persona_id = :'tomas'), 'sin puestos pagados no hay strike');
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'

@@ -19,6 +19,7 @@ import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 import { BotonCompartirViaje } from "@/app/ui/estudiante/boton-compartir-viaje";
 import { FormularioPuesto } from "@/app/ui/estudiante/formulario-puesto";
 import { MapaEnVivo } from "@/app/ui/estudiante/mapa-en-vivo";
+import { horaDe, venceCupo } from "@/app/lib/vencimientos";
 
 export const metadata: Metadata = { title: "Cupo" };
 
@@ -123,6 +124,11 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
               <Aviso tipo="error">Ya pasó el límite para pagar (10 minutos antes de la salida).</Aviso>
             )
           )}
+          {pagado && cupo.estado === "publicado" && (
+            <p className="text-[13px] text-texto-suave">
+              Si el conductor no sale antes de las {horaDe(venceCupo(saleMs))}, el cupo se cancela solo y te devolvemos todo.
+            </p>
+          )}
           {pagado && <BotonCompartirViaje compartir={compartirPuesto.bind(null, cupo.id)} />}
           {telefonoConductor && (
             <a
@@ -156,7 +162,9 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
         <>
           {miPuesto?.estado === "rechazado" && <Aviso tipo="info">El conductor no aprobó tu solicitud en este cupo. Puedes buscar otro.</Aviso>}
           {miPuesto?.estado === "sin_pago" && <Aviso tipo="info">Perdiste el puesto porque no se pagó a tiempo.</Aviso>}
-          {cupo.estado === "cancelado" && <Aviso tipo="info">El conductor canceló este cupo.</Aviso>}
+          {cupo.estado === "cancelado" && (
+            <Aviso tipo="info">{cupo.vencio ? "Este cupo se canceló solo porque el conductor no salió a tiempo." : "El conductor canceló este cupo."}</Aviso>
+          )}
           {cupo.estado === "terminado" && <Aviso tipo="info">{regreso ? "Este cupo ya terminó su recorrido." : "Este cupo ya llegó a la universidad."}</Aviso>}
           <Mapa etiqueta="Mapa del cupo" centro={salida} origen={salida} destino={destino} uEnElOrigen={regreso} className="h-52" />
         </>

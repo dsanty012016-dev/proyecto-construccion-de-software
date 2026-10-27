@@ -19,6 +19,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 
 ## Avance
 - Publicada en Vercel: https://unigoproject.vercel.app (equipo UniGo, plan Hobby, se publica con cada merge a `main`).
+- Fase 10: solicitudes que vencen a los 15 min sin aceptar, cupos que se cancelan solos 5 min después de la hora si no salieron, y correos desde un Gmail del proyecto con plantillas en español (rama `fase-10-vencimientos`, migración 018).
 - Fase 9: viaje de regreso (de la U a la casa) en viajes por pedido y cupos, con el punto en la U a máximo 500 m de la sede y las mismas reglas de pago, cancelación y seguimiento (rama `fase-9-regreso`, migración 017).
 - Fase 8: política de privacidad (Ley 1581) en `/privacidad`, casilla obligatoria al registrarse y aceptación al entrar para quien ya tenía cuenta, con la versión y la fecha guardadas en el perfil (rama `fase-8-privacidad`, migración 016).
 - Fase 0: lista (rama `fase-0-base`).

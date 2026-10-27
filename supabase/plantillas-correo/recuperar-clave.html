@@ -1,0 +1,20 @@
+<!--
+  Correo para crear una contraseña nueva.
+  Se pega en Supabase → Authentication → Emails → Templates → "Reset Password".
+  Asunto: Crea tu contraseña nueva de UniGo
+  Los correos no leen las variables de globals.css: los colores van escritos
+  aquí, los mismos de docs/identidad.md.
+-->
+<div style="margin:0;padding:24px 12px;background:#0B1220;font-family:Arial,Helvetica,sans-serif;">
+  <div style="max-width:480px;margin:0 auto;background:#172033;border-radius:16px;padding:28px 24px;color:#F8FAFC;">
+    <p style="margin:0 0 20px;font-size:22px;font-weight:bold;letter-spacing:-0.5px;">UniGo</p>
+    <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#F8FAFC;">Crea tu contraseña nueva</h1>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.5;color:#F8FAFC;">Pediste cambiar tu contraseña. Toca el botón y escribe la nueva.</p>
+    <a href="{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=recovery"
+       style="display:inline-block;background:#2563EB;color:#F8FAFC;text-decoration:none;font-weight:bold;font-size:16px;padding:14px 24px;border-radius:12px;">Crear contraseña nueva</a>
+    <p style="margin:24px 0 0;font-size:14px;line-height:1.5;color:#94A3B8;">Si no lo pediste, ignora este correo: tu contraseña sigue igual. El enlace sirve una sola vez.</p>
+  </div>
+  <p style="max-width:480px;margin:16px auto 0;font-size:12px;line-height:1.5;color:#94A3B8;text-align:center;">
+    UniGo · Tu viaje, tu universidad. Proyecto académico de la Universidad Santo Tomás, seccional Villavicencio.
+  </p>
+</div>
