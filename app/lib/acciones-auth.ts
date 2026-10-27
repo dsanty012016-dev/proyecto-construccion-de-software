@@ -201,3 +201,24 @@ export async function aceptarPolitica(_anterior: EstadoFormulario, formulario: F
   if (error) return { resultado: "error", mensaje: MENSAJE_GENERICO };
   redirect("/inicio");
 }
+
+/** Tipos de enlace de los correos de Supabase que acepta /continuar. */
+const TIPOS_ENLACE = ["email", "signup", "recovery", "invite", "magiclink", "email_change"] as const;
+
+/**
+ * Usa el enlace del correo (confirmar cuenta o recuperar contraseña) cuando la
+ * persona toca "Continuar" en /continuar. Si ya se usó o venció, vuelve a
+ * /entrar con el aviso.
+ */
+export async function usarEnlaceDeCorreo(formulario: FormData) {
+  const tokenHash = String(formulario.get("token_hash") ?? "");
+  const tipo = String(formulario.get("type") ?? "");
+  const siguiente = destinoSeguro(String(formulario.get("siguiente") ?? ""));
+  const tipoValido = (TIPOS_ENLACE as readonly string[]).includes(tipo);
+  if (!tipoValido || !/^[A-Za-z0-9_-]{8,256}$/.test(tokenHash)) redirect("/entrar?error=enlace");
+
+  const supabase = await crearClienteServidor();
+  const { error } = await supabase.auth.verifyOtp({ type: tipo as (typeof TIPOS_ENLACE)[number], token_hash: tokenHash });
+  if (error) redirect("/entrar?error=enlace");
+  redirect(tipo === "recovery" ? "/nueva-clave" : siguiente);
+}
