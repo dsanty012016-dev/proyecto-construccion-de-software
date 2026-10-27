@@ -24,6 +24,10 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
+      # Dependencias de la app con fallas de seguridad conocidas (altas o críticas).
+      - name: Auditoría de dependencias
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Lint
         run: npm run lint
 

@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 // Manifiesto de la PWA: permite agregar UniGo a la pantalla de inicio del
 // celular y que se abra como una app, sin la barra del navegador.
-// (El modo sin conexión con service worker queda para una fase posterior.)
+// Sin internet, el service worker (public/sw.js) muestra /sin-conexion.
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "UniGo",
