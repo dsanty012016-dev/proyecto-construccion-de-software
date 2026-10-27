@@ -31,7 +31,7 @@ Todo esto quedó como prueba en `supabase/pruebas/pruebas.sql` (sección 10) y c
 2. ~~Aplicar `015-revision-seguridad.sql`~~: aplicada.
 3. ~~Política de privacidad~~ (Ley 1581): lista en la fase 8 (`/privacidad`, migración 016).
 4. ~~Al publicar en Vercel~~: Site URL y Redirect URLs en `docs/supabase-auth.md`; `npm audit` corre en GitHub en cada subida (falla con fallas altas o críticas).
-5. ~~CSP completa~~ (fase 11, `next.config.ts`): la página solo carga código de sí misma y de aframe.io, y solo se conecta con Supabase, OpenFreeMap, FOSSGIS y la barra de vistas previas de Vercel. Si se agrega un servicio externo, hay que sumarlo ahí.
+5. ~~CSP completa~~ (fase 11, `next.config.ts`): la página solo carga código de sí misma y de aframe.io, y solo se conecta con Supabase, OpenFreeMap, FOSSGIS y la barra de vistas previas de Vercel. Si se agrega un servicio externo, hay que sumarlo ahí. Solo la portada (`/`) permite además `'unsafe-eval'`: A-Frame 1.7 usa `new Function()` al cargar (en su librería de texto) y sin eso no arranca el 3D; es una página pública sin datos de usuarios.
 
 ## Decisiones de diseño (conocidas, no son fallas)
 
