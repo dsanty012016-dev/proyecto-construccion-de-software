@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { usarEnlaceDeCorreo } from "@/app/lib/acciones-auth";
 import { EncabezadoLogo } from "@/app/ui/auth/encabezado";
-import { BotonEnviar } from "@/app/ui/auth/campos";
+import { FormularioContinuar } from "@/app/ui/auth/formulario-continuar";
 
 export const metadata: Metadata = { title: "Continuar", robots: { index: false } };
 
@@ -22,12 +21,12 @@ export default async function PaginaContinuar({
         titulo={recuperar ? "Crea tu contraseña nueva" : "Confirma tu cuenta"}
         subtitulo={recuperar ? "Toca el botón para seguir y escribir tu contraseña nueva." : "Toca el botón para confirmar tu correo institucional."}
       />
-      <form action={usarEnlaceDeCorreo} className="mt-8 space-y-4">
-        <input type="hidden" name="token_hash" value={token_hash ?? ""} />
-        <input type="hidden" name="type" value={type ?? ""} />
-        <input type="hidden" name="siguiente" value={siguiente ?? ""} />
-        <BotonEnviar enviando="Un momento…">{recuperar ? "Continuar" : "Confirmar mi cuenta"}</BotonEnviar>
-      </form>
+      <FormularioContinuar
+        tokenHash={token_hash ?? ""}
+        tipo={type ?? ""}
+        siguiente={siguiente ?? ""}
+        texto={recuperar ? "Continuar" : "Confirmar mi cuenta"}
+      />
     </>
   );
 }
