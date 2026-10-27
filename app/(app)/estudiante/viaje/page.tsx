@@ -19,6 +19,7 @@ import { RutaCorta } from "@/app/ui/comun/ruta-viaje";
 import { BotonCompartirViaje } from "@/app/ui/estudiante/boton-compartir-viaje";
 import { MapaEnVivo } from "@/app/ui/estudiante/mapa-en-vivo";
 import { PALABRAS } from "@/app/lib/sentido";
+import { horaDe, venceSolicitud } from "@/app/lib/vencimientos";
 import { TarjetaOferta } from "@/app/ui/estudiante/tarjeta-oferta";
 import { Nota } from "@/app/ui/comun/nota";
 
@@ -75,6 +76,9 @@ export default async function PaginaViajeEstudiante() {
           <p className="flex gap-2.5 text-[13px] leading-relaxed text-texto-suave">
             <IconoCandado className="mt-0.5 size-[18px] shrink-0 text-secundario" />
             Pagas al aceptar con tu saldo ({pesos(saldo)}). El conductor recibe el dinero cuando llegues.
+          </p>
+          <p className="text-center text-[13px] text-texto-suave">
+            Si no aceptas una oferta antes de las {horaDe(venceSolicitud(Date.parse(viaje.creado_en)))}, la solicitud se cancela sola.
           </p>
           <BotonAccion accion={cancelarViaje} campos={{ viaje: viaje.id }} estilo="discreto" textoSi="Sí, cancelar" confirmar="¿Cancelar la solicitud?">
             Cancelar la solicitud
