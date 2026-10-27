@@ -219,6 +219,13 @@ export async function usarEnlaceDeCorreo(formulario: FormData) {
 
   const supabase = await crearClienteServidor();
   const { error } = await supabase.auth.verifyOtp({ type: tipo as (typeof TIPOS_ENLACE)[number], token_hash: tokenHash });
-  if (error) redirect("/entrar?error=enlace");
+  if (error) {
+    // Lo más común: el enlace ya se usó (la persona lo volvió a abrir desde el
+    // correo) y la sesión de la primera vez sigue abierta. Entonces no hay
+    // error que mostrar: sigue adentro.
+    const { data } = await supabase.auth.getClaims();
+    if (data?.claims?.sub) redirect(tipo === "recovery" ? "/nueva-clave" : siguiente);
+    redirect("/entrar?error=enlace");
+  }
   redirect(tipo === "recovery" ? "/nueva-clave" : siguiente);
 }
