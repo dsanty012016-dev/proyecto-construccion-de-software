@@ -5,6 +5,7 @@ import { perfilActual } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
 import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
+import { InstalarApp } from "@/app/ui/comun/instalar-app";
 import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
 
 export const metadata: Metadata = { title: "Perfil" };
@@ -41,6 +42,7 @@ export default async function PaginaPerfil() {
       </dl>
 
       <EstadoCuenta personaId={usuario.id} siempre />
+      <InstalarApp />
 
       {perfil?.rol && (
         <section aria-labelledby="titulo-modo" className="space-y-3">

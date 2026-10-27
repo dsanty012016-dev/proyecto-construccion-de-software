@@ -1,10 +1,10 @@
 // Pruebas de las validaciones de los formularios de cupos.
 import { describe, expect, it } from "vitest";
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 import { erroresPorCampo } from "./validaciones-auth";
 import { esquemaPedirPuesto, esquemaPublicarCupo, esquemaResponderPuesto } from "./validaciones-cupo";
 
-function errores(esquema: ZodTypeAny, datos: unknown) {
+function errores(esquema: ZodType, datos: unknown) {
   const resultado = esquema.safeParse(datos);
   return resultado.success ? {} : erroresPorCampo(resultado.error);
 }

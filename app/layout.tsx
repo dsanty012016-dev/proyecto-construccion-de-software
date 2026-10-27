@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Manrope } from "next/font/google";
+import { RegistrarServiceWorker } from "@/app/ui/comun/registrar-sw";
 import "./globals.css";
 
 // Inter para títulos y Manrope para el texto (identidad de UniGo).
@@ -52,7 +53,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" className={`${inter.variable} ${manrope.variable}`}>
-      <body className="min-h-dvh">{children}</body>
+      <body className="min-h-dvh">
+        {children}
+        <RegistrarServiceWorker />
+      </body>
     </html>
   );
 }

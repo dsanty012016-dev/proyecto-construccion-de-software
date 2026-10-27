@@ -20,7 +20,7 @@ function mensajeDeError(error: { code?: string; message: string }): string {
 const esquemaEnviar = z.object({
   tipo: z.enum(TIPOS_DOCUMENTO),
   ruta: z.string().regex(/^[0-9a-f-]{36}\/[A-Za-z0-9._-]{1,100}$/, "Ese archivo no es válido."),
-  autorizo: z.literal("si", { errorMap: () => ({ message: "Debes autorizar el tratamiento de tus datos para continuar." }) }),
+  autorizo: z.literal("si", { error: "Debes autorizar el tratamiento de tus datos para continuar." }),
 });
 
 export async function enviarDocumento(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {

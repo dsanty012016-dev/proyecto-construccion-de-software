@@ -8,7 +8,7 @@ export const DOMINIO_INSTITUCIONAL = "ustavillavo.edu.co";
 export const LARGO_MINIMO_CLAVE = 8;
 
 const correo = z
-  .string({ required_error: "Escribe tu correo." })
+  .string({ error: "Escribe tu correo." })
   .trim()
   .toLowerCase()
   .min(1, "Escribe tu correo.")
@@ -20,7 +20,7 @@ const correoInstitucional = correo.refine(
 );
 
 const clave = z
-  .string({ required_error: "Escribe una contraseña." })
+  .string({ error: "Escribe una contraseña." })
   .min(LARGO_MINIMO_CLAVE, `La contraseña debe tener al menos ${LARGO_MINIMO_CLAVE} caracteres.`)
   // bcrypt (lo que usa Supabase) solo tiene en cuenta los primeros 72 bytes.
   .max(72, "La contraseña es demasiado larga (máximo 72 caracteres).")
@@ -29,7 +29,7 @@ const clave = z
 
 /** Celular colombiano: 10 dígitos que empiezan por 3. Se guarda como +57... */
 const telefono = z
-  .string({ required_error: "Escribe tu celular." })
+  .string({ error: "Escribe tu celular." })
   .transform((valor) => valor.replace(/[\s\-()]/g, "").replace(/^\+?57(?=\d{10}$)/, ""))
   .refine((valor) => /^3\d{9}$/.test(valor), "El celular debe tener 10 dígitos y empezar por 3.")
   .transform((valor) => `+57${valor}`);
@@ -37,19 +37,19 @@ const telefono = z
 export const esquemaRegistro = z
   .object({
     nombre: z
-      .string({ required_error: "Escribe tu nombre." })
+      .string({ error: "Escribe tu nombre." })
       .trim()
       .min(2, "Escribe tu nombre completo.")
       .max(80, "El nombre es demasiado largo."),
     correo: correoInstitucional,
     telefono,
     rol: z.enum(["estudiante", "conductor"], {
-      errorMap: () => ({ message: "Elige si eres estudiante o conductor." }),
+      error: "Elige si eres estudiante o conductor.",
     }),
     clave,
     confirmacion: z.string(),
     terminos: z.literal("on", {
-      errorMap: () => ({ message: "Debes aceptar la política de privacidad para continuar." }),
+      error: "Debes aceptar la política de privacidad para continuar.",
     }),
   })
   .refine((datos) => datos.clave === datos.confirmacion, {
@@ -73,7 +73,7 @@ export const esquemaNuevaClave = z
 
 export const esquemaRol = z.object({
   rol: z.enum(["estudiante", "conductor"], {
-    errorMap: () => ({ message: "Elige si eres estudiante o conductor." }),
+    error: "Elige si eres estudiante o conductor.",
   }),
 });
 

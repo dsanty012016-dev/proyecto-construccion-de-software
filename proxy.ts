@@ -45,7 +45,7 @@ export async function proxy(peticion: NextRequest) {
 
 export const config = {
   matcher: [
-    // Todo menos archivos estáticos, imágenes, íconos y el manifiesto.
-    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|manifest.webmanifest|brand/|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Todo menos archivos estáticos, imágenes, íconos, el manifiesto y el service worker.
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|manifest.webmanifest|sw.js|brand/|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
