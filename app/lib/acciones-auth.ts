@@ -29,7 +29,12 @@ function sinClaves(datos: Record<string, string>) {
   return copia;
 }
 
-/** Dirección del sitio (http://localhost:3000 o la de Vercel) para los enlaces de los correos. */
+/**
+ * Dirección del sitio para los enlaces de los correos: la misma desde donde se
+ * pidió (https://unigoproject.vercel.app en producción, localhost al
+ * desarrollar). Supabase solo la respeta si está en "Redirect URLs"; si no,
+ * usa la "Site URL" (ver docs/supabase-auth.md).
+ */
 async function origen() {
   const cabeceras = await headers();
   const declarado = cabeceras.get("origin");
