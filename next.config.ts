@@ -7,7 +7,8 @@ import type { NextConfig } from "next";
 //   llevar el token de un viaje compartido);
 // - la ubicación solo la pide UniGo; cámara y micrófono, nadie;
 // - siempre por https;
-// - CSP (fase 11): la página solo carga código y datos de los sitios que usa.
+// - CSP (fase 11): la página solo carga código y datos de los sitios que usa
+//   (la portada además permite eval, por A-Frame; ver cspPortada).
 
 /** Supabase del proyecto (datos, sesión, tiempo real y documentos). */
 const supabase = (() => {
@@ -59,9 +60,18 @@ const politica = {
   "upgrade-insecure-requests": [],
 };
 
-const csp = Object.entries(politica)
-  .map(([directiva, valores]) => [directiva, ...valores].join(" "))
-  .join("; ");
+function escribir(p: Record<string, string[]>) {
+  return Object.entries(p)
+    .map(([directiva, valores]) => [directiva, ...valores].join(" "))
+    .join("; ");
+}
+
+const csp = escribir(politica);
+
+// La portada (/) carga el 3D de A-Frame, que usa new Function() al arrancar
+// (dentro de su librería de texto). Solo ahí se permite 'unsafe-eval': es una
+// página pública sin datos de nadie; el resto de la app queda sin eval.
+const cspPortada = escribir({ ...politica, "script-src": [...politica["script-src"], "'unsafe-eval'"] });
 
 const cabeceras = [
   { key: "Content-Security-Policy", value: csp },
@@ -77,6 +87,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: cabeceras },
+      // Va después: para la portada reemplaza la CSP general.
+      { source: "/", headers: [{ key: "Content-Security-Policy", value: cspPortada }] },
       // El service worker siempre se pide de nuevo (si no, una versión vieja se queda pegada).
       { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }] },
     ];
