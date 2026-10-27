@@ -89,9 +89,10 @@ function pintarEstilo(mapa: MapaLibre) {
   };
   // MapLibre 6 tipa cada propiedad de pintura; aquí se arman por nombre.
   type Propiedad = Parameters<MapaLibre["setPaintProperty"]>[1];
-  const poner = (id: string, propiedad: string, valor: unknown) => {
+  type Valor = Parameters<MapaLibre["setPaintProperty"]>[2];
+  const poner = (id: string, propiedad: string, valor: string | undefined) => {
     try {
-      mapa.setPaintProperty(id, propiedad as Propiedad, valor);
+      mapa.setPaintProperty(id, propiedad as Propiedad, valor as Valor);
     } catch {
       // Propiedad que esta capa no tiene.
     }
