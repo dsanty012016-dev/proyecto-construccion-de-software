@@ -116,7 +116,7 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 
 ## Viaje de regreso (fase 9, migración 017)
 - Viajes por pedido y cupos tienen **sentido**: ida (a la U) o regreso (de la U a la casa). Los de antes quedan en ida.
-- **Punto en la U:** en la ida es el destino y en el regreso la recogida. Por defecto es la sede; se puede mover a otra portería o esquina a máximo **500 m** de la sede (provisional, se puede ajustar).
+- **Punto en la U:** en la ida es el destino y en el regreso la recogida. Por defecto es la sede; se puede mover a otra portería o esquina a máximo **500 m** de la sede (confirmado por el equipo: cubre las porterías y esquinas de alrededor sin dejar que el "punto en la U" quede en otro barrio).
 - El punto de la casa debe quedar a 100 m o más del punto en la U.
 - **Cupo de regreso:** sale de la U (máximo 500 m de la sede, ahí se suben todos) y el conductor marca hasta dónde va. Cada estudiante marca dónde se baja; el conductor los ve numerados en orden de bajada, de la U hacia afuera.
 - Pago, cancelación, strikes, seguimiento en vivo, compartir y calificaciones: **las mismas reglas** que la ida.
@@ -124,7 +124,7 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 
 ## Vencimientos (fase 10, migración 018)
 - **Viaje por pedido:** si a los **15 minutos** de pedirlo el estudiante no ha aceptado una oferta, la solicitud se cancela sola. Sin cobro ni strike; las ofertas quedan rechazadas. La pantalla de espera dice a qué hora vence.
-- **Cupo (hora fija):** si **5 minutos** después de la hora de salida el conductor no ha salido, el cupo se cancela solo. Como si el conductor lo cancelara: a quien pagó se le devuelve todo y, si había puestos pagados, el conductor suma 1 strike.
+- **Cupo (hora fija):** si **5 minutos** después de la hora de salida el conductor no ha salido, el cupo se cancela solo. Como si el conductor lo cancelara: a quien pagó se le devuelve todo y, si había puestos pagados, el conductor suma 1 strike (confirmado por el equipo).
 - Lo hace la base con una tarea que corre cada minuto (pg_cron). En el historial salen como "Venció sin conductor" y "No salió".
 
 ## Provisional (falta que el equipo decida)
