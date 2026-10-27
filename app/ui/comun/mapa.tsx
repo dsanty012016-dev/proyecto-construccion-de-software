@@ -87,9 +87,11 @@ function pintarEstilo(mapa: MapaLibre) {
     viaMenor: colorDeToken("--color-mapa-via-menor"),
     textoSuave: colorDeToken("--color-texto-suave"),
   };
+  // MapLibre 6 tipa cada propiedad de pintura; aquí se arman por nombre.
+  type Propiedad = Parameters<MapaLibre["setPaintProperty"]>[1];
   const poner = (id: string, propiedad: string, valor: unknown) => {
     try {
-      mapa.setPaintProperty(id, propiedad, valor);
+      mapa.setPaintProperty(id, propiedad as Propiedad, valor);
     } catch {
       // Propiedad que esta capa no tiene.
     }
