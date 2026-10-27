@@ -57,7 +57,9 @@ function FilaViaje({ item }: { item: ItemViaje }) {
     <li className="space-y-2 border-b border-texto-suave/15 py-4 last:border-b-0">
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-[13px] text-texto-suave">{fechaCorta(viaje.terminado_en ?? viaje.cancelado_en ?? viaje.creado_en)}</p>
-        <p className={`text-[13px] font-semibold ${viaje.estado === "cancelado" ? "text-texto-suave" : "text-secundario"}`}>{etiquetaEstado(viaje.estado)}</p>
+        <p className={`text-[13px] font-semibold ${viaje.estado === "cancelado" ? "text-texto-suave" : "text-secundario"}`}>
+          {viaje.vencio ? "Venció sin conductor" : etiquetaEstado(viaje.estado)}
+        </p>
       </div>
       <p className="font-semibold">
         {viaje.origen_texto} → {viaje.destino_texto}
@@ -87,7 +89,7 @@ function FilaCupo({ item }: { item: CupoEnHistorial }) {
     <li className="space-y-2 border-b border-texto-suave/15 py-4 last:border-b-0">
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-[13px] text-texto-suave">Cupo · sale {fechaCorta(cupo.sale_en)}</p>
-        <p className={`text-[13px] font-semibold ${terminado ? "text-secundario" : "text-texto-suave"}`}>{terminado ? "Terminado" : "Cancelado"}</p>
+        <p className={`text-[13px] font-semibold ${terminado ? "text-secundario" : "text-texto-suave"}`}>{terminado ? "Terminado" : cupo.vencio ? "No salió" : "Cancelado"}</p>
       </div>
       <p className="font-semibold">
         {(() => {

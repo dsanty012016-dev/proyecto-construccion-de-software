@@ -122,11 +122,15 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - Pago, cancelación, strikes, seguimiento en vivo, compartir y calificaciones: **las mismas reglas** que la ida.
 - Los estudiantes ven los cupos separados en "A la U" y "De la U a casa".
 
+## Vencimientos (fase 10, migración 018)
+- **Viaje por pedido:** si a los **15 minutos** de pedirlo el estudiante no ha aceptado una oferta, la solicitud se cancela sola. Sin cobro ni strike; las ofertas quedan rechazadas. La pantalla de espera dice a qué hora vence.
+- **Cupo (hora fija):** si **5 minutos** después de la hora de salida el conductor no ha salido, el cupo se cancela solo. Como si el conductor lo cancelara: a quien pagó se le devuelve todo y, si había puestos pagados, el conductor suma 1 strike.
+- Lo hace la base con una tarea que corre cada minuto (pg_cron). En el historial salen como "Venció sin conductor" y "No salió".
+
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |
 |---|---|---|
 | 4 | "IA para la mejor ruta": ¿modelo de IA o algoritmo? | No aplica con viajes de una persona; queda para cuando haya viajes compartidos. |
-| 5 | ¿Las solicitudes vencen si nadie oferta? | No vencen; el estudiante las cancela. |
 
 ## Pendiente para otras fases
 - ~~Ubicación de la sede~~: lista (migración 007).

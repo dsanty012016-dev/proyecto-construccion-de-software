@@ -124,6 +124,7 @@ export type Database = {
           sentido: Sentido;
           terminado_en: string | null;
           universidad_id: number;
+          vencio: boolean;
         };
         Insert: {
           conductor_id: string;
@@ -307,6 +308,7 @@ export type Database = {
           sentido: Sentido;
           terminado_en: string | null;
           universidad_id: number;
+          vencio: boolean;
         };
         Insert: {
           aceptado_en?: string | null;
