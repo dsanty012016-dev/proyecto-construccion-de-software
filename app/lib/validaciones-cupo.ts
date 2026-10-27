@@ -9,7 +9,7 @@ import { PRECIO_MAXIMO, PRECIO_MINIMO } from "./viaje";
 
 function numeroDeTexto(mensaje: string) {
   return z
-    .string({ required_error: mensaje })
+    .string({ error: mensaje })
     .trim()
     .min(1, mensaje)
     .transform((valor) => Number(valor.replace(",", ".")))
@@ -20,7 +20,7 @@ const latitud = (mensaje: string) => numeroDeTexto(mensaje).refine((v) => v >= -
 const longitud = (mensaje: string) => numeroDeTexto(mensaje).refine((v) => v >= -180 && v <= 180, "Esa ubicación no es válida.");
 
 const direccion = z
-  .string({ required_error: "Escribe la dirección o el barrio." })
+  .string({ error: "Escribe la dirección o el barrio." })
   .trim()
   .min(3, "Escribe la dirección o el barrio.")
   .max(120, "Máximo 120 caracteres.");
@@ -32,7 +32,7 @@ const referencia = z
   .optional()
   .transform((valor) => valor || undefined);
 
-const idCupo = z.string({ required_error: "Falta el cupo." }).uuid("Ese cupo no existe.");
+const idCupo = z.string({ error: "Falta el cupo." }).uuid("Ese cupo no existe.");
 
 /**
  * Publicar cupo (017). "punto" es el del conductor: de donde sale en la ida o
@@ -48,11 +48,11 @@ export const esquemaPublicarCupo = z.object({
   u_lng: coordenadaOpcional(180),
   referencia_u: referencia,
   sale_en: z
-    .string({ required_error: "Elige la fecha y la hora de salida." })
+    .string({ error: "Elige la fecha y la hora de salida." })
     .transform((valor, ctx) => {
       const iso = horaLocalAIso(valor);
       if (!iso) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Elige la fecha y la hora de salida." });
+        ctx.addIssue({ code: "custom", message: "Elige la fecha y la hora de salida." });
         return z.NEVER;
       }
       return iso;
@@ -75,7 +75,7 @@ export const esquemaPedirPuesto = z.object({
 });
 
 export const esquemaResponderPuesto = z.object({
-  puesto: z.string({ required_error: "Falta la solicitud." }).uuid("Esa solicitud no existe."),
+  puesto: z.string({ error: "Falta la solicitud." }).uuid("Esa solicitud no existe."),
   decision: z.enum(["aprobar", "rechazar"]),
 });
 

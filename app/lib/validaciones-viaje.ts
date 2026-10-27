@@ -14,16 +14,16 @@ const LARGO_REFERENCIA = 70;
 /** Número que llega como texto del formulario. Vacío o raro = inválido (no 0). */
 function numeroDeTexto(mensaje: string) {
   return z
-    .string({ required_error: mensaje })
+    .string({ error: mensaje })
     .trim()
     .min(1, mensaje)
     .transform((valor) => Number(valor.replace(",", ".")))
     .refine((valor) => Number.isFinite(valor), mensaje);
 }
 
-const idViaje = z.string({ required_error: "Falta el viaje." }).uuid("Ese viaje no existe.");
+const idViaje = z.string({ error: "Falta el viaje." }).uuid("Ese viaje no existe.");
 
-const sentido = z.enum(["ida", "regreso"], { errorMap: () => ({ message: "Elige si vas a la U o sales de la U." }) });
+const sentido = z.enum(["ida", "regreso"], { error: "Elige si vas a la U o sales de la U." });
 
 /** Coordenada que puede no venir (el punto en la U: si no viene, es la sede). */
 function coordenadaOpcional(limite: number) {
@@ -52,7 +52,7 @@ export const esquemaPedirViaje = z.object({
   punto_lat: numeroDeTexto("Elige tu punto en el mapa.").refine((v) => v >= -90 && v <= 90, "Esa ubicación no es válida."),
   punto_lng: numeroDeTexto("Elige tu punto en el mapa.").refine((v) => v >= -180 && v <= 180, "Esa ubicación no es válida."),
   direccion: z
-    .string({ required_error: "Escribe la dirección o el barrio." })
+    .string({ error: "Escribe la dirección o el barrio." })
     .trim()
     .min(3, "Escribe la dirección o el barrio.")
     .max(LARGO_DIRECCION, `Máximo ${LARGO_DIRECCION} caracteres.`),
@@ -82,7 +82,7 @@ export const esquemaOferta = z.object({
 });
 
 export const esquemaAceptarOferta = z.object({
-  oferta: z.string({ required_error: "Falta la oferta." }).uuid("Esa oferta no existe."),
+  oferta: z.string({ error: "Falta la oferta." }).uuid("Esa oferta no existe."),
 });
 
 export const esquemaCalificacion = z.object({
@@ -102,12 +102,12 @@ export const esquemaCalificacion = z.object({
 /** Placa colombiana en mayúsculas y sin espacios: ABC123 (carro) o ABC12D (moto). */
 export const esquemaVehiculo = z.object({
   placa: z
-    .string({ required_error: "Escribe la placa." })
+    .string({ error: "Escribe la placa." })
     .transform((valor) => valor.replace(/[\s-]/g, "").toUpperCase())
     .refine((valor) => /^[A-Z]{3}[0-9]{2}[0-9A-Z]$/.test(valor), "La placa debe verse así: ABC123 o ABC12D."),
-  marca: z.string({ required_error: "Escribe la marca." }).trim().min(1, "Escribe la marca.").max(40, "Máximo 40 caracteres."),
-  modelo: z.string({ required_error: "Escribe el modelo." }).trim().min(1, "Escribe el modelo.").max(40, "Máximo 40 caracteres."),
-  color: z.string({ required_error: "Escribe el color." }).trim().min(1, "Escribe el color.").max(30, "Máximo 30 caracteres."),
+  marca: z.string({ error: "Escribe la marca." }).trim().min(1, "Escribe la marca.").max(40, "Máximo 40 caracteres."),
+  modelo: z.string({ error: "Escribe el modelo." }).trim().min(1, "Escribe el modelo.").max(40, "Máximo 40 caracteres."),
+  color: z.string({ error: "Escribe el color." }).trim().min(1, "Escribe el color.").max(30, "Máximo 30 caracteres."),
 });
 
 export const esquemaDisponibilidad = z.object({
@@ -124,6 +124,6 @@ export const esquemaUbicacion = z.object({
 
 /** Calificación de un puesto de un cupo terminado (014): mismas estrellas y comentario. */
 export const esquemaCalificacionPuesto = esquemaCalificacion.omit({ viaje: true }).extend({
-  puesto: z.string({ required_error: "Falta el puesto." }).uuid("Ese viaje no existe."),
-  cupo: z.string({ required_error: "Falta el cupo." }).uuid("Ese viaje no existe."),
+  puesto: z.string({ error: "Falta el puesto." }).uuid("Ese viaje no existe."),
+  cupo: z.string({ error: "Falta el cupo." }).uuid("Ese viaje no existe."),
 });

@@ -1,6 +1,6 @@
 // Pruebas de las validaciones de los formularios del viaje.
 import { describe, expect, it } from "vitest";
-import type { ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 import { erroresPorCampo } from "./validaciones-auth";
 import {
   esquemaCalificacion,
@@ -12,7 +12,7 @@ import {
 
 const viajeId = "2f1c3a8e-9b7d-4c1e-8a55-0d6f3b2a9c11";
 
-function errores(esquema: ZodTypeAny, datos: unknown) {
+function errores(esquema: ZodType, datos: unknown) {
   const resultado = esquema.safeParse(datos);
   return resultado.success ? {} : erroresPorCampo(resultado.error);
 }
