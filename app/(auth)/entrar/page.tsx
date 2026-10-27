@@ -19,9 +19,9 @@ export default async function PaginaEntrar({
       <EncabezadoLogo titulo="¡Bienvenido!" subtitulo="Inicia sesión para continuar" />
       {error === "enlace" && (
         <div className="mb-4">
-          <Aviso tipo="error">
-            Ese enlace ya se usó o venció. Inicia sesión, o pide uno nuevo desde
-            “¿Olvidaste tu contraseña?”.
+          <Aviso tipo="info">
+            Ese enlace ya se usó o venció. Si ya confirmaste tu cuenta, solo inicia sesión. Si querías cambiar tu contraseña, pide un
+            enlace nuevo en “¿Olvidaste tu contraseña?”.
           </Aviso>
         </div>
       )}
