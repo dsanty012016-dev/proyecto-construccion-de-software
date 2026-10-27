@@ -196,6 +196,9 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     import("maplibre-gl")
       .then((lib) => {
         if (cancelado || !contenedor.current) return;
+        // MapLibre 6 dibuja en un worker aparte: Next.js lo publica como archivo
+        // propio y aquí se le dice dónde está (forma que documenta MapLibre).
+        lib.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString());
         const inicio = centroInicial.current;
         let cargado = false;
         try {
@@ -207,7 +210,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
             attributionControl: { compact: true, customAttribution: CREDITO_RUTAS },
           });
         } catch {
-          // Sin WebGL (navegador viejo o desactivado).
+          // Sin WebGL2 (navegador viejo o desactivado).
           setEstado("error");
           return;
         }
@@ -215,8 +218,8 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
         if (conControles.current) instancia.addControl(new lib.NavigationControl({ showCompass: false }), "top-right");
         // Si el estilo pide una imagen que no trae, se pone una transparente
         // en vez de llenar la consola de avisos.
-        instancia.on("styleimagemissing", (evento) => {
-          if (!instancia.hasImage(evento.id)) instancia.addImage(evento.id, { width: 1, height: 1, data: new Uint8Array(4) });
+        instancia.setMissingStyleImageResolver((id) => {
+          if (!instancia.hasImage(id)) instancia.addImage(id, { width: 1, height: 1, data: new Uint8Array(4) });
         });
         instancia.on("load", () => {
           cargado = true;
