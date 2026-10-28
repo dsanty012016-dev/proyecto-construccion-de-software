@@ -127,6 +127,12 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - **Cupo (hora fija):** si **5 minutos** después de la hora de salida el conductor no ha salido, el cupo se cancela solo. Como si el conductor lo cancelara: a quien pagó se le devuelve todo y, si había puestos pagados, el conductor suma 1 strike (confirmado por el equipo).
 - Lo hace la base con una tarea que corre cada minuto (pg_cron). En el historial salen como "Venció sin conductor" y "No salió".
 
+## Notificaciones (fase 12, migración 019)
+- Se activan con una tarjeta en el inicio ("Ahora no" la oculta 14 días) o desde el perfil, donde también se apagan. El permiso se pide al tocar el botón.
+- **Estudiante:** oferta nueva o cambio de precio; viaje empezó y terminó; puesto aprobado, no aprobado o perdido por no pagar; el cupo salió y llegó; cancelaciones del conductor y vencimientos.
+- **Conductor:** aceptaron su oferta; nueva solicitud de su universidad (si está disponible y verificado); pidieron puesto en su cupo; el estudiante canceló el viaje o dejó el puesto.
+- En iPhone solo con la app instalada. Configuración en `docs/notificaciones.md`.
+
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |
 |---|---|---|

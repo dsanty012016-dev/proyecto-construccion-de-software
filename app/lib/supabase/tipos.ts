@@ -339,6 +339,8 @@ export type Database = {
     Functions: {
       aceptar_oferta: { Args: { p_oferta: string }; Returns: undefined };
       aceptar_politica: { Args: { p_version: string }; Returns: undefined };
+      guardar_suscripcion: { Args: { p_endpoint: string; p_p256dh: string; p_auth: string }; Returns: undefined };
+      borrar_suscripcion: { Args: { p_endpoint: string }; Returns: undefined };
       reportar_ubicacion: { Args: { p_viaje: string; p_lat: number; p_lng: number; p_precision?: number }; Returns: undefined };
       compartir_viaje: { Args: { p_viaje: string }; Returns: string };
       viaje_compartido: {

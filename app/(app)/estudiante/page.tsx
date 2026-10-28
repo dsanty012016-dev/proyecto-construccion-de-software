@@ -10,6 +10,7 @@ import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
 import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
+import { ActivarNotificaciones } from "@/app/ui/comun/activar-notificaciones";
 import { InstalarApp } from "@/app/ui/comun/instalar-app";
 import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
 import { Mapa } from "@/app/ui/comun/mapa";
@@ -64,6 +65,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
         {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
         <EstadoCuenta personaId={usuario.id} />
         <InstalarApp cerrable />
+        <ActivarNotificaciones />
 
         {activo ? (
           <section aria-labelledby="titulo-activo" className="space-y-4 rounded-2xl bg-superficie p-4">
