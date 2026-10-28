@@ -1312,6 +1312,29 @@ reset role;
 select prueba.ok((select count(*) = 0 from privado.suscripciones_push), 'cada quien apaga sus notificaciones');
 
 -- ---------------------------------------------------------------------------
+-- 16. Mantenimiento de las notificaciones (020)
+-- ---------------------------------------------------------------------------
+\echo '== Mantenimiento de las notificaciones'
+
+reset role;
+delete from privado.avisos;
+insert into privado.avisos (personas, titulo, cuerpo, url, creado_en) values
+  (array[:'rita']::uuid[], 'Recién', 'Aún no toca reintentar.', '/inicio', now() - interval '20 seconds'),
+  (array[:'rita']::uuid[], 'Pendiente', 'Se reintenta.', '/inicio', now() - interval '5 minutes'),
+  (array[:'rita']::uuid[], 'Viejo', 'Ya no se reintenta.', '/inicio', now() - interval '2 hours'),
+  (array[:'rita']::uuid[], 'Antiguo', 'Se borra.', '/inicio', now() - interval '8 days');
+insert into privado.avisos (personas, titulo, cuerpo, url, creado_en, enviado_en) values
+  (array[:'rita']::uuid[], 'Enviado', 'No se reintenta.', '/inicio', now() - interval '5 minutes', now() - interval '4 minutes');
+
+select prueba.ok((select reintentados = 1 and borrados = 1 from privado.mantener_avisos()),
+                 'reintenta solo los pendientes de 1 a 30 minutos y borra los de más de 7 días');
+select prueba.ok((select count(*) = 4 and bool_and(titulo <> 'Antiguo') from privado.avisos), 'los avisos de la última semana se quedan');
+set role authenticated;
+select prueba.como(:'rita');
+select prueba.falla($$select * from privado.mantener_avisos()$$, 'permission denied', 'nadie corre el mantenimiento desde la app');
+reset role;
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'

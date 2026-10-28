@@ -18,6 +18,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
 ## Avance
+- Fase 13 (cierre): reintento y limpieza de las notificaciones (migración 020), README al día y documento de entrega `docs/entrega.md` (rama `fase-13-cierre`).
 - Fase 12: notificaciones en el celular (Web Push) con una función de Supabase que las envía, tarjeta para activarlas en inicio y perfil (rama `fase-12-avisos`, migración 019, `docs/notificaciones.md`).
 - Fase 11: app web más parecida a una app: botón para instalarla (Android) o guía (iPhone), página sin conexión con service worker, CSP completa y `npm audit` en GitHub (rama `fase-11-app-web`).
 - Publicada en Vercel: https://unigoproject.vercel.app (equipo UniGo, plan Hobby, se publica con cada merge a `main`).
