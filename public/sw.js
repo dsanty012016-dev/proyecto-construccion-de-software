@@ -70,3 +70,41 @@ self.addEventListener("fetch", (evento) => {
     );
   }
 });
+
+// Notificaciones (fase 12): llegan desde la función "enviar-avisos" de Supabase
+// con { titulo, cuerpo, url }. Al tocarla se abre (o se enfoca) UniGo en esa
+// pantalla.
+self.addEventListener("push", (evento) => {
+  let datos = {};
+  try {
+    datos = evento.data ? evento.data.json() : {};
+  } catch {
+    datos = {};
+  }
+  const url = typeof datos.url === "string" && datos.url.startsWith("/") ? datos.url : "/inicio";
+  evento.waitUntil(
+    self.registration.showNotification(datos.titulo || "UniGo", {
+      body: datos.cuerpo || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      lang: "es",
+      data: { url },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (evento) => {
+  evento.notification.close();
+  const destino = new URL(evento.notification.data?.url || "/inicio", self.location.origin).href;
+  evento.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((ventanas) => {
+      for (const ventana of ventanas) {
+        if (new URL(ventana.url).origin === self.location.origin && "focus" in ventana) {
+          ventana.navigate(destino);
+          return ventana.focus();
+        }
+      }
+      return self.clients.openWindow(destino);
+    }),
+  );
+});

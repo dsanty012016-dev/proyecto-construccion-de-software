@@ -1188,6 +1188,130 @@ select prueba.ok((select estado = 'cancelado' and vencio from public.cupos where
 select prueba.ok((select count(*) = :strikes_tomas from public.strikes where persona_id = :'tomas'), 'sin puestos pagados no hay strike');
 
 -- ---------------------------------------------------------------------------
+-- 14. Notificaciones (019)
+-- ---------------------------------------------------------------------------
+\echo '== Notificaciones'
+
+set role authenticated;
+select prueba.como(:'rita');
+select public.guardar_suscripcion('https://push.ejemplo.com/rita-1', repeat('p', 87), repeat('a', 22));
+select prueba.falla($$select public.guardar_suscripcion('http://inseguro.com/x', repeat('p', 87), repeat('a', 22))$$, 'No pudimos activar', 'solo direcciones https');
+select prueba.falla($$select * from privado.suscripciones_push$$, 'permission denied', 'nadie lee las suscripciones desde la app');
+select prueba.falla($$select * from privado.avisos$$, 'permission denied', 'nadie lee los avisos desde la app');
+select prueba.falla($$select * from privado.tomar_aviso(1)$$, 'permission denied', 'nadie toma avisos desde la app');
+select prueba.como(:'tomas');
+select public.guardar_suscripcion('https://push.ejemplo.com/tomas-1', repeat('q', 87), repeat('b', 22));
+select public.borrar_suscripcion('https://push.ejemplo.com/rita-1');
+reset role;
+select prueba.ok((select count(*) = 2 from privado.suscripciones_push where persona_id in (:'rita', :'tomas')),
+                 'cada quien solo borra su propia suscripción');
+
+-- Rita pide un viaje: le llega a Tomás (disponible y verificado).
+set role authenticated;
+select prueba.como(:'rita');
+select public.solicitar_viaje(4.15, -73.64, 'Barzal', 4.121686, -73.615496, 'USTA') as viaje_aviso \gset
+reset role;
+select prueba.ok((select personas = array[:'tomas']::uuid[] and titulo = 'Nueva solicitud de viaje' and cuerpo like 'De Barzal a la U%'
+                  from privado.avisos order by id desc limit 1), 'a los conductores disponibles les llega la solicitud');
+
+set role authenticated;
+select prueba.como(:'tomas');
+select public.ofertar(:'viaje_aviso', 7000) as oferta_aviso \gset
+reset role;
+select id as aviso_oferta from privado.avisos order by id desc limit 1 \gset
+select prueba.ok((select personas = array[:'rita']::uuid[] and titulo = 'Nueva oferta' and cuerpo = 'Tomás L. te ofrece llevarte por $7.000.'
+                  from privado.avisos where id = :aviso_oferta), 'al estudiante le llega la oferta con el precio');
+select prueba.ok((select count(*) = 1 from privado.tomar_aviso(:aviso_oferta)), 'el aviso se toma con la suscripción de quien lo recibe');
+select prueba.ok((select count(*) = 0 from privado.tomar_aviso(:aviso_oferta)), 'un aviso no se envía dos veces');
+
+set role authenticated;
+select prueba.como(:'rita');
+select public.aceptar_oferta(:'oferta_aviso');
+reset role;
+select prueba.ok((select personas = array[:'tomas']::uuid[] and titulo = '¡Aceptaron tu oferta!' from privado.avisos order by id desc limit 1),
+                 'al conductor le avisan que aceptaron su oferta');
+set role authenticated;
+select prueba.como(:'rita');
+select public.cancelar_viaje(:'viaje_aviso', 'Ya no lo necesito');
+reset role;
+select prueba.ok((select personas = array[:'tomas']::uuid[] and titulo = 'Viaje cancelado' from privado.avisos order by id desc limit 1),
+                 'si el estudiante cancela, se le avisa al conductor');
+
+select count(*) as avisos_antes from privado.avisos \gset
+delete from privado.suscripciones_push where persona_id = :'rita';
+set role authenticated;
+select prueba.como(:'rita');
+select public.solicitar_viaje(4.15, -73.64, 'Barzal', 4.121686, -73.615496, 'USTA') as viaje_sin_aviso \gset
+select prueba.como(:'tomas');
+select public.ofertar(:'viaje_sin_aviso', 7000);
+reset role;
+select prueba.ok((select count(*) = :avisos_antes + 1 from privado.avisos), 'sin notificaciones activas no se crea aviso (solo el de Tomás)');
+select privado.borrar_suscripciones_vencidas(array['https://push.ejemplo.com/tomas-1']);
+select prueba.ok((select count(*) = 0 from privado.suscripciones_push where persona_id = :'tomas'), 'las suscripciones vencidas se borran');
+set role authenticated;
+select prueba.como(:'rita');
+select public.cancelar_viaje(:'viaje_sin_aviso');
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- 15. Notificaciones de un viaje completo (019)
+-- ---------------------------------------------------------------------------
+\echo '== Notificaciones de un viaje completo'
+
+set role authenticated;
+select prueba.como(:'rita');
+select public.guardar_suscripcion('https://push.example.com/rita', 'p256dh-de-rita-0123456789', 'auth-rita-01');
+select prueba.falla($$select public.guardar_suscripcion('http://inseguro.com/x', 'p256dh-de-rita-0123456789', 'auth-rita-01')$$, 'No pudimos activar', 'solo suscripciones https');
+select prueba.falla($$select * from privado.suscripciones_push$$, 'permission denied', 'nadie lee las suscripciones');
+select prueba.falla($$select * from privado.avisos$$, 'permission denied', 'nadie lee los avisos');
+select prueba.falla($$select * from privado.tomar_aviso(1)$$, 'permission denied', 'solo la función de Supabase toma avisos');
+select prueba.como(:'tomas');
+select public.guardar_suscripcion('https://push.example.com/tomas', 'p256dh-de-tomas-0123456789', 'auth-tomas-1');
+reset role;
+select prueba.ok((select count(*) = 2 from privado.suscripciones_push), 'cada quien guarda la suscripción de su celular');
+delete from privado.avisos;
+
+set role authenticated;
+select prueba.como(:'rita');
+select public.solicitar_viaje(4.15, -73.64, 'Barzal', 4.121686, -73.615496, 'USTA') as viaje_aviso \gset
+reset role;
+select prueba.ok((select count(*) = 1 from privado.avisos where :'tomas' = any (personas) and titulo = 'Nueva solicitud de viaje' and cuerpo like 'De Barzal a la U%'),
+                 'al conductor disponible le llega la solicitud nueva');
+
+set role authenticated;
+select prueba.como(:'tomas');
+select public.ofertar(:'viaje_aviso', 7000) as oferta_aviso \gset
+select public.ofertar(:'viaje_aviso', 7500);
+reset role;
+select prueba.ok((select count(*) = 1 from privado.avisos where :'rita' = any (personas) and titulo = 'Nueva oferta' and cuerpo like '%$7.000.'),
+                 'al estudiante le llega cada oferta con el precio');
+select prueba.ok((select count(*) = 1 from privado.avisos where :'rita' = any (personas) and titulo = 'Cambió una oferta' and cuerpo like '%$7.500.'),
+                 'y cuando el conductor cambia el precio');
+
+set role authenticated;
+select prueba.como(:'rita');
+select public.aceptar_oferta(:'oferta_aviso');
+select prueba.como(:'tomas');
+select public.iniciar_viaje(:'viaje_aviso');
+select public.terminar_viaje(:'viaje_aviso');
+reset role;
+select prueba.ok((select count(*) = 1 from privado.avisos where :'tomas' = any (personas) and titulo = '¡Aceptaron tu oferta!'), 'al conductor le avisa que aceptaron su oferta');
+select prueba.ok((select count(*) = 1 from privado.avisos where :'rita' = any (personas) and titulo = 'Tu viaje empezó'), 'al estudiante le avisa que empezó el viaje');
+select prueba.ok((select count(*) = 1 from privado.avisos where :'rita' = any (personas) and titulo = 'Llegaste'), 'y que llegó, para calificar');
+select prueba.ok((select count(*) = 0 from privado.avisos where :'ana' = any (personas)), 'a quien no activó notificaciones no se le crea nada');
+
+select id as aviso_llegaste from privado.avisos where titulo = 'Llegaste' \gset
+select prueba.ok((select count(*) = 1 from privado.tomar_aviso(:aviso_llegaste)), 'la función de Supabase toma el aviso con el celular de la persona');
+select prueba.ok((select count(*) = 0 from privado.tomar_aviso(:aviso_llegaste)), 'un aviso se envía una sola vez');
+select privado.borrar_suscripciones_vencidas(array['https://push.example.com/rita']);
+select prueba.ok((select count(*) = 0 from privado.suscripciones_push where persona_id = :'rita'), 'se borran los celulares que ya no reciben');
+set role authenticated;
+select prueba.como(:'tomas');
+select public.borrar_suscripcion('https://push.example.com/tomas');
+reset role;
+select prueba.ok((select count(*) = 0 from privado.suscripciones_push), 'cada quien apaga sus notificaciones');
+
+-- ---------------------------------------------------------------------------
 -- 9. Sin sesión (anon)
 -- ---------------------------------------------------------------------------
 \echo '== Sin sesión'

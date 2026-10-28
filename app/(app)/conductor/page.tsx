@@ -14,6 +14,7 @@ import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
+import { ActivarNotificaciones } from "@/app/ui/comun/activar-notificaciones";
 import { InstalarApp } from "@/app/ui/comun/instalar-app";
 import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
 import { PastillaSaldo } from "@/app/ui/comun/pastilla-saldo";
@@ -75,6 +76,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
       <EstadoCuenta personaId={usuario.id} />
       <InstalarApp cerrable />
+      <ActivarNotificaciones />
 
       {!verificado && (
         <Link href="/conductor/documentos" className={FILA_ENLACE}>
