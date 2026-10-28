@@ -6,6 +6,8 @@
 3. La función toma el aviso una sola vez (`privado.tomar_aviso`) y lo manda a cada celular con las claves VAPID. Los celulares que ya no existen se borran.
 4. El service worker (`public/sw.js`) muestra la notificación y, al tocarla, abre UniGo en la pantalla del aviso.
 
+Si la función no responde en el momento, cada 2 minutos se reintentan los avisos pendientes de los últimos 30 minutos; los de más de 7 días se borran (migración 020).
+
 En iPhone solo llegan con UniGo instalada en la pantalla de inicio (iOS 16.4 o más nuevo). La tarjeta lo explica.
 
 ## Qué se avisa

@@ -16,6 +16,14 @@ Todo cambio en la base de datos (tablas, políticas RLS, funciones) se escribe a
 | `010-cupos.sql` | Cupos publicados por el conductor y puestos que piden los estudiantes (con aprobación) |
 | `011-verificacion-conductor.sql` | Documentos del conductor (bucket privado), administradores y bloqueo hasta aprobarlos |
 | `012-billetera.sql` | Billetera simulada, pagos retenidos, cobros por cancelación, strikes y suspensiones |
+| `013-seguimiento.sql` | Ubicación en vivo del conductor y enlaces para compartir el viaje |
+| `014-cupos-completos.sql` | Cupos: calificaciones, seguimiento en vivo, compartir por estudiante y orden de recogida |
+| `015-revision-seguridad.sql` | Correcciones de la revisión de seguridad (ver `docs/seguridad.md`) |
+| `016-politica-privacidad.sql` | Aceptación de la política de privacidad (versión y fecha) |
+| `017-viaje-de-regreso.sql` | Sentido ida/regreso en viajes y cupos, punto en la U a máximo 500 m de la sede |
+| `018-vencimientos.sql` | Solicitudes y cupos que se cancelan solos (pg_cron cada minuto) |
+| `019-notificaciones.sql` | Suscripciones del celular, avisos por evento y llamada a la función `enviar-avisos` (pg_net) |
+| `020-mantener-avisos.sql` | Reintento cada 2 minutos y limpieza de avisos viejos |
 
 ## Reglas
 - Nunca editar un script ya ejecutado en Supabase: se crea uno nuevo que lo corrija.
@@ -31,7 +39,8 @@ docker run -d --name unigo-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgre
 PGHOST=localhost PGUSER=postgres PGPASSWORD=postgres ./supabase/pruebas/correr.sh
 ```
 
-## Aplicar en Supabase (cuando exista el proyecto)
+## Aplicar en Supabase
+El proyecto Unigo de Supabase ya tiene aplicadas las migraciones hasta la última que se haya fusionado. Para un proyecto nuevo:
 1. Panel de Supabase → SQL Editor → pegar y ejecutar cada archivo **en orden**, uno por uno. No ejecutes nada de `supabase/pruebas/`.
 2. Authentication → Providers → Email: dejar activado **Confirm email**, para que solo entre quien de verdad tiene el correo institucional.
 3. Revisar en Database → Tables que todas digan "RLS enabled".
