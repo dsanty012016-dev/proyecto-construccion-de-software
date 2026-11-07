@@ -4,21 +4,25 @@ import { gananciaConductor } from "@/app/lib/comision";
 import { historialDeCupos, type CupoEnHistorial } from "@/app/lib/consultas-cupo";
 import { historialDeViajes } from "@/app/lib/consultas-viaje";
 import { etiquetaEstado, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
+import { filtrarHistorial, type Item } from "@/app/lib/historial";
 import { recorridoDelPuesto } from "@/app/lib/sentido";
 import { perfilActual } from "@/app/lib/sesion";
+import { leerFiltro, type ParametrosUrl } from "@/app/lib/validaciones-historial";
+import { FiltrosHistorial } from "@/app/ui/comun/filtros-historial";
 
 export const metadata: Metadata = { title: "Mis viajes" };
 
 type ItemViaje = Awaited<ReturnType<typeof historialDeViajes>>[number];
-type Item = { tipo: "viaje"; fecha: number; dato: ItemViaje } | { tipo: "cupo"; fecha: number; dato: CupoEnHistorial };
 
 const BOTON_CALIFICAR =
   "flex min-h-11 w-full items-center justify-center rounded-xl border border-texto-suave/30 text-sm font-semibold text-texto hover:bg-superficie";
 
 // Historial de viajes por pedido y de cupos (terminados y cancelados), de
 // los dos roles, del más reciente al más viejo. Desde aquí se califica lo que falte.
-export default async function PaginaViajes() {
-  const { usuario } = await perfilActual();
+// Los filtros viven en la URL (?tipo=cupo&estado=terminado&pendientes=1) y se
+// aplican aquí, sobre lo que ya traen las consultas.
+export default async function PaginaViajes({ searchParams }: { searchParams: Promise<ParametrosUrl> }) {
+  const [{ usuario }, filtro] = await Promise.all([perfilActual(), searchParams.then(leerFiltro)]);
   const [viajes, cupos] = await Promise.all([historialDeViajes(usuario.id), historialDeCupos(usuario.id)]);
   const items: Item[] = [
     ...viajes.map((v) => ({
@@ -28,6 +32,7 @@ export default async function PaginaViajes() {
     })),
     ...cupos.map((c) => ({ tipo: "cupo" as const, fecha: Date.parse(c.cupo.sale_en), dato: c })),
   ].sort((a, b) => b.fecha - a.fecha);
+  const visibles = filtrarHistorial(items, filtro);
 
   return (
     <main className="space-y-5 px-5 pt-6">
@@ -41,11 +46,23 @@ export default async function PaginaViajes() {
           Aún no tienes viajes terminados. Cuando termines uno, aparece aquí para calificarlo.
         </p>
       ) : (
-        <ul>
-          {items.map((item) =>
-            item.tipo === "viaje" ? <FilaViaje key={`v-${item.dato.viaje.id}`} item={item.dato} /> : <FilaCupo key={`c-${item.dato.cupo.id}`} item={item.dato} />,
+        <>
+          <FiltrosHistorial filtro={filtro} />
+          {visibles.length === 0 ? (
+            <div role="status" className="space-y-3 rounded-2xl bg-superficie p-5">
+              <p className="font-semibold">No hay viajes con estos filtros</p>
+              <Link href="/viajes" className="inline-flex min-h-11 items-center font-semibold text-secundario underline-offset-4 hover:underline">
+                Quitar los filtros
+              </Link>
+            </div>
+          ) : (
+            <ul>
+              {visibles.map((item) =>
+                item.tipo === "viaje" ? <FilaViaje key={`v-${item.dato.viaje.id}`} item={item.dato} /> : <FilaCupo key={`c-${item.dato.cupo.id}`} item={item.dato} />,
+              )}
+            </ul>
           )}
-        </ul>
+        </>
       )}
     </main>
   );
