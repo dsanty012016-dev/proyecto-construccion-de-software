@@ -151,7 +151,7 @@ export default async function PaginaViajeEstudiante() {
               <a
                 href={`tel:${conductor.telefono}`}
                 aria-label={`Llamar a ${nombre}`}
-                className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primario text-texto hover:bg-primario/85"
+                className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primario text-sobre-primario hover:bg-primario/85"
               >
                 <IconoTelefono className="size-[22px]" />
               </a>

@@ -16,6 +16,26 @@ Definidos una sola vez en `app/globals.css`. Contrastes calculados (WCAG): el te
 
 Texto blanco sobre un botón `primario`: 4,9:1 (cumple).
 
+## Modo claro
+UniGo sigue siendo **modo oscuro primero**, pero también tiene modo claro. Sin elegir nada, la app sigue el modo del celular; el botón de sol/luna (arriba en cada pantalla) guarda la elección en ese navegador. Los mismos tokens cambian de valor en `app/globals.css`, así que los componentes no cambian.
+
+| Token (clase) | Hex en claro | Contraste sobre fondo claro | Sobre superficie blanca |
+|---|---|---|---|
+| `fondo` | `#F4F7FB` | — | — |
+| `superficie` | `#FFFFFF` | — | — |
+| `primario` | `#2563EB` | 4,8:1 (se sigue usando solo como relleno) | 5,2:1 |
+| `secundario` | `#1D4ED8` | 6,2:1 | 6,7:1 |
+| `texto` | `#0B1220` | 17,4:1 | 18,7:1 |
+| `texto-suave` | `#475569` | 7,1:1 | 7,6:1 |
+| `error` | `#B91C1C` | 6,0:1 | 6,5:1 |
+
+Reglas del modo claro:
+- **Texto sobre azul:** encima de `bg-primario` se usa `text-sobre-primario` (blanco `#F8FAFC` en los dos modos, 4,9:1), no `text-texto`, que en claro es azul noche.
+- **Bloques azules grandes** (tarjeta "Estás disponible", viaje activo, bloques azules de la portada): llevan `data-tema="oscuro"` para conservar la paleta oscura por dentro.
+- **Logo:** el componente `Logo` (`app/ui/comun/logo.tsx`) muestra `logo-oscuro.png` o `logo-claro.png` según el modo.
+- **Mapa y 3D:** toman los colores de los tokens y se repintan al cambiar de modo.
+- La paleta clara la propuso el equipo de desarrollo (no viene del documento "IDENTIDAD APP"); si el equipo de diseño define otra, solo hay que cambiar los valores en `globals.css` y esta tabla.
+
 ## Tipografía
 - **Inter**: títulos (`font-titulo`).
 - **Manrope**: texto (`font-texto`).

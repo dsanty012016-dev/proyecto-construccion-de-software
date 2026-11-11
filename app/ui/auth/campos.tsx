@@ -108,7 +108,7 @@ export function BotonEnviar({ children, enviando, deshabilitado }: { children: R
     <button
       type="submit"
       disabled={pending || deshabilitado}
-      className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto transition-colors hover:bg-primario/85 disabled:opacity-70"
+      className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-sobre-primario transition-colors hover:bg-primario/85 disabled:opacity-70"
     >
       {pending ? enviando : children}
     </button>

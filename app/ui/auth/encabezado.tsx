@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Logo } from "@/app/ui/comun/logo";
 import { IconoAtras } from "./iconos-auth";
 
 // Encabezados de las pantallas de acceso: con el logo grande (entrar) o con
@@ -8,14 +8,7 @@ import { IconoAtras } from "./iconos-auth";
 export function EncabezadoLogo({ titulo, subtitulo }: { titulo: string; subtitulo: string }) {
   return (
     <header className="mb-8 text-center">
-      <Image
-        src="/brand/logo-oscuro.png"
-        alt="UniGo, tu viaje, tu universidad"
-        width={1170}
-        height={412}
-        priority
-        className="mx-auto h-auto w-56"
-      />
+      <Logo ancho={1170} alto={412} alt="UniGo, tu viaje, tu universidad" prioridad className="mx-auto h-auto w-56" />
       <h1 className="mt-10 text-3xl tracking-tight">{titulo}</h1>
       <p className="mt-2 text-texto-suave">{subtitulo}</p>
     </header>

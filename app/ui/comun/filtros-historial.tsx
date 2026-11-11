@@ -11,7 +11,7 @@ const NOMBRE_ESTADO: Record<Filtro["estado"], string> = { todos: "Todos", termin
 // Mismo aspecto que el selector de ida y regreso: el activo en azul lleno.
 const OPCION =
   "flex min-h-11 items-center justify-center rounded-xl px-2 text-center text-sm font-semibold transition-colors motion-reduce:transition-none";
-const ACTIVA = "bg-primario text-texto";
+const ACTIVA = "bg-primario text-sobre-primario";
 const INACTIVA = "text-texto-suave hover:text-texto";
 
 export function FiltrosHistorial({ filtro }: { filtro: Filtro }) {

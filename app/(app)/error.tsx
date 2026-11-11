@@ -19,7 +19,7 @@ export default function ErrorDeLaApp({ error, reset }: { error: Error & { digest
         <button
           type="button"
           onClick={reset}
-          className="min-h-12 rounded-xl bg-primario font-titulo font-semibold text-texto hover:bg-primario/85"
+          className="min-h-12 rounded-xl bg-primario font-titulo font-semibold text-sobre-primario hover:bg-primario/85"
         >
           Intentar de nuevo
         </button>

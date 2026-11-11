@@ -41,7 +41,7 @@ export default async function PaginaCupos({ searchParams }: { searchParams: Prom
             key={s}
             href={s === "ida" ? "/estudiante/cupos" : "/estudiante/cupos?sentido=regreso"}
             aria-current={s === sentido ? "page" : undefined}
-            className={`flex min-h-11 items-center justify-center rounded-xl text-sm font-semibold ${s === sentido ? "bg-primario text-texto" : "text-texto-suave hover:text-texto"}`}
+            className={`flex min-h-11 items-center justify-center rounded-xl text-sm font-semibold ${s === sentido ? "bg-primario text-sobre-primario" : "text-texto-suave hover:text-texto"}`}
           >
             {PALABRAS[s].corto}
           </Link>

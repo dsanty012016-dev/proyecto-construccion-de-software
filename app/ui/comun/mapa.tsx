@@ -5,6 +5,7 @@ import type { GeoJSONSource, Map as MapaLibre, Marker } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { type Coordenada, coordenadaValida, distanciaTexto, ESTILO_MAPA, limites } from "@/app/lib/mapa";
 import { buscarRuta, CREDITO_RUTAS } from "@/app/lib/ruta-vial";
+import { escucharTema } from "./tema-navegador";
 
 // Mapa de la app (MapLibre con el estilo oscuro de OpenFreeMap, teñido con la
 // paleta de UniGo para que se vea como en los diseños). Dos usos:
@@ -272,6 +273,20 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   const oLng = origen?.lng;
   const dLat = destino?.lat;
   const dLng = destino?.lng;
+  // Al cambiar entre modo claro y oscuro, el mapa se vuelve a teñir con la
+  // paleta del modo nuevo (los colores salen de globals.css).
+  useEffect(() => {
+    if (estado !== "listo") return;
+    return escucharTema(() => {
+      const mapa = mapaRef.current;
+      if (!mapa) return;
+      pintarEstilo(mapa);
+      for (const id of ["ruta-vial", "ruta-recta"]) {
+        if (mapa.getLayer(id)) mapa.setPaintProperty(id, "line-color", colorDeToken("--color-secundario"));
+      }
+    });
+  }, [estado]);
+
   useEffect(() => {
     const mapa = mapaRef.current;
     const lib = libRef.current;

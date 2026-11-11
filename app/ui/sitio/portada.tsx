@@ -107,7 +107,7 @@ export function Portada() {
                 <span className="font-titulo text-lg font-bold tabular-nums">{o.precio}</span>
               </div>
             ))}
-            <span className="mt-2 flex h-[46px] items-center justify-center rounded-xl bg-primario font-titulo text-[15px] font-semibold">
+            <span className="mt-2 flex h-[46px] items-center justify-center rounded-xl bg-primario font-titulo text-[15px] font-semibold text-sobre-primario">
               Aceptar y pagar $7.000
             </span>
           </div>

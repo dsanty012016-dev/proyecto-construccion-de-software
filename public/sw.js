@@ -7,7 +7,8 @@
 // No guarda páginas ni datos de la app: viajes, saldo y ubicación siempre
 // vienen frescos del servidor.
 
-const VERSION = "unigo-v1";
+const VERSION = "unigo-v2";
+const LOGOS = ["/brand/logo-oscuro.png", "/brand/logo-claro.png"];
 const ESTATICOS = "unigo-estaticos";
 const SIN_CONEXION = "/sin-conexion";
 const MAXIMO_ESTATICOS = 80;
@@ -16,7 +17,7 @@ self.addEventListener("install", (evento) => {
   evento.waitUntil(
     caches
       .open(VERSION)
-      .then((cache) => cache.addAll([SIN_CONEXION, "/brand/logo-oscuro.png"]))
+      .then((cache) => cache.addAll([SIN_CONEXION, ...LOGOS]))
       .then(() => self.skipWaiting()),
   );
 });
@@ -48,8 +49,8 @@ self.addEventListener("fetch", (evento) => {
     return;
   }
 
-  // El logo de la página "sin conexión".
-  if (url.pathname === "/brand/logo-oscuro.png") {
+  // Los logos de la página "sin conexión" (modo oscuro y modo claro).
+  if (LOGOS.includes(url.pathname)) {
     evento.respondWith(caches.match(request, { cacheName: VERSION }).then((guardado) => guardado ?? fetch(request)));
     return;
   }

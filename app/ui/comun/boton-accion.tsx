@@ -12,8 +12,8 @@ import { ESTADO_INICIAL, type EstadoFormulario } from "@/app/lib/estado-formular
 type Accion = (anterior: EstadoFormulario, formulario: FormData) => Promise<EstadoFormulario>;
 
 const ESTILOS = {
-  primario: "h-14 w-full rounded-xl bg-primario font-titulo text-base font-semibold text-texto hover:bg-primario/85",
-  pequeno: "min-h-11 rounded-xl bg-primario px-5 font-titulo text-sm font-semibold text-texto hover:bg-primario/85",
+  primario: "h-14 w-full rounded-xl bg-primario font-titulo text-base font-semibold text-sobre-primario hover:bg-primario/85",
+  pequeno: "min-h-11 rounded-xl bg-primario px-5 font-titulo text-sm font-semibold text-sobre-primario hover:bg-primario/85",
   pequenoBorde: "min-h-11 rounded-xl border border-texto-suave/30 px-4 text-sm font-semibold text-texto hover:bg-superficie",
   borde: "min-h-12 w-full rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-superficie",
   peligro: "min-h-12 w-full rounded-xl font-semibold text-error hover:bg-error/10",
@@ -96,7 +96,7 @@ export function BotonAccion({
               type="submit"
               disabled={pendiente}
               className={`min-h-11 rounded-xl text-sm font-semibold disabled:opacity-70 ${
-                estilo === "peligro" || estilo === "peligroBorde" ? "bg-error/15 text-error hover:bg-error/25" : "bg-primario text-texto hover:bg-primario/85"
+                estilo === "peligro" || estilo === "peligroBorde" ? "bg-error/15 text-error hover:bg-error/25" : "bg-primario text-sobre-primario hover:bg-primario/85"
               }`}
             >
               {pendiente ? enviando : textoSi}

@@ -99,7 +99,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       )}
 
       {activo ? (
-        <section aria-labelledby="titulo-viaje-activo" className="space-y-3 rounded-[18px] bg-primario p-[18px] text-texto">
+        <section aria-labelledby="titulo-viaje-activo" data-tema="oscuro" className="space-y-3 rounded-[18px] bg-primario p-[18px] text-texto">
           <h2 id="titulo-viaje-activo" className="text-[22px] tracking-tight">
             {etiquetaEstado(activo.viaje.estado)}
           </h2>
@@ -189,7 +189,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
                 ) : (
                   <Link
                     href={`/conductor/ofertar/${viaje.id}`}
-                    className="flex min-h-11 shrink-0 items-center rounded-xl bg-primario px-[18px] font-titulo text-[15px] font-semibold text-texto hover:bg-primario/85"
+                    className="flex min-h-11 shrink-0 items-center rounded-xl bg-primario px-[18px] font-titulo text-[15px] font-semibold text-sobre-primario hover:bg-primario/85"
                   >
                     Ofertar
                   </Link>

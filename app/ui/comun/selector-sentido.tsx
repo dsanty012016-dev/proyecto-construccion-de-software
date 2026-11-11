@@ -23,7 +23,7 @@ export function SelectorSentido({ valor, alCambiar, pregunta }: Props) {
           <label
             key={sentido}
             htmlFor={`${id}-${sentido}`}
-            className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl px-3 text-center text-sm font-semibold text-texto-suave transition-colors has-[:checked]:bg-primario has-[:checked]:text-texto has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-secundario"
+            className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl px-3 text-center text-sm font-semibold text-texto-suave transition-colors has-[:checked]:bg-primario has-[:checked]:text-sobre-primario has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-secundario"
           >
             <input
               id={`${id}-${sentido}`}

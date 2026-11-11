@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Manrope } from "next/font/google";
+import { COLOR_BARRA, SCRIPT_TEMA } from "@/app/lib/tema";
 import { RegistrarServiceWorker } from "@/app/ui/comun/registrar-sw";
 import "./globals.css";
 
@@ -40,19 +41,29 @@ export const metadata: Metadata = {
 };
 
 // Pensada para celular: sin zoom accidental y con la barra del navegador
-// del mismo color que el fondo.
+// del mismo color que el fondo, en modo claro y en oscuro (si la persona
+// elige un modo con el botón, tema-navegador.ts la actualiza).
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0b1220",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: COLOR_BARRA.claro },
+    { media: "(prefers-color-scheme: dark)", color: COLOR_BARRA.oscuro },
+  ],
+  colorScheme: "dark light",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${manrope.variable}`}>
+    // suppressHydrationWarning: el código de abajo pone data-tema en <html>
+    // antes de que React arranque, y eso no es un error.
+    <html lang="es" className={`${inter.variable} ${manrope.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Pone el modo guardado (claro u oscuro) antes de pintar, para que no parpadee. */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+      </head>
       <body className="min-h-dvh">
         {children}
         <RegistrarServiceWorker />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { BotonTema } from "@/app/ui/comun/boton-tema";
+import { Logo } from "@/app/ui/comun/logo";
 import { BotonReintentar } from "@/app/ui/comun/boton-reintentar";
 
 export const metadata: Metadata = { title: "Sin conexión", robots: { index: false } };
@@ -9,7 +10,10 @@ export const metadata: Metadata = { title: "Sin conexión", robots: { index: fal
 export default function PaginaSinConexion() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-start justify-center gap-5 px-5 py-10">
-      <Image src="/brand/logo-oscuro.png" alt="UniGo" width={97} height={34} className="h-[34px] w-auto" priority unoptimized />
+      <div className="flex w-full items-center justify-between gap-3">
+        <Logo ancho={97} alto={34} className="h-[34px] w-auto" prioridad sinOptimizar />
+        <BotonTema />
+      </div>
       <h1 className="text-3xl tracking-tight">Sin conexión</h1>
       <p className="leading-relaxed text-texto-suave">
         No hay internet en este momento. Tus viajes, tu saldo y tus cupos siguen guardados; apenas vuelva la señal, sigues donde ibas.

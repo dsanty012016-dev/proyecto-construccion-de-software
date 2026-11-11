@@ -13,7 +13,7 @@ export default function NoEncontrada() {
       </p>
       <h1 className="text-2xl tracking-tight">Esta página no existe</h1>
       <p className="text-texto-suave">Puede que el enlace esté mal escrito o que ya no funcione. Si te compartieron un viaje, pídele a esa persona un enlace nuevo.</p>
-      <Link href="/" className="mx-auto inline-flex min-h-12 items-center rounded-full bg-primario px-6 font-titulo font-semibold text-texto hover:bg-primario/85">
+      <Link href="/" className="mx-auto inline-flex min-h-12 items-center rounded-full bg-primario px-6 font-titulo font-semibold text-sobre-primario hover:bg-primario/85">
         Ir al inicio
       </Link>
     </main>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { escucharTema } from "@/app/ui/comun/tema-navegador";
 import { EDIFICIOS, RUTA, UNIVERSIDAD, type Edificio } from "./mapa-ciudad";
 
 // Escena 3D de la portada con A-Frame: la misma ciudad del mapa SVG, con un
@@ -136,6 +137,9 @@ function construirEscena(proporcion: number) {
     primario: color("primario"),
     secundario: color("secundario"),
     texto: color("texto"),
+    // Blanco en los dos modos: la luz que alumbra la ciudad (en modo claro,
+    // "texto" es azul noche y la dejaría a oscuras).
+    luz: color("sobre-primario"),
   };
 
   const edificios = EDIFICIOS.map((e) => caja(e, c.superficie)).join("");
@@ -170,7 +174,7 @@ function construirEscena(proporcion: number) {
   background="color: ${c.fondo}" fog="type: linear; color: ${c.fondo}; near: ${16 * lejos}; far: ${34 * lejos}"
   style="width:100%;height:100%">
   <a-entity light="type: ambient; color: ${c.secundario}; intensity: 0.55"></a-entity>
-  <a-entity light="type: directional; color: ${c.texto}; intensity: 0.9" position="-4 8 6"></a-entity>
+  <a-entity light="type: directional; color: ${c.luz}; intensity: 0.9" position="-4 8 6"></a-entity>
   <a-entity light="type: point; color: ${c.primario}; intensity: 1.4; distance: 9" position="${UNIVERSIDAD.x} 3.5 ${UNIVERSIDAD.z}"></a-entity>
 
   <a-entity camera="fov: 42" position="${camara}" rotation="-40 0 0"
@@ -206,6 +210,22 @@ export function EscenaRuta() {
     const nodo = contenedor.current;
     if (!nodo || !conviene3D()) return;
     let cancelado = false;
+    let construida = false;
+
+    const construir = () => {
+      nodo.innerHTML = construirEscena(nodo.clientWidth / Math.max(1, nodo.clientHeight));
+      construida = true;
+      const escena = nodo.querySelector("a-scene");
+      escena?.addEventListener("loaded", () => !cancelado && setLista(true), {
+        once: true,
+      });
+    };
+
+    // Al cambiar entre modo claro y oscuro, la ciudad se arma de nuevo con
+    // los colores del modo nuevo (A-Frame los recibe escritos, no por CSS).
+    const dejarDeEscuchar = escucharTema(() => {
+      if (!cancelado && construida) construir();
+    });
 
     // Espera a que la página termine de cargar y el navegador esté libre.
     const empezar = () => {
@@ -213,11 +233,7 @@ export function EscenaRuta() {
         .then((AFRAME) => {
           if (cancelado) return;
           registrarRecorrido(AFRAME);
-          nodo.innerHTML = construirEscena(nodo.clientWidth / Math.max(1, nodo.clientHeight));
-          const escena = nodo.querySelector("a-scene");
-          escena?.addEventListener("loaded", () => !cancelado && setLista(true), {
-            once: true,
-          });
+          construir();
         })
         .catch(() => {
           // Sin A-Frame se queda el mapa SVG; no hace falta avisar.
@@ -234,6 +250,7 @@ export function EscenaRuta() {
 
     return () => {
       cancelado = true;
+      dejarDeEscuchar();
       window.removeEventListener("load", enEspera);
       nodo.innerHTML = "";
     };

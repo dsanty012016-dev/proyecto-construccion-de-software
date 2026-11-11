@@ -6,7 +6,7 @@ export function BotonReintentar() {
     <button
       type="button"
       onClick={() => window.location.reload()}
-      className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-texto transition-colors hover:bg-primario/85"
+      className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-sobre-primario transition-colors hover:bg-primario/85"
     >
       Reintentar
     </button>

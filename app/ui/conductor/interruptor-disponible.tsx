@@ -23,7 +23,8 @@ export function InterruptorDisponible({
   return (
     <form action={accion} className="space-y-2">
       <input type="hidden" name="disponible" value={disponible ? "no" : "si"} />
-      <div className={`space-y-2.5 rounded-[18px] p-[18px] ${disponible ? "bg-primario text-texto" : "bg-superficie text-texto"}`}>
+      {/* Sobre el azul se conserva la paleta oscura (texto blanco) también en modo claro. */}
+      <div data-tema={disponible ? "oscuro" : undefined} className={`space-y-2.5 rounded-[18px] p-[18px] text-texto ${disponible ? "bg-primario" : "bg-superficie"}`}>
         <div className="flex min-h-11 items-center gap-4">
           <div className="min-w-0 flex-1">
             <p id="etiqueta-disponible" className="font-titulo text-[22px] font-bold tracking-tight">

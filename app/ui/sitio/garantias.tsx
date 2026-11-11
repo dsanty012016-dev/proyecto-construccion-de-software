@@ -41,7 +41,7 @@ const PRECIOS = [
 export function Seguridad() {
   return (
     <section id="seguridad" aria-labelledby="titulo-seguridad" className={`px-5 ${AIRE}`}>
-      <div className="mx-auto flex max-w-[1200px] flex-wrap gap-x-[4.5rem] gap-y-10 rounded-[2rem] bg-primario px-[clamp(1.5rem,5vw,4.5rem)] py-[clamp(2.25rem,6vw,5rem)]">
+      <div data-tema="oscuro" className="mx-auto flex max-w-[1200px] flex-wrap gap-x-[4.5rem] gap-y-10 rounded-[2rem] bg-primario px-[clamp(1.5rem,5vw,4.5rem)] py-[clamp(2.25rem,6vw,5rem)]">
         <h2 id="titulo-seguridad" className="min-w-0 flex-[1_1_21rem] text-[clamp(2.1rem,4.6vw,3.6rem)] leading-[1.04] font-extrabold tracking-[-0.035em] text-balance">
           Tu seguridad la cuida el sistema, no la buena voluntad.
         </h2>
