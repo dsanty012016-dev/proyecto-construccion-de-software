@@ -154,6 +154,12 @@ html {
   scrollbar-color: var(--color-linea) var(--color-fondo);
 }
 
+/* Portada: la barra de arriba es fija, así que los enlaces a secciones
+   (#como-funciona, #precios...) dejan espacio para que no queden debajo de ella. */
+html:has(#barra-sitio) {
+  scroll-padding-top: 5rem;
+}
+
 /* Sobre los bloques azules de la landing, el foco azul claro no se ve: va en blanco. */
 .zona-azul :focus-visible {
   outline-color: var(--color-sobre-primario);
