@@ -125,7 +125,7 @@ export function ActivarNotificaciones({ enPerfil = false }: { enPerfil?: boolean
   if (!enPerfil && (estado.paso !== "apagadas" || cerradoHace())) return null;
 
   const boton =
-    "flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primario px-4 font-titulo text-sm font-semibold text-texto hover:bg-primario/85 disabled:opacity-70";
+    "flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primario px-4 font-titulo text-sm font-semibold text-sobre-primario hover:bg-primario/85 disabled:opacity-70";
 
   return (
     <section aria-labelledby="titulo-notificaciones" className="space-y-3 rounded-2xl border border-secundario/40 p-4">

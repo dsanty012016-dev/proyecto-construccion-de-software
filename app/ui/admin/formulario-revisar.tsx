@@ -37,7 +37,7 @@ export function FormularioRevisar({ documentoId }: { documentoId: string }) {
           name="decision"
           value="aprobar"
           disabled={pendiente}
-          className="min-h-11 rounded-xl bg-primario text-sm font-semibold text-texto hover:bg-primario/85 disabled:opacity-70"
+          className="min-h-11 rounded-xl bg-primario text-sm font-semibold text-sobre-primario hover:bg-primario/85 disabled:opacity-70"
         >
           Aprobar
         </button>

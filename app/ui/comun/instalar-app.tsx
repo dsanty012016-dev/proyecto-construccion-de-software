@@ -108,7 +108,7 @@ export function InstalarApp({ cerrable = false }: { cerrable?: boolean }) {
           <button
             type="button"
             onClick={instalar}
-            className="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primario px-4 font-titulo text-sm font-semibold text-texto hover:bg-primario/85"
+            className="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primario px-4 font-titulo text-sm font-semibold text-sobre-primario hover:bg-primario/85"
           >
             Instalar UniGo
           </button>
@@ -118,7 +118,7 @@ export function InstalarApp({ cerrable = false }: { cerrable?: boolean }) {
               type="button"
               onClick={() => setVerPasos(true)}
               aria-expanded={verPasos}
-              className="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primario px-4 font-titulo text-sm font-semibold text-texto hover:bg-primario/85"
+              className="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-primario px-4 font-titulo text-sm font-semibold text-sobre-primario hover:bg-primario/85"
             >
               Cómo instalarla
             </button>

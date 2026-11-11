@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cupoCompartido, viajeCompartido } from "@/app/lib/consultas-seguimiento";
 import { fechaCorta } from "@/app/lib/formato";
 import type { Coordenada } from "@/app/lib/mapa";
 import { textoUbicacion, viajeSeSigue } from "@/app/lib/seguimiento";
+import { BotonTema } from "@/app/ui/comun/boton-tema";
+import { Logo } from "@/app/ui/comun/logo";
 import { Mapa } from "@/app/ui/comun/mapa";
 import { PasosViaje } from "@/app/ui/comun/pasos-viaje";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
@@ -111,8 +112,11 @@ export default async function PaginaViajeCompartido({ params }: { params: Promis
 
   const encabezado = (
     <header className="flex items-center justify-between gap-3 px-5 pt-4">
-      <Image src="/brand/logo-oscuro.png" alt="UniGo" width={91} height={32} className="h-8 w-auto" priority />
-      <span className="text-[13px] font-semibold text-texto-suave">Viaje compartido</span>
+      <Logo ancho={91} alto={32} className="h-8 w-auto" prioridad />
+      <div className="flex items-center gap-1">
+        <span className="text-[13px] font-semibold text-texto-suave">Viaje compartido</span>
+        <BotonTema />
+      </div>
     </header>
   );
 

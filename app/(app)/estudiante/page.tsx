@@ -20,7 +20,7 @@ import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 export const metadata: Metadata = { title: "Inicio" };
 
 const BOTON_PRINCIPAL =
-  "flex h-14 w-full items-center justify-center rounded-2xl bg-primario font-titulo text-base font-semibold text-texto transition-colors hover:bg-primario/85";
+  "flex h-14 w-full items-center justify-center rounded-2xl bg-primario font-titulo text-base font-semibold text-sobre-primario transition-colors hover:bg-primario/85";
 const BOTON_BORDE =
   "flex h-14 w-full items-center justify-center rounded-2xl border border-texto-suave/40 font-titulo text-base font-semibold text-texto transition-colors hover:bg-superficie";
 

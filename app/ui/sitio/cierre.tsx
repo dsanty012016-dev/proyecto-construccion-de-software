@@ -74,7 +74,7 @@ export function Equipo() {
 export function Cierre() {
   return (
     <section aria-labelledby="titulo-cierre" className={`px-5 ${AIRE}`}>
-      <div className="zona-azul mx-auto flex max-w-[1200px] flex-col items-center gap-[22px] rounded-[2rem] bg-primario px-[clamp(1.5rem,5vw,4.5rem)] py-[clamp(3rem,7vw,6rem)] text-center">
+      <div data-tema="oscuro" className="zona-azul mx-auto flex max-w-[1200px] flex-col items-center gap-[22px] rounded-[2rem] bg-primario px-[clamp(1.5rem,5vw,4.5rem)] py-[clamp(3rem,7vw,6rem)] text-center">
         <h2 id="titulo-cierre" className="text-[clamp(2.5rem,6.4vw,5.25rem)] leading-[0.98] font-extrabold tracking-[-0.04em] text-balance">
           Tu viaje, tu universidad.
         </h2>

@@ -2,7 +2,8 @@
 
 /* Identidad visual de UniGo (ver docs/identidad.md; modo oscuro primero).
    Los colores se definen UNA sola vez aquí; en los componentes se usan como
-   clases (bg-fondo, text-texto, bg-primario...) y nunca como hex sueltos. */
+   clases (bg-fondo, text-texto, bg-primario...) y nunca como hex sueltos.
+   Aquí va la paleta oscura; la clara está más abajo ("Modo claro"). */
 @theme {
   --color-fondo: #0b1220; /* azul noche: fondo de la app, mapa y conductor */
   --color-superficie: #172033; /* tarjetas y componentes sobre el fondo */
@@ -11,6 +12,7 @@
   --color-texto: #f8fafc; /* títulos y texto principal */
   --color-texto-suave: #94a3b8; /* descripciones y texto secundario */
   --color-error: #fca5a5; /* mensajes de error y campos inválidos (9,6:1 sobre fondo) */
+  --color-sobre-primario: #f8fafc; /* texto e iconos encima del azul primario: blanco en los dos modos */
   /* Solo para teñir el mapa como en los diseños (ui/comun/mapa.tsx). */
   --color-mapa-tierra: #0e1729; /* manzanas y terreno, un punto más claro que el fondo */
   --color-mapa-via: #1a2740; /* avenidas y vías principales */
@@ -24,10 +26,93 @@
   --font-texto: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* ---------------------------------------------------------------------------
+   Modo claro y modo oscuro.
+   - Sin elegir nada, UniGo sigue el modo del celular (prefers-color-scheme).
+   - El botón de sol/luna (ui/comun/boton-tema.tsx) guarda la elección y pone
+     data-tema="claro" u "oscuro" en <html>; eso manda sobre el celular.
+   - data-tema="oscuro" también sirve en un bloque suelto: lo que va sobre el
+     azul primario (tarjetas azules) conserva la paleta oscura en los dos modos.
+   CSS no deja reutilizar un grupo de variables, así que la paleta clara está
+   escrita dos veces (por atributo y por el modo del celular) y la oscura se
+   repite para data-tema="oscuro". Si cambias un color, cámbialo en todas.
+   Contrastes de la paleta clara en docs/identidad.md.
+   --------------------------------------------------------------------------- */
+[data-tema="claro"] {
+  --color-fondo: #f4f7fb;
+  --color-superficie: #ffffff;
+  --color-primario: #2563eb;
+  --color-secundario: #1d4ed8;
+  --color-texto: #0b1220;
+  --color-texto-suave: #475569;
+  --color-error: #b91c1c;
+  --color-mapa-tierra: #eef2f7;
+  --color-mapa-via: #c9d4e2;
+  --color-mapa-via-menor: #dde5ee;
+  --color-linea: #d3dce8;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-tema="oscuro"]) {
+    --color-fondo: #f4f7fb;
+    --color-superficie: #ffffff;
+    --color-primario: #2563eb;
+    --color-secundario: #1d4ed8;
+    --color-texto: #0b1220;
+    --color-texto-suave: #475569;
+    --color-error: #b91c1c;
+    --color-mapa-tierra: #eef2f7;
+    --color-mapa-via: #c9d4e2;
+    --color-mapa-via-menor: #dde5ee;
+    --color-linea: #d3dce8;
+    color-scheme: light;
+  }
+}
+
+[data-tema="oscuro"] {
+  --color-fondo: #0b1220;
+  --color-superficie: #172033;
+  --color-primario: #2563eb;
+  --color-secundario: #60a5fa;
+  --color-texto: #f8fafc;
+  --color-texto-suave: #94a3b8;
+  --color-error: #fca5a5;
+  --color-mapa-tierra: #0e1729;
+  --color-mapa-via: #1a2740;
+  --color-mapa-via-menor: #152036;
+  --color-linea: #26344f;
+  color-scheme: dark;
+}
+
+/* Lo que solo se muestra en un modo (el logo y el icono del botón de tema):
+   .solo-claro se esconde en oscuro y .solo-oscuro se esconde en claro. */
+[data-tema="oscuro"] .solo-claro,
+[data-tema="claro"] .solo-oscuro {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .solo-claro {
+    display: none;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-tema="oscuro"]) .solo-oscuro {
+    display: none;
+  }
+}
+
 @layer base {
   html {
     color-scheme: dark;
     scroll-behavior: smooth;
+  }
+
+  /* El texto se hereda ya calculado: un bloque con su propio tema lo vuelve a pedir. */
+  [data-tema] {
+    color: var(--color-texto);
   }
 
   body {
@@ -71,7 +156,7 @@ html {
 
 /* Sobre los bloques azules de la landing, el foco azul claro no se ve: va en blanco. */
 .zona-azul :focus-visible {
-  outline-color: var(--color-texto);
+  outline-color: var(--color-sobre-primario);
 }
 
 /* Respeta a quien pide menos movimiento. */

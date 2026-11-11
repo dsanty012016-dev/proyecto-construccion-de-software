@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { politicaAlDia } from "@/app/lib/privacidad";
 import { perfilActual } from "@/app/lib/sesion";
 import { BarraInferior } from "@/app/ui/comun/barra-inferior";
+import { BotonTema } from "@/app/ui/comun/boton-tema";
 
 // Marco de la zona privada: columna de celular y barra inferior según el rol.
 // Sin rol (cuenta nueva) no hay barra: primero tiene que elegir. Sin la
@@ -11,6 +12,10 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   if (perfil && !politicaAlDia(perfil.politica_version)) redirect("/aceptar-politica");
   return (
     <div className="mx-auto min-h-dvh w-full max-w-md pb-24">
+      {/* Modo claro u oscuro, arriba en todas las pantallas de la app. */}
+      <div className="flex justify-end px-3 pt-2">
+        <BotonTema />
+      </div>
       {children}
       {perfil?.rol && <BarraInferior rol={perfil.rol} />}
     </div>

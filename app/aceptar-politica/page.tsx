@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { redirect } from "next/navigation";
 import { politicaAlDia } from "@/app/lib/privacidad";
 import { perfilActual } from "@/app/lib/sesion";
 import { FormularioAceptarPolitica } from "@/app/ui/auth/formulario-aceptar-politica";
+import { BotonTema } from "@/app/ui/comun/boton-tema";
+import { Logo } from "@/app/ui/comun/logo";
 
 export const metadata: Metadata = { title: "Política de privacidad" };
 
@@ -16,7 +17,10 @@ export default async function PaginaAceptarPolitica() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-5 py-10">
-      <Image src="/brand/logo-oscuro.png" alt="UniGo" width={97} height={34} className="h-[34px] w-auto self-start" priority />
+      <div className="flex items-center justify-between gap-3">
+        <Logo ancho={97} alto={34} className="h-[34px] w-auto" prioridad />
+        <BotonTema />
+      </div>
       <div className="space-y-3">
         <h1 className="text-3xl tracking-tight">Antes de seguir</h1>
         <p className="leading-relaxed text-texto-suave">
