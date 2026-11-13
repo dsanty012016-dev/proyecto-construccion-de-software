@@ -117,7 +117,7 @@ export default async function PaginaViajeEstudiante() {
 
       <div className="relative -mt-5 space-y-5 rounded-t-3xl bg-fondo px-5 pt-5">
         <div role="status">
-          <h1 className="text-[26px] tracking-tight">{titulo}</h1>
+          <h1 className="cartel text-[2.25rem]">{titulo}</h1>
           <p className="mt-1 text-sm text-texto-suave">
             <span className="sr-only">{etiquetaEstado(viaje.estado)}. </span>
             {viaje.estado === "aceptado" ? `Te recoge en ${viaje.origen_texto}` : `Vas a ${viaje.destino_texto}`}

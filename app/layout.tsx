@@ -1,20 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Manrope } from "next/font/google";
+import localFont from "next/font/local";
 import { COLOR_BARRA, SCRIPT_TEMA } from "@/app/lib/tema";
 import { RegistrarServiceWorker } from "@/app/ui/comun/registrar-sw";
 import "./globals.css";
 
-// Inter para títulos y Manrope para el texto (identidad de UniGo).
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+// Archivo: la única letra de UniGo. Es una sola fuente variable; en su ancho
+// normal es el texto y, en el más angosto y el peso más negro, los títulos de
+// cartel y las cifras (ver globals.css). Va guardada en el proyecto (licencia
+// abierta OFL) y recortada a las letras del español, así el build no depende
+// de internet.
+const archivo = localFont({
+  src: "./ui/comun/fuentes/archivo-latino.ttf",
+  variable: "--font-archivo",
+  weight: "100 900",
   display: "swap",
-});
-
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
-  display: "swap",
+  declarations: [{ prop: "font-stretch", value: "62% 125%" }],
 });
 
 // Dirección pública: la de producción en Vercel (Vercel da la variable al
@@ -59,7 +59,7 @@ export default function RootLayout({
   return (
     // suppressHydrationWarning: el código de abajo pone data-tema en <html>
     // antes de que React arranque, y eso no es un error.
-    <html lang="es" className={`${inter.variable} ${manrope.variable}`} suppressHydrationWarning>
+    <html lang="es" className={archivo.variable} suppressHydrationWarning>
       <head>
         {/* Pone el modo guardado (claro u oscuro) antes de pintar, para que no parpadee. */}
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />

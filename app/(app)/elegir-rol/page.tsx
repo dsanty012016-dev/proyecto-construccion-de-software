@@ -12,7 +12,7 @@ export default async function PaginaElegirRol() {
 
   return (
     <main className="px-6 py-10">
-      <h1 className="text-3xl tracking-tight">¿Cómo vas a usar UniGo?</h1>
+      <h1 className="cartel text-[2.75rem]">¿Cómo vas a usar UniGo?</h1>
       <p className="mt-2 mb-8 text-texto-suave">
         Hola{perfil ? `, ${perfil.nombre.split(" ")[0]}` : ""}. Elige una opción para terminar tu cuenta.
       </p>

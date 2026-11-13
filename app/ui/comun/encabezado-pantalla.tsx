@@ -15,7 +15,7 @@ export function EncabezadoPantalla({ titulo, volverA, texto }: { titulo: string;
         </Link>
       )}
       <div className="min-w-0">
-        <h1 className="text-2xl tracking-tight">{titulo}</h1>
+        <h1 className="cartel text-[2.125rem]">{titulo}</h1>
         {texto && <p className="text-sm text-texto-suave">{texto}</p>}
       </div>
     </header>

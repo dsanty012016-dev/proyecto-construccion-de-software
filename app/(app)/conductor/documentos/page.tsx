@@ -20,8 +20,8 @@ export default async function PaginaDocumentos() {
     <main className="space-y-6 px-5 pt-4">
       <EncabezadoPantalla titulo={aprobados === 3 ? "Cuenta verificada" : "Antes de tu primer viaje"} volverA="/conductor" />
       <div className="space-y-2.5">
-        <p className="font-titulo text-[32px] font-bold tracking-tight tabular-nums">
-          {aprobados} de 3 <span className="text-lg font-semibold tracking-normal text-texto-suave">aprobados</span>
+        <p className="cifra text-[2.5rem]">
+          {aprobados} de 3 <span className="text-lg font-semibold [font-stretch:100%] text-texto-suave">aprobados</span>
         </p>
         <div aria-hidden="true" className="grid grid-cols-3 gap-1.5">
           {TIPOS_DOCUMENTO.map((t, i) => (

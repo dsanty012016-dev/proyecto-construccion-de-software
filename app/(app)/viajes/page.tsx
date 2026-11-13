@@ -37,7 +37,7 @@ export default async function PaginaViajes({ searchParams }: { searchParams: Pro
   return (
     <main className="space-y-5 px-5 pt-6">
       <header>
-        <h1 className="text-3xl tracking-tight">Mis viajes</h1>
+        <h1 className="cartel text-[2.75rem]">Mis viajes</h1>
         <p className="text-sm text-texto-suave">Viajes por pedido y cupos con hora fija, como estudiante y como conductor.</p>
       </header>
 

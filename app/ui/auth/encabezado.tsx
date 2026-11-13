@@ -1,16 +1,15 @@
 import Link from "next/link";
-import { Logo } from "@/app/ui/comun/logo";
 import { IconoAtras } from "./iconos-auth";
 
-// Encabezados de las pantallas de acceso: con el logo grande (entrar) o con
-// botón para volver (registro y recuperar), como en los mockups.
+// Encabezados de las pantallas de acceso. El logo ya va en el marco
+// (app/(auth)/layout.tsx); aquí va el título en letra de cartel, alineado a
+// la izquierda como el resto de UniGo, y debajo una línea que explica.
 
 export function EncabezadoLogo({ titulo, subtitulo }: { titulo: string; subtitulo: string }) {
   return (
-    <header className="mb-8 text-center">
-      <Logo ancho={1170} alto={412} alt="UniGo, tu viaje, tu universidad" prioridad className="mx-auto h-auto w-56" />
-      <h1 className="mt-10 text-3xl tracking-tight">{titulo}</h1>
-      <p className="mt-2 text-texto-suave">{subtitulo}</p>
+    <header className="mb-8">
+      <h1 className="cartel text-[3.25rem]">{titulo}</h1>
+      <p className="mt-3 text-lg leading-snug text-texto-suave">{subtitulo}</p>
     </header>
   );
 }
@@ -28,22 +27,22 @@ export function EncabezadoVolver({
     <header className="mb-8">
       <Link
         href={volverA}
-        aria-label="Volver"
-        className="-ml-3 flex size-11 items-center justify-center rounded-full text-texto hover:bg-superficie"
+        className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-xl pr-3 pl-1 text-sm font-semibold text-texto-suave hover:text-texto"
       >
-        <IconoAtras className="size-6" />
+        <IconoAtras className="size-5" />
+        Volver
       </Link>
-      <h1 className="mt-4 text-3xl tracking-tight">{titulo}</h1>
-      <p className="mt-2 leading-relaxed text-texto-suave">{subtitulo}</p>
+      <h1 className="mt-3 cartel text-[3.25rem]">{titulo}</h1>
+      <p className="mt-3 text-lg leading-snug text-texto-suave">{subtitulo}</p>
     </header>
   );
 }
 
 export function PieEnlace({ texto, enlace, href }: { texto: string; enlace: string; href: string }) {
   return (
-    <p className="mt-8 text-center text-sm text-texto-suave">
+    <p className="mt-8 border-t border-linea pt-4 text-texto-suave">
       {texto}{" "}
-      <Link href={href} className="inline-flex min-h-11 items-center font-semibold">
+      <Link href={href} className="inline-flex min-h-11 items-center font-bold underline decoration-2 underline-offset-4">
         {enlace}
       </Link>
     </p>

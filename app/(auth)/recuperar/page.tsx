@@ -9,11 +9,11 @@ export default function PaginaRecuperar() {
   return (
     <>
       <EncabezadoVolver
-        titulo="Recuperar contraseña"
-        subtitulo="Escribe tu correo institucional y te enviaremos un enlace para crear una contraseña nueva."
+        titulo="¿Se te olvidó la contraseña?"
+        subtitulo="Escribe tu correo institucional y te enviamos un enlace para crear una nueva."
       />
       <FormularioRecuperar />
-      <PieEnlace texto="¿Recordaste tu contraseña?" enlace="Inicia sesión" href="/entrar" />
+      <PieEnlace texto="¿Recordaste tu contraseña?" enlace="Entrar" href="/entrar" />
     </>
   );
 }

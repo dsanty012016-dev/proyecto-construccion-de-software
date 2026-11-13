@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { IconoBilletera, IconoInicio, IconoPerfil, IconoVehiculo, IconoViajes } from "./iconos-app";
 
 // Barra de navegación inferior de la zona privada. Cambia según el rol y marca
-// la pestaña actual. Es "use client" solo para saber en qué ruta está.
+// la pestaña actual: la línea de arriba es una ruta y la pestaña en la que
+// estás es su parada (el mismo dibujo de las paradas de la portada).
+// Es "use client" solo para saber en qué ruta está.
 
 interface Pestana {
   href: string;
@@ -41,11 +43,8 @@ function pestanasDe(rol: "estudiante" | "conductor"): Pestana[] {
 export function BarraInferior({ rol }: { rol: "estudiante" | "conductor" }) {
   const ruta = usePathname();
   return (
-    <nav
-      aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-texto-suave/15 bg-fondo pb-[env(safe-area-inset-bottom)]"
-    >
-      <ul className="mx-auto flex max-w-md justify-around px-2 pt-1.5 pb-2.5">
+    <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-linea bg-fondo pb-[env(safe-area-inset-bottom)]">
+      <ul className="mx-auto flex max-w-md justify-around px-2 pb-2">
         {pestanasDe(rol).map((pestana) => {
           const activa = pestana.activa(ruta);
           return (
@@ -53,10 +52,13 @@ export function BarraInferior({ rol }: { rol: "estudiante" | "conductor" }) {
               <Link
                 href={pestana.href}
                 aria-current={activa ? "page" : undefined}
-                className={`flex min-h-13 min-w-14 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-xs ${activa ? "font-bold text-secundario" : "font-semibold text-texto-suave hover:text-texto"}`}
+                className={`relative flex min-h-14 min-w-14 flex-col items-center justify-center gap-1 px-1 pt-2.5 text-xs ${
+                  activa
+                    ? "font-bold text-texto before:absolute before:-top-px before:left-1/2 before:size-3.5 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border-[3px] before:border-primario before:bg-fondo"
+                    : "font-semibold text-texto-suave hover:text-texto"
+                }`}
               >
-                {/* La pestaña actual lleva una pastilla detrás del icono. */}
-                <span className={`flex h-7 w-12 items-center justify-center rounded-full ${activa ? "bg-secundario/15" : ""}`}>{pestana.icono}</span>
+                <span className={activa ? "text-secundario" : undefined}>{pestana.icono}</span>
                 {pestana.texto}
               </Link>
             </li>

@@ -125,7 +125,7 @@ export default async function PaginaViajeCompartido({ params }: { params: Promis
       <main className="mx-auto min-h-dvh w-full max-w-md">
         {encabezado}
         <div className="space-y-3 px-5 pt-16 text-center">
-          <h1 className="text-2xl tracking-tight">{vista.terminado ? "Este viaje ya terminó" : "Este viaje ya no está activo"}</h1>
+          <h1 className="cartel text-[2.125rem]">{vista.terminado ? "Este viaje ya terminó" : "Este viaje ya no está activo"}</h1>
           <p className="text-sm text-texto-suave">Por privacidad, el enlace deja de mostrar el recorrido cuando el viaje termina o se cancela.</p>
           <Link href="/" className="inline-flex min-h-11 items-center font-semibold">
             Conoce UniGo
@@ -162,7 +162,7 @@ export default async function PaginaViajeCompartido({ params }: { params: Promis
 
       <div className="relative -mt-5 space-y-5 rounded-t-3xl bg-fondo px-5 pt-5">
         <div role="status" className="space-y-1">
-          <h1 className="text-[26px] tracking-tight">{vista.titulo}</h1>
+          <h1 className="cartel text-[2.25rem]">{vista.titulo}</h1>
           {vista.detalle && <p className="text-sm text-texto-suave">{vista.detalle}</p>}
         </div>
         {vista.pasos && <PasosViaje estado={vista.pasos} />}
