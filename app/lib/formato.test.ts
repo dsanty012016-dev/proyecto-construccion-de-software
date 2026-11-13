@@ -1,7 +1,7 @@
 // Pruebas del formato de pesos, nombres, tiempos y de la comisión.
 import { describe, expect, it } from "vitest";
 import { comision, gananciaConductor } from "./comision";
-import { calificacionTexto, diaRelativo, etiquetaEstado, fechaCorta, hace, horaCorta, iniciales, nombreCorto, pesos } from "./formato";
+import { calificacionTexto, diaRelativo, etiquetaEstado, fechaCorta, hace, horaCorta, iniciales, lugarCorto, nombreCorto, pesos } from "./formato";
 
 describe("pesos", () => {
   it("separa los miles con punto", () => {
@@ -24,6 +24,20 @@ describe("nombres", () => {
     expect(nombreCorto("Ana María Rojas")).toBe("Ana R.");
     expect(nombreCorto("Camilo")).toBe("Camilo");
     expect(nombreCorto("")).toBe("");
+  });
+
+  it("resume un lugar para las listas", () => {
+    expect(lugarCorto("Universidad Santo Tomás, seccional Villavicencio")).toBe("Universidad Santo Tomás");
+    expect(lugarCorto("Universidad Santo Tomas Seccional Villavicencio")).toBe("Universidad Santo Tomas");
+    expect(lugarCorto("Universidad Santo Tomás, seccional Villavicencio (portería de la 40)")).toBe("Universidad Santo Tomás");
+    expect(lugarCorto("Barzal, calle 38 con 33")).toBe("Barzal");
+    expect(lugarCorto("  Porfía  ")).toBe("Porfía");
+  });
+
+  it("deja el lugar igual si no hay nada que quitar o quedaría vacío", () => {
+    expect(lugarCorto("El Buque")).toBe("El Buque");
+    expect(lugarCorto("(frente al parque)")).toBe("(frente al parque)");
+    expect(lugarCorto("")).toBe("");
   });
 
   it("escribe la calificación con coma, o Nuevo si no hay", () => {
