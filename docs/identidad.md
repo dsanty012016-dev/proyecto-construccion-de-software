@@ -41,7 +41,8 @@ Una sola letra: **Archivo**, una fuente variable guardada en `app/ui/comun/fuent
 - **Texto**: Archivo en su ancho normal (`font-texto` y `font-titulo` son la misma letra).
 - **Título de cada pantalla**: clase `cartel`, la letra más angosta y más negra. Como es muy angosta, va grande (`text-[2rem]` o más).
 - **Cifras importantes** (precios, saldo, horas): clase `cifra`, angosta, negra y con números del mismo ancho.
-- **Botones azules**: clase `prensa` junto a `bg-primario`; el borde inferior oscuro baja al tocar.
+- **Botones azules**: clase `prensa` junto a `bg-primario`; el borde inferior oscuro baja al tocar. El botón claro sobre un bloque azul usa `prensa-papel`.
+- **Piezas que se repiten**: la placa del vehículo (`Placa`), los pasos del viaje como ruta con paradas (`PasosViaje`) y las líneas punteadas de tiquete (`border-dashed`) para separar renglones de ofertas y de pago.
 - Botones y campos usan `rounded-xl` (0,6 rem); las tarjetas, `rounded-2xl`.
 - `--color-noche` (`#0b1220`) es el azul noche fijo en los dos modos: sombras y texto sobre el papel blanco del tiquete y el recibo de la portada.
 

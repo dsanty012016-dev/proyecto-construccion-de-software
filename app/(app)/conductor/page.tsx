@@ -99,14 +99,14 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       )}
 
       {activo ? (
-        <section aria-labelledby="titulo-viaje-activo" data-tema="oscuro" className="space-y-3 rounded-[18px] bg-primario p-[18px] text-texto">
-          <h2 id="titulo-viaje-activo" className="text-[22px] tracking-tight">
+        <section aria-labelledby="titulo-viaje-activo" data-tema="oscuro" className="space-y-3 rounded-2xl bg-primario p-[18px] text-texto">
+          <h2 id="titulo-viaje-activo" className="cartel text-[2rem]">
             {etiquetaEstado(activo.viaje.estado)}
           </h2>
           <p className="text-sm">{activo.estudiante ? `Llevas a ${nombreCorto(activo.estudiante.nombre)} · ${puntoDeLaCasa(activo.viaje)}` : "Tienes un viaje asignado."}</p>
           <Link
             href="/conductor/viaje"
-            className="flex h-12 w-full items-center justify-center rounded-xl bg-texto font-titulo font-semibold text-fondo hover:bg-texto/90"
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-texto prensa-papel font-semibold text-fondo hover:bg-texto/90"
           >
             Ver mi viaje
           </Link>

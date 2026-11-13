@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { reportarUbicacion } from "@/app/lib/acciones-seguimiento";
 import { iniciarViaje, terminarViaje } from "@/app/lib/acciones-viaje";
-import { gananciaConductor } from "@/app/lib/comision";
+import { gananciaConductor, PORCENTAJE_COMISION } from "@/app/lib/comision";
 import { viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
 import { nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
@@ -40,7 +40,7 @@ export default async function PaginaViajeConductor() {
     <main className="space-y-5 px-5 pt-6">
       <EnVivo escuchas={[{ tabla: "viajes", filtro: `id=eq.${viaje.id}` }]} />
       <EncabezadoPantalla titulo={enCurso ? `Llevando a ${nombre}` : `Ve a recoger a ${nombre}`} volverA="/conductor" />
-      <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} />
+      <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} regreso={regreso} />
       <Mapa etiqueta="Mapa del viaje" centro={origen} origen={origen} destino={destino} uEnElOrigen={regreso} className="h-52" />
       <TransmisorUbicacion enviar={reportarUbicacion.bind(null, viaje.id)} clave={viaje.id} />
       <a
@@ -74,12 +74,14 @@ export default async function PaginaViajeConductor() {
       </section>
 
       {viaje.precio !== null && (
-        <section aria-label="Pago" className="flex items-center justify-between gap-3 rounded-2xl bg-superficie p-4">
+        <section aria-label="Pago" className="flex items-center justify-between gap-3 border-y border-dashed border-texto-suave/40 py-3.5">
           <div>
             <p className="text-sm text-texto-suave">Recibes al terminar el viaje</p>
-            <p className="text-xs text-texto-suave">Oferta {pesos(viaje.precio)} menos el 10 % de UniGo</p>
+            <p className="text-xs text-texto-suave">
+              Oferta {pesos(viaje.precio)} menos el {PORCENTAJE_COMISION} % de UniGo
+            </p>
           </div>
-          <p className="font-titulo text-xl font-bold">{pesos(gananciaConductor(viaje.precio))}</p>
+          <p className="cifra text-[2rem]">{pesos(gananciaConductor(viaje.precio))}</p>
         </section>
       )}
 

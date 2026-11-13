@@ -9,6 +9,7 @@ import { BotonTema } from "@/app/ui/comun/boton-tema";
 import { Logo } from "@/app/ui/comun/logo";
 import { Mapa } from "@/app/ui/comun/mapa";
 import { PasosViaje } from "@/app/ui/comun/pasos-viaje";
+import { Placa } from "@/app/ui/comun/placa";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 import { RefrescarCada } from "@/app/ui/compartido/refrescar-cada";
 
@@ -175,9 +176,7 @@ export default async function PaginaViajeCompartido({ params }: { params: Promis
               <span className="block font-bold">{vista.conductor ?? "Conductor"}</span>
               {vista.vehiculoTexto && <span className="block text-[13px] text-texto-suave">{vista.vehiculoTexto}</span>}
             </span>
-            {vista.placa && (
-              <span className="shrink-0 rounded-lg bg-texto px-3 py-1 font-titulo text-xl font-bold tracking-[0.08em] text-fondo">{vista.placa}</span>
-            )}
+            {vista.placa && <Placa placa={vista.placa} grande />}
           </section>
         )}
         <p className="text-[13px] leading-relaxed text-texto-suave">
