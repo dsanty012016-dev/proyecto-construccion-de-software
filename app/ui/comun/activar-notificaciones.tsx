@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { activarNotificaciones, desactivarNotificaciones } from "@/app/lib/acciones-avisos";
+import { activarNotificaciones as activarEnServidor, desactivarNotificaciones as desactivarEnServidor } from "@/app/lib/acciones-avisos";
 import { claveVapidABytes } from "@/app/lib/avisos";
+import { enOrdenAvisos, estadoNotificaciones, type EstadoNotificaciones } from "@/app/lib/avisos-navegador";
 
 // Tarjeta para activar las notificaciones en este celular (fase 12). El
 // navegador pregunta el permiso solo al tocar el botón. En el inicio se puede
@@ -10,24 +11,12 @@ import { claveVapidABytes } from "@/app/lib/avisos";
 // siempre está, para activarlas o apagarlas.
 // En iPhone solo funcionan con UniGo instalada (Safari no las da en la web).
 
-type Estado =
-  | { paso: "cargando" }
-  | { paso: "no-disponible" }
-  | { paso: "instalar-primero" }
-  | { paso: "bloqueadas" }
-  | { paso: "apagadas" }
-  | { paso: "activas"; endpoint: string };
-
 const CLAVE_CERRADO = "unigo-avisos-cerrado";
 const DIAS_OCULTO = 14;
 const CLAVE_VAPID = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 
-function instalada() {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
-}
+const activarNotificaciones: typeof activarEnServidor = (datos) => enOrdenAvisos(() => activarEnServidor(datos));
+const desactivarNotificaciones: typeof desactivarEnServidor = (endpoint) => enOrdenAvisos(() => desactivarEnServidor(endpoint));
 
 function cerradoHace(): boolean {
   try {
@@ -38,32 +27,23 @@ function cerradoHace(): boolean {
   }
 }
 
-async function estadoActual(): Promise<Estado> {
-  const esIphone = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if (esIphone && !instalada()) return { paso: "instalar-primero" };
-  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window) || !claveVapidABytes(CLAVE_VAPID)) {
-    return { paso: "no-disponible" };
-  }
-  if (Notification.permission === "denied") return { paso: "bloqueadas" };
-  const registro = await navigator.serviceWorker.getRegistration();
-  const suscripcion = await registro?.pushManager.getSubscription();
-  return suscripcion ? { paso: "activas", endpoint: suscripcion.endpoint } : { paso: "apagadas" };
-}
-
 export function ActivarNotificaciones({ enPerfil = false }: { enPerfil?: boolean }) {
-  const [estado, setEstado] = useState<Estado>({ paso: "cargando" });
+  const [estado, setEstado] = useState<EstadoNotificaciones>({ paso: "cargando" });
   const [trabajando, setTrabajando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [oculta, setOculta] = useState(false);
 
   useEffect(() => {
     let vigente = true;
-    estadoActual()
+    estadoNotificaciones(CLAVE_VAPID, activarNotificaciones)
       .then((nuevo) => {
         if (vigente) setEstado(nuevo);
       })
       .catch(() => {
-        if (vigente) setEstado({ paso: "no-disponible" });
+        if (vigente) {
+          setEstado({ paso: "apagadas" });
+          setError("No pudimos comprobar las notificaciones de esta cuenta. Intenta activarlas de nuevo.");
+        }
       });
     return () => {
       vigente = false;
@@ -102,7 +82,11 @@ export function ActivarNotificaciones({ enPerfil = false }: { enPerfil?: boolean
     try {
       const registro = await navigator.serviceWorker.getRegistration();
       await (await registro?.pushManager.getSubscription())?.unsubscribe();
-      await desactivarNotificaciones(endpoint);
+      const respuesta = await desactivarNotificaciones(endpoint);
+      if (!respuesta.ok) {
+        setError(respuesta.mensaje);
+        return;
+      }
       setEstado({ paso: "apagadas" });
     } catch {
       setError("No pudimos apagar las notificaciones. Intenta de nuevo.");

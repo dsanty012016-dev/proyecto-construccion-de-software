@@ -125,9 +125,20 @@ export async function entrar(
   redirect(destinoSeguro(datos.siguiente));
 }
 
-export async function salir() {
+export async function salir(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
+  const endpoint = formulario.get("endpoint");
+  if (endpoint !== null && (typeof endpoint !== "string" || !endpoint.startsWith("https://") || endpoint.length > 1000)) {
+    return { resultado: "error", mensaje: "No pudimos comprobar las notificaciones de este celular. Intenta de nuevo." };
+  }
   const supabase = await crearClienteServidor();
-  await supabase.auth.signOut();
+  // Se borra mientras todavía hay sesión: la RPC solo permite quitar las propias.
+  // Las suscripciones de otros celulares se conservan.
+  if (endpoint) {
+    const { error } = await supabase.rpc("borrar_suscripcion", { p_endpoint: endpoint });
+    if (error) return { resultado: "error", mensaje: "No pudimos apagar las notificaciones de este celular. Intenta cerrar sesión de nuevo." };
+  }
+  const { error } = await supabase.auth.signOut();
+  if (error) return { resultado: "error", mensaje: "No pudimos cerrar sesión. Revisa tu conexión e intenta de nuevo." };
   redirect("/entrar");
 }
 

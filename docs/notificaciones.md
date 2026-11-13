@@ -10,6 +10,15 @@ Si la función no responde en el momento, cada 2 minutos se reintentan los aviso
 
 En iPhone solo llegan con UniGo instalada en la pantalla de inicio (iOS 16.4 o más nuevo). La tarjeta lo explica.
 
+## Cambio de cuenta y cierre de sesión
+- Al abrir el inicio o el perfil, una suscripción que ya exista en el navegador se vuelve a asociar a la cuenta con sesión antes de mostrar "Notificaciones activas". No se vuelve a pedir el permiso del navegador.
+- Al cerrar sesión desde el perfil, el navegador identifica su suscripción y el servidor la borra con `borrar_suscripcion` antes de cerrar la sesión. Las suscripciones de otros celulares se conservan.
+- Si falla la lectura de la suscripción o su borrado, se muestra el error y se permite reintentar; el cierre no se anuncia como correcto.
+- Si no se puede asociar una suscripción heredada a la cuenta actual, se intenta cancelarla en el navegador y se muestra cómo volver a activarla.
+- Las activaciones y el cierre se ordenan para que una petición pendiente no vuelva a guardar la suscripción después del borrado. Cuando está disponible, Web Locks coordina también las pestañas del mismo sitio.
+- Al apagar las notificaciones, se cancela también la suscripción del navegador para que no se restaure al volver al perfil. Los errores del servidor se muestran en pantalla.
+- No requiere migraciones: usa las funciones y permisos de la migración 019.
+
 ## Qué se avisa
 Ver la cabecera de `supabase/migraciones/019-notificaciones.sql` (lo decidió el equipo).
 
