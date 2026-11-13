@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Cierre, Conducir, Equipo } from "@/app/ui/sitio/cierre";
-import { Paradas } from "@/app/ui/sitio/paradas";
+import { Cuentas } from "@/app/ui/sitio/cuentas";
+import { FranjaCiudad, Paradas } from "@/app/ui/sitio/paradas";
 import { Portada } from "@/app/ui/sitio/portada";
-import { Precios, Seguridad } from "@/app/ui/sitio/garantias";
 import { Salidas } from "@/app/ui/sitio/salidas";
 
-// Página pública de UniGo (rediseño con la skill impeccable, lienzo
-// "UniGo · Landing (impeccable)"). Cuenta una sola historia: del "¿alguien va
-// pa' la U?" del grupo de chat a la ruta del barrio a la universidad.
-// Todo es Server Component salvo la escena 3D de la portada.
+// Página pública de UniGo: el "cartel de ruta" (fase 17). Cuenta una sola
+// historia: del "¿alguien va pa' la U?" del grupo de chat a la mañana de
+// Laura, de Barzal a clase de siete. Todo es Server Component; lo único con
+// JavaScript es el botón de modo claro u oscuro de la barra.
 export const metadata: Metadata = {
   title: { absolute: "UniGo: tu viaje, tu universidad" },
   description:
@@ -20,9 +20,9 @@ export default function PaginaInicio() {
     <>
       <Portada />
       <Paradas />
+      <FranjaCiudad />
       <Salidas />
-      <Seguridad />
-      <Precios />
+      <Cuentas />
       <Conducir />
       <Equipo />
       <Cierre />

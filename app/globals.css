@@ -17,10 +17,12 @@
   --color-mapa-tierra: #0e1729; /* manzanas y terreno, un punto más claro que el fondo */
   --color-mapa-via: #1a2740; /* avenidas y vías principales */
   --color-mapa-via-menor: #152036; /* calles y edificios */
-  --color-linea: #26344f; /* bordes finos y calles del mapa de la landing */
+  --color-linea: #26344f; /* bordes finos de la app y de la portada */
+  --color-noche: #0b1220; /* azul noche fijo en los dos modos: sombras y texto sobre papel blanco */
 }
 
-/* Las fuentes las carga app/layout.tsx con next/font y dejan estas variables. */
+/* Las fuentes las carga app/layout.tsx con next/font y dejan estas variables.
+   La portada pública usa además Archivo (ver app/(sitio)/layout.tsx). */
 @theme inline {
   --font-titulo: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-texto: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
@@ -174,27 +176,5 @@ html:has(#barra-sitio) {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-}
-
-/* Landing: la ruta del mapa de la portada se dibuja una vez al cargar. */
-@keyframes trazar {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Landing: los mensajes del chat y las ofertas aparecen uno tras otro. */
-@keyframes aparecer {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }

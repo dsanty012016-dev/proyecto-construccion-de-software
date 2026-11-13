@@ -37,8 +37,10 @@ Reglas del modo claro:
 - La paleta clara la propuso el equipo de desarrollo (no viene del documento "IDENTIDAD APP"); si el equipo de diseño define otra, solo hay que cambiar los valores en `globals.css` y esta tabla.
 
 ## Tipografía
-- **Inter**: títulos (`font-titulo`).
-- **Manrope**: texto (`font-texto`).
+- **Inter**: títulos de la app (`font-titulo`).
+- **Manrope**: texto de la app (`font-texto`).
+- **Archivo**: todo el sitio público (portada y privacidad). Es una fuente variable: muy angosta y negra en los titulares de cartel (clase `.cartel`), ancho normal en el texto. Va guardada en `app/ui/sitio/fuentes/` (licencia abierta OFL) y la carga `app/(sitio)/layout.tsx`.
+- `--color-noche` (`#0b1220`) es el azul noche fijo en los dos modos: sombras y texto sobre el papel blanco del tiquete y el recibo de la portada.
 
 ## Logos (`public/brand/`)
 | Archivo | Uso |
