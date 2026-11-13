@@ -47,7 +47,7 @@ jobs:
         with:
           deno-version: v2.x
       - name: Revisar tipos de la función de notificaciones
-        run: deno check supabase/functions/enviar-avisos/index.ts
+        run: deno check --node-modules-dir=none supabase/functions/enviar-avisos/index.ts
 
   base-de-datos:
     # Corre las migraciones y las pruebas de seguridad (RLS y RPC) en un
