@@ -27,7 +27,7 @@ export default async function PaginaBilletera() {
     <main className="space-y-6 px-5 pt-6">
       <header>
         <h1 className="font-texto text-sm font-semibold text-texto-suave">Tu saldo</h1>
-        <p className="mt-1 font-titulo text-5xl leading-tight font-bold tracking-tight tabular-nums">{pesos(saldo)}</p>
+        <p className="mt-1 cifra text-[4rem]">{pesos(saldo)}</p>
         <p className="mt-2 text-[13px] text-texto-suave">
           Saldo de prueba · {cuenta.strikes} de {STRIKES_PARA_SUSPENDER} strikes
           {perfil?.rol === "conductor" && " · tus ganancias llegan ya sin el 10 % de UniGo"}

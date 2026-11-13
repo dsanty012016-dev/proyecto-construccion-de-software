@@ -22,7 +22,7 @@ export default async function PaginaAceptarPolitica() {
         <BotonTema />
       </div>
       <div className="space-y-3">
-        <h1 className="text-3xl tracking-tight">Antes de seguir</h1>
+        <h1 className="cartel text-[2.75rem]">Antes de seguir</h1>
         <p className="leading-relaxed text-texto-suave">
           Publicamos la política de privacidad de UniGo. Cuenta qué datos guardamos (tu cuenta, tus viajes, la ubicación del conductor mientras
           viajan y, si conduces, tus documentos), quién los ve, con qué servicios los compartimos y cómo pedirnos que los borremos.

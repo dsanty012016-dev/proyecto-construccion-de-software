@@ -57,7 +57,7 @@ export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; p
             onChange={(e) => setPrecio(e.target.value.replace(/\D/g, "").slice(0, 6))}
             aria-invalid={estado.errores?.precio ? true : undefined}
             aria-describedby={`${idPrecio}-ayuda`}
-            className="h-14 min-w-0 flex-1 bg-transparent text-center font-titulo text-[40px] font-bold tracking-tight text-texto tabular-nums outline-none placeholder:text-texto-suave"
+            className="h-14 min-w-0 flex-1 bg-transparent text-center cifra text-[3rem] text-texto outline-none placeholder:text-texto-suave"
           />
           <button
             type="button"

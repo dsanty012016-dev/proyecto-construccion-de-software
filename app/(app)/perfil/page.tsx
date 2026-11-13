@@ -24,7 +24,7 @@ export default async function PaginaPerfil() {
       <header className="flex items-center gap-4">
         <Avatar nombre={perfil?.nombre ?? "?"} grande />
         <div className="min-w-0">
-          <h1 className="truncate text-2xl tracking-tight">{perfil?.nombre}</h1>
+          <h1 className="truncate pb-1 cartel text-[2.125rem]">{perfil?.nombre}</h1>
           <p className="text-sm font-semibold text-secundario">{conductor ? "Conductor" : "Estudiante"}</p>
         </div>
       </header>

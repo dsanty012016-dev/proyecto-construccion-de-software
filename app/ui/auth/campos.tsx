@@ -10,7 +10,7 @@ import { IconoOjo, IconoOjoTachado } from "./iconos-auth";
 // vea contra el fondo con el contraste que pide WCAG (3:1).
 
 const estiloEntrada =
-  "h-12 w-full rounded-xl border bg-superficie text-texto placeholder:text-texto-suave outline-none transition-colors focus:border-secundario aria-[invalid=true]:border-error";
+  "h-13 w-full rounded-xl border-2 bg-superficie text-texto placeholder:text-texto-suave outline-none transition-colors focus:border-secundario aria-[invalid=true]:border-error";
 
 interface PropsCampo extends React.InputHTMLAttributes<HTMLInputElement> {
   etiqueta: string;
@@ -25,7 +25,7 @@ export function Campo({ etiqueta, error, icono, prefijo, className, ...resto }: 
   const idError = `${id}-error`;
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
+      <label htmlFor={id} className="mb-1.5 block text-[15px] font-semibold">
         {etiqueta}
       </label>
       <div className="relative">
@@ -66,7 +66,7 @@ export function CampoClave({ etiqueta, error, icono, className, ...resto }: Prop
   const [visible, setVisible] = useState(false);
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
+      <label htmlFor={id} className="mb-1.5 block text-[15px] font-semibold">
         {etiqueta}
       </label>
       <div className="relative">
@@ -108,7 +108,7 @@ export function BotonEnviar({ children, enviando, deshabilitado }: { children: R
     <button
       type="submit"
       disabled={pending || deshabilitado}
-      className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-sobre-primario transition-colors hover:bg-primario/85 disabled:opacity-70"
+      className="flex h-14 w-full items-center justify-center rounded-xl bg-primario prensa text-[17px] font-bold text-sobre-primario transition-colors hover:bg-primario/85 disabled:opacity-70"
     >
       {pending ? enviando : children}
     </button>

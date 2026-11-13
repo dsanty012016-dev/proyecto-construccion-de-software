@@ -80,7 +80,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
 
       {!verificado && (
         <Link href="/conductor/documentos" className={FILA_ENLACE}>
-          <span className="font-titulo text-lg font-bold tabular-nums">{aprobados}/3</span>
+          <span className="cifra text-2xl">{aprobados}/3</span>
           <span className="min-w-0 flex-1">
             <span className="block font-bold">{rechazados > 0 ? "Hay un documento por corregir" : "Verifica tu cuenta"}</span>
             <span className="block text-[13px] text-texto-suave">
@@ -117,7 +117,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
 
       {miCupo ? (
         <Link href="/conductor/cupo" className={FILA_ENLACE}>
-          <span className="font-titulo text-lg font-bold tabular-nums">{horaCorta(miCupo.cupo.sale_en).hora}</span>
+          <span className="cifra text-2xl">{horaCorta(miCupo.cupo.sale_en).hora}</span>
           <span className="min-w-0 flex-1">
             <span className="block font-bold">{miCupo.cupo.estado === "en_curso" ? "Tu cupo va en camino" : "Tu cupo publicado"}</span>
             <span className="block text-[13px] text-texto-suave">
@@ -189,7 +189,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
                 ) : (
                   <Link
                     href={`/conductor/ofertar/${viaje.id}`}
-                    className="flex min-h-11 shrink-0 items-center rounded-xl bg-primario px-[18px] font-titulo text-[15px] font-semibold text-sobre-primario hover:bg-primario/85"
+                    className="flex min-h-11 shrink-0 items-center rounded-xl bg-primario prensa px-[18px] font-titulo text-[15px] font-semibold text-sobre-primario hover:bg-primario/85"
                   >
                     Ofertar
                   </Link>

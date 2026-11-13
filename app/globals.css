@@ -21,11 +21,49 @@
   --color-noche: #0b1220; /* azul noche fijo en los dos modos: sombras y texto sobre papel blanco */
 }
 
-/* Las fuentes las carga app/layout.tsx con next/font y dejan estas variables.
-   La portada pública usa además Archivo (ver app/(sitio)/layout.tsx). */
+/* Una sola letra en todo UniGo: Archivo, que carga app/layout.tsx con next/font.
+   Es variable: en su ancho normal es el texto y, muy angosta y negra, hace los
+   títulos de cartel (.cartel) y las cifras (.cifra). font-titulo y font-texto
+   siguen existiendo para no cambiar las pantallas, pero ya son la misma letra. */
 @theme inline {
-  --font-titulo: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-texto: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-titulo: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-texto: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Las esquinas de botones y campos (rounded-xl) van un poco más rectas, como
+   los botones de la portada. Las tarjetas (rounded-2xl) quedan igual. */
+@theme {
+  --radius-xl: 0.6rem;
+}
+
+/* Título de cartel: la letra más angosta y más negra. Para el título de cada
+   pantalla; pide un tamaño grande (text-[2rem] o más) porque es muy angosta. */
+@utility cartel {
+  font-stretch: 62%;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.012em;
+  word-spacing: 0.06em;
+  text-wrap: balance;
+}
+
+/* Cifras importantes (precios, saldo, horas): angostas, negras y del mismo
+   ancho para que no bailen al cambiar. */
+@utility cifra {
+  font-stretch: 62%;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Botón azul que "se hunde" al tocarlo: borde inferior más oscuro que baja
+   al presionar. Va junto a bg-primario. */
+@utility prensa {
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--color-primario) 55%, var(--color-noche));
+  &:active:not(:disabled) {
+    translate: 0 2px;
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--color-primario) 55%, var(--color-noche));
+  }
 }
 
 /* ---------------------------------------------------------------------------

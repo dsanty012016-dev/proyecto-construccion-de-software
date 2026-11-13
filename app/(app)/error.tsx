@@ -13,13 +13,13 @@ export default function ErrorDeLaApp({ error, reset }: { error: Error & { digest
 
   return (
     <main className="flex min-h-[70dvh] flex-col justify-center gap-5 px-5 text-center">
-      <h1 className="text-2xl tracking-tight">No pudimos cargar esta pantalla</h1>
+      <h1 className="cartel text-[2.125rem]">No pudimos cargar esta pantalla</h1>
       <p className="text-texto-suave">Revisa tu conexión e inténtalo de nuevo. Si sigue pasando, avísale al equipo de UniGo.</p>
       <div className="flex flex-col gap-2">
         <button
           type="button"
           onClick={reset}
-          className="min-h-12 rounded-xl bg-primario font-titulo font-semibold text-sobre-primario hover:bg-primario/85"
+          className="min-h-12 rounded-xl bg-primario prensa font-titulo font-semibold text-sobre-primario hover:bg-primario/85"
         >
           Intentar de nuevo
         </button>

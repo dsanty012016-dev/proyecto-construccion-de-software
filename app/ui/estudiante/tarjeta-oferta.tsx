@@ -24,7 +24,7 @@ export function TarjetaOferta({ oferta, saldo, destacada }: { oferta: ConductorC
             {conductor.viajes_terminados === 1 ? "viaje" : "viajes"}
           </p>
         </div>
-        <p className="font-titulo text-[22px] font-bold tabular-nums">{pesos(oferta.precio)}</p>
+        <p className="cifra text-[1.75rem]">{pesos(oferta.precio)}</p>
       </div>
       <p className="text-[13px] text-texto-suave">
         {vehiculo ? (

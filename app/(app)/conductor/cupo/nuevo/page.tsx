@@ -30,7 +30,7 @@ export default async function PaginaNuevoCupo() {
           <Aviso tipo="info">Para publicar un cupo primero registra tu vehículo.</Aviso>
           <Link
             href="/conductor/vehiculo"
-            className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-sobre-primario hover:bg-primario/85"
+            className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario prensa font-titulo font-semibold text-sobre-primario hover:bg-primario/85"
           >
             Registrar mi vehículo
           </Link>
@@ -40,7 +40,7 @@ export default async function PaginaNuevoCupo() {
           <Aviso tipo="info">Podrás publicar cupos cuando un administrador apruebe tus documentos.</Aviso>
           <Link
             href="/conductor/documentos"
-            className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-sobre-primario hover:bg-primario/85"
+            className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario prensa font-titulo font-semibold text-sobre-primario hover:bg-primario/85"
           >
             Ver mis documentos
           </Link>

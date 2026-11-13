@@ -14,7 +14,7 @@ export default function PaginaSinConexion() {
         <Logo ancho={97} alto={34} className="h-[34px] w-auto" prioridad sinOptimizar />
         <BotonTema />
       </div>
-      <h1 className="text-3xl tracking-tight">Sin conexión</h1>
+      <h1 className="cartel text-[2.75rem]">Sin conexión</h1>
       <p className="leading-relaxed text-texto-suave">
         No hay internet en este momento. Tus viajes, tu saldo y tus cupos siguen guardados; apenas vuelva la señal, sigues donde ibas.
       </p>

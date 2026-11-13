@@ -24,7 +24,7 @@ export default async function PaginaCalificar({ params }: { params: Promise<{ id
         <IconoCheck className="size-8" />
       </span>
       <div className="space-y-1 text-center">
-        <h1 className="text-2xl tracking-tight">¡Viaje terminado!</h1>
+        <h1 className="cartel text-[2.125rem]">¡Viaje terminado!</h1>
         {viaje.precio !== null && <p className="text-texto-suave">{pesos(viaje.precio)}</p>}
       </div>
       <div className="w-full space-y-5 rounded-2xl bg-superficie p-5">

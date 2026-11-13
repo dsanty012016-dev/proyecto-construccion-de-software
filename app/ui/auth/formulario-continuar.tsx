@@ -17,7 +17,7 @@ function Boton({ listo, texto }: { listo: boolean; texto: string }) {
     <button
       type="submit"
       disabled={!listo || pending}
-      className="flex h-12 w-full items-center justify-center rounded-xl bg-primario font-titulo font-semibold text-sobre-primario transition-colors hover:bg-primario/85 disabled:opacity-70"
+      className="flex h-14 w-full items-center justify-center rounded-xl bg-primario prensa text-[17px] font-bold text-sobre-primario transition-colors hover:bg-primario/85 disabled:opacity-70"
     >
       {!listo ? "Cargando…" : pending ? "Un momento…" : texto}
     </button>

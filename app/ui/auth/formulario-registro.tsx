@@ -65,7 +65,7 @@ export function FormularioRegistro() {
       />
 
       <div>
-        <label htmlFor={idRol} className="mb-1.5 block text-sm font-medium">
+        <label htmlFor={idRol} className="mb-1.5 block text-[15px] font-semibold">
           Tipo de usuario
         </label>
         <select
@@ -74,7 +74,7 @@ export function FormularioRegistro() {
           defaultValue={v.rol ?? ""}
           aria-invalid={e.rol ? true : undefined}
           aria-describedby={e.rol ? `${idRol}-error` : undefined}
-          className={`h-12 w-full rounded-xl border bg-superficie px-4 text-texto outline-none focus:border-secundario ${e.rol ? "border-error" : "border-texto-suave/60"}`}
+          className={`h-13 w-full rounded-xl border-2 bg-superficie px-4 text-texto outline-none focus:border-secundario ${e.rol ? "border-error" : "border-texto-suave/60"}`}
           required
         >
           <option value="" disabled>
@@ -94,7 +94,7 @@ export function FormularioRegistro() {
         etiqueta="Contraseña"
         name="clave"
         autoComplete="new-password"
-        placeholder={`Mínimo ${LARGO_MINIMO_CLAVE} caracteres, con letras y números`}
+        placeholder={`Letras y números, mínimo ${LARGO_MINIMO_CLAVE}`}
         error={e.clave}
         required
       />
@@ -133,7 +133,7 @@ export function FormularioRegistro() {
         )}
       </div>
 
-      <BotonEnviar enviando="Creando tu cuenta…">Registrarme</BotonEnviar>
+      <BotonEnviar enviando="Creando tu cuenta…">Crear mi cuenta</BotonEnviar>
     </form>
   );
 }

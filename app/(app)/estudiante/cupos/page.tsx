@@ -105,9 +105,9 @@ function FilaCupo({ item }: { item: CupoDisponible }) {
         href={`/estudiante/cupos/${cupo.id}`}
         className={`grid grid-cols-[76px_minmax(0,1fr)_auto] items-start gap-x-3 py-4 ${lleno ? "text-texto-suave" : "text-texto"}`}
       >
-        <span className="font-titulo text-[26px] leading-none font-bold tracking-tight tabular-nums">
+        <span className="cifra text-[2rem]">
           {hora}
-          <span className="mt-1 block font-texto text-xs font-semibold tracking-normal text-texto-suave">{periodo}</span>
+          <span className="mt-1 block text-xs font-semibold [font-stretch:100%] text-texto-suave">{periodo}</span>
         </span>
         <span className="flex min-w-0 flex-col gap-1">
           <span className="font-bold">{quien}</span>
@@ -134,13 +134,13 @@ function FilaCupo({ item }: { item: CupoDisponible }) {
             </span>
           )}
         </span>
-        <span className="text-right font-titulo font-bold tabular-nums">
+        <span className="text-right cifra text-[1.375rem]">
           {lleno ? (
             "Lleno"
           ) : (
             <>
               {pesos(cupo.precio)}
-              <span className="block font-texto text-xs font-semibold text-texto-suave">puesto</span>
+              <span className="mt-1 block text-xs font-semibold [font-stretch:100%] text-texto-suave">puesto</span>
             </>
           )}
         </span>

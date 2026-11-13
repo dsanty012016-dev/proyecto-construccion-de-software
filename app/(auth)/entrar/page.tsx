@@ -16,7 +16,7 @@ export default async function PaginaEntrar({
 
   return (
     <>
-      <EncabezadoLogo titulo="¡Bienvenido!" subtitulo="Inicia sesión para continuar" />
+      <EncabezadoLogo titulo="Qué bueno verte." subtitulo="Entra con tu correo institucional." />
       {error === "enlace" && (
         <div className="mb-4">
           <Aviso tipo="info">
@@ -26,7 +26,7 @@ export default async function PaginaEntrar({
         </div>
       )}
       <FormularioEntrar siguiente={siguiente ? destinoSeguro(siguiente) : undefined} />
-      <PieEnlace texto="¿No tienes cuenta?" enlace="Regístrate" href="/registro" />
+      <PieEnlace texto="¿No tienes cuenta?" enlace="Crear cuenta" href="/registro" />
     </>
   );
 }

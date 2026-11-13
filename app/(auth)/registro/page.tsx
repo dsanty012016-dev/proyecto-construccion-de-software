@@ -9,11 +9,11 @@ export default function PaginaRegistro() {
   return (
     <>
       <EncabezadoVolver
-        titulo="Crear cuenta"
-        subtitulo="Únete a UniGo y viaja de forma segura con tu universidad."
+        titulo="Crea tu cuenta."
+        subtitulo="Solo necesitas tu correo institucional y un par de datos."
       />
       <FormularioRegistro />
-      <PieEnlace texto="¿Ya tienes cuenta?" enlace="Inicia sesión" href="/entrar" />
+      <PieEnlace texto="¿Ya tienes cuenta?" enlace="Entrar" href="/entrar" />
     </>
   );
 }

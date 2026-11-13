@@ -45,7 +45,7 @@ export function FormularioEntrar({ siguiente }: { siguiente?: string }) {
         </div>
       </div>
 
-      <BotonEnviar enviando="Entrando…">Iniciar sesión</BotonEnviar>
+      <BotonEnviar enviando="Entrando…">Entrar</BotonEnviar>
     </form>
   );
 }
