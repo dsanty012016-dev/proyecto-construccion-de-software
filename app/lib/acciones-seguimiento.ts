@@ -3,6 +3,7 @@
 import { crearClienteServidor } from "./supabase/server";
 import { esquemaIdViaje, esquemaUbicacion } from "./validaciones-viaje";
 import { esquemaIdCupo } from "./validaciones-cupo";
+import { lecturaGpsReciente } from "./seguimiento";
 
 // Server Actions del seguimiento en vivo (013 y 014): el conductor manda su
 // ubicación (en un viaje o en un cupo en curso) y el estudiante pide el enlace
@@ -19,6 +20,7 @@ export interface Posicion {
   lat: number;
   lng: number;
   precision?: number;
+  medidoEn: number;
 }
 
 type Respuesta = { ok: boolean; mensaje?: string };
@@ -27,6 +29,8 @@ type Respuesta = { ok: boolean; mensaje?: string };
 function limpiar(id: string, posicion: Posicion) {
   const validado = esquemaUbicacion.safeParse({ viaje: id, ...posicion });
   if (!validado.success) return null;
+  // La hora de recepción no convierte una lectura vieja en una posición nueva.
+  if (!lecturaGpsReciente(posicion.medidoEn, Date.now())) return null;
   return {
     lat: Number(validado.data.lat.toFixed(6)),
     lng: Number(validado.data.lng.toFixed(6)),

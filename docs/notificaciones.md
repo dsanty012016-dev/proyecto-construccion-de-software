@@ -3,10 +3,11 @@
 ## Cómo funcionan
 1. La persona toca "Activar notificaciones" (inicio o perfil). El navegador pide el permiso y entrega una suscripción, que se guarda con `guardar_suscripcion` (019) en `privado.suscripciones_push`.
 2. Cuando pasa algo (oferta, aceptación, cupo que sale...), un trigger crea el aviso en `privado.avisos` y, con pg_net, llama a la función de Supabase **enviar-avisos** con el número del aviso.
-3. La función toma el aviso una sola vez (`privado.tomar_aviso`) y lo manda a cada celular con las claves VAPID. Los celulares que ya no existen se borran.
+3. Con la migración 022 y la función actualizada, se reserva cada celular, se envía con las claves VAPID y se confirma el resultado. Los fallos temporales se reintentan sin repetir las entregas confirmadas; los celulares que ya no existen se borran.
 4. El service worker (`public/sw.js`) muestra la notificación y, al tocarla, abre UniGo en la pantalla del aviso.
 
 Si la función no responde en el momento, cada 2 minutos se reintentan los avisos pendientes de los últimos 30 minutos; los de más de 7 días se borran (migración 020).
+Las reservas que no se confirmaron caducan después de dos minutos. Si se perdió la confirmación de un envío que sí llegó, puede repetirse. Orden de actualización: `docs/correcciones-fiabilidad.md`.
 
 En iPhone solo llegan con UniGo instalada en la pantalla de inicio (iOS 16.4 o más nuevo). La tarjeta lo explica.
 

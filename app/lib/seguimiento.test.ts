@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { enlaceCompartido, INTERVALO_UBICACION_MS, textoUbicacion, tocaEnviar, tokenValido, viajeSeSigue } from "./seguimiento";
+import { enlaceCompartido, INTERVALO_UBICACION_MS, lecturaGpsReciente, textoUbicacion, tocaEnviar, tokenValido, viajeSeSigue } from "./seguimiento";
 
 describe("seguimiento en vivo", () => {
+  it("solo acepta mediciones recientes y tolera pequeñas diferencias de reloj", () => {
+    const ahora = 1_000_000;
+    expect(lecturaGpsReciente(ahora, ahora)).toBe(true);
+    expect(lecturaGpsReciente(ahora - 10_000, ahora)).toBe(true);
+    expect(lecturaGpsReciente(ahora - 10_001, ahora)).toBe(false);
+    expect(lecturaGpsReciente(ahora - 60_000, ahora)).toBe(false);
+    expect(lecturaGpsReciente(ahora + 5_000, ahora)).toBe(true);
+    expect(lecturaGpsReciente(ahora + 5_001, ahora)).toBe(false);
+    expect(lecturaGpsReciente(NaN, ahora)).toBe(false);
+  });
   it("manda la primera ubicación y luego cada 5 segundos", () => {
     expect(tocaEnviar(null, 1000)).toBe(true);
     expect(tocaEnviar(1000, 1000 + INTERVALO_UBICACION_MS - 1)).toBe(false);

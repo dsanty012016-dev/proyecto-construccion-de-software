@@ -20,9 +20,8 @@ jobs:
         with:
           node-version: 22
 
-      # Cuando exista package-lock.json, cambiar a "npm ci" para instalaciones exactas.
       - name: Instalar dependencias
-        run: npm install
+        run: npm ci
 
       - name: Lint
         run: npm run lint
@@ -38,17 +37,17 @@ jobs:
       - name: Auditoría de dependencias
         run: |
           npm audit --omit=dev --json > auditoria.json || true
-          node -e '
-            const r = require("./auditoria.json");
-            const v = Object.values(r.vulnerabilities ?? {});
-            for (const x of v) {
-              const via = x.via.map((y) => (typeof y === "string" ? y : y.title)).join(" / ");
-              const arreglo = x.fixAvailable === true ? "npm audit fix" : x.fixAvailable ? `${x.fixAvailable.name}@${x.fixAvailable.version}` : "sin arreglo";
-              console.log(`::warning::${x.severity} · ${x.name} ${x.range} · ${via} · ${arreglo}`);
-            }
-            const graves = v.filter((x) => x.severity === "high" || x.severity === "critical");
-            if (graves.length > 0) { console.log(`::error::${graves.length} dependencias con fallas altas o críticas`); process.exit(1); }
-          '
+          node scripts/validar-auditoria.mjs auditoria.json
+
+  funcion-avisos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Revisar tipos de la función de notificaciones
+        run: deno check --node-modules-dir=none supabase/functions/enviar-avisos/index.ts
 
   base-de-datos:
     # Corre las migraciones y las pruebas de seguridad (RLS y RPC) en un

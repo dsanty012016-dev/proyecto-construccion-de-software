@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { Posicion } from "@/app/lib/acciones-seguimiento";
-import { INTERVALO_UBICACION_MS, tocaEnviar } from "@/app/lib/seguimiento";
+import { INTERVALO_UBICACION_MS, lecturaGpsReciente, tocaEnviar } from "@/app/lib/seguimiento";
 
 // Mientras el viaje o el cupo está activo, manda la ubicación del conductor
 // cada 5 segundos (013 y 014) para que los estudiantes lo vean moverse en el
@@ -41,38 +41,70 @@ export function TransmisorUbicacion({
     () => true,
   );
   const [estado, setEstado] = useState<Estado>({ paso: "buscando" });
-  const ultimaPosicion = useRef<GeolocationPosition | null>(null);
-  const ultimoEnvio = useRef<number | null>(null);
-  const enviando = useRef(false);
 
   useEffect(() => {
     if (!conGps) return;
+    let vigente = true;
+    let ultimaPosicion: GeolocationPosition | null = null;
+    let ultimoEnvio: number | null = null;
+    let ultimaMedicionEnviada: number | null = null;
+    let enviando = false;
+    let consultando = false;
 
     async function enviar() {
-      const posicion = ultimaPosicion.current;
+      const posicion = ultimaPosicion;
       const ahora = Date.now();
-      if (!posicion || enviando.current || !tocaEnviar(ultimoEnvio.current, ahora)) return;
-      enviando.current = true;
-      ultimoEnvio.current = ahora;
+      if (!vigente || !posicion || enviando || !tocaEnviar(ultimoEnvio, ahora)) return;
+      if (!lecturaGpsReciente(posicion.timestamp, ahora)) {
+        ultimaPosicion = null;
+        setEstado({ paso: "error", mensaje: "Sin lecturas recientes del GPS. Buscando tu ubicación de nuevo." });
+        return;
+      }
+      if (ultimaMedicionEnviada === posicion.timestamp) return;
+      enviando = true;
+      ultimoEnvio = ahora;
       const respuesta = await enviarRef.current({
         lat: posicion.coords.latitude,
         lng: posicion.coords.longitude,
         precision: Number.isFinite(posicion.coords.accuracy) ? posicion.coords.accuracy : undefined,
+        medidoEn: posicion.timestamp,
       }).catch(() => ({ ok: false, mensaje: "Sin conexión. Seguimos intentando." }));
-      enviando.current = false;
+      enviando = false;
+      if (respuesta.ok) ultimaMedicionEnviada = posicion.timestamp;
+      if (!vigente || ultimaPosicion !== posicion) return;
+      if (!lecturaGpsReciente(posicion.timestamp, Date.now())) {
+        setEstado({ paso: "error", mensaje: "La última ubicación enviada ya no es reciente. Esperando al GPS." });
+        return;
+      }
       setEstado(respuesta.ok ? { paso: "en-vivo" } : { paso: "error", mensaje: respuesta.mensaje ?? "No pudimos enviar tu ubicación." });
     }
 
+    const recibir = (posicion: GeolocationPosition) => {
+      if (!vigente) return;
+      ultimaPosicion = posicion;
+      void enviar();
+    };
+    const fallar = (fallo: GeolocationPositionError) => {
+      if (!vigente) return;
+      ultimaPosicion = null;
+      setEstado({ paso: "error", mensaje: mensajeDeFallo(fallo.code) });
+    };
     const vigilancia = navigator.geolocation.watchPosition(
-      (posicion) => {
-        ultimaPosicion.current = posicion;
-        void enviar();
-      },
-      (fallo) => setEstado({ paso: "error", mensaje: mensajeDeFallo(fallo.code) }),
+      recibir,
+      fallar,
       { enableHighAccuracy: true, maximumAge: INTERVALO_UBICACION_MS, timeout: 20_000 },
     );
-    // Por si el teléfono está quieto y no avisa: se reenvía la última cada 5 s.
-    const cada = setInterval(() => void enviar(), INTERVALO_UBICACION_MS);
+    // Quieto también necesita una medición nueva: nunca se rejuvenece la anterior.
+    const cada = setInterval(() => {
+      void enviar();
+      if (consultando || (ultimaPosicion && lecturaGpsReciente(ultimaPosicion.timestamp, Date.now()))) return;
+      consultando = true;
+      navigator.geolocation.getCurrentPosition(
+        (posicion) => { consultando = false; recibir(posicion); },
+        (fallo) => { consultando = false; fallar(fallo); },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 20_000 },
+      );
+    }, INTERVALO_UBICACION_MS);
 
     // Que la pantalla no se apague mientras dura el viaje (si el navegador lo permite).
     let bloqueo: WakeLockSentinel | null = null;
@@ -81,7 +113,8 @@ export function TransmisorUbicacion({
       navigator.wakeLock
         .request("screen")
         .then((b) => {
-          bloqueo = b;
+          if (vigente) bloqueo = b;
+          else void b.release().catch(() => {});
         })
         .catch(() => {});
     };
@@ -89,6 +122,7 @@ export function TransmisorUbicacion({
     document.addEventListener("visibilitychange", pedirPantalla);
 
     return () => {
+      vigente = false;
       navigator.geolocation.clearWatch(vigilancia);
       clearInterval(cada);
       document.removeEventListener("visibilitychange", pedirPantalla);

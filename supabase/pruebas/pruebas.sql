@@ -1360,4 +1360,5 @@ select prueba.ok(
   'viajes y ofertas están en tiempo real'
 );
 
+\ir correcciones.sql
 \echo '== Todas las pruebas pasaron'
