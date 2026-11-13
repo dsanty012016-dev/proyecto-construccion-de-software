@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { salir } from "@/app/lib/acciones-auth";
 import { perfilActual } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonCambiarModo } from "@/app/ui/comun/boton-cambiar-modo";
 import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
 import { ActivarNotificaciones } from "@/app/ui/comun/activar-notificaciones";
+import { BotonSalir } from "@/app/ui/comun/boton-salir";
 import { InstalarApp } from "@/app/ui/comun/instalar-app";
 import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
 
@@ -44,7 +44,7 @@ export default async function PaginaPerfil() {
 
       <EstadoCuenta personaId={usuario.id} siempre />
       <InstalarApp />
-      <ActivarNotificaciones enPerfil />
+      <ActivarNotificaciones key={usuario.id} enPerfil />
 
       {perfil?.rol && (
         <section aria-labelledby="titulo-modo" className="space-y-3">
@@ -91,11 +91,7 @@ export default async function PaginaPerfil() {
         </nav>
       )}
 
-      <form action={salir}>
-        <button type="submit" className="min-h-12 w-full rounded-xl text-sm font-semibold text-texto-suave hover:text-texto">
-          Cerrar sesión
-        </button>
-      </form>
+      <BotonSalir />
     </main>
   );
 }

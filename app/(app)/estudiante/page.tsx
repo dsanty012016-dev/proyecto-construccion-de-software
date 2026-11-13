@@ -65,7 +65,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
         {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
         <EstadoCuenta personaId={usuario.id} />
         <InstalarApp cerrable />
-        <ActivarNotificaciones />
+        <ActivarNotificaciones key={usuario.id} />
 
         {activo ? (
           <section aria-labelledby="titulo-activo" className="space-y-4 rounded-2xl bg-superficie p-4">

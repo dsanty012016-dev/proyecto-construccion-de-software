@@ -76,7 +76,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
       <EstadoCuenta personaId={usuario.id} />
       <InstalarApp cerrable />
-      <ActivarNotificaciones />
+      <ActivarNotificaciones key={usuario.id} />
 
       {!verificado && (
         <Link href="/conductor/documentos" className={FILA_ENLACE}>
