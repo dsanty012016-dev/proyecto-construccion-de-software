@@ -43,4 +43,4 @@ Las pruebas de la base de datos corren en GitHub en cada subida; para correrlas 
 - `docs/landing-original/`: la landing en HTML del equipo, conservada como referencia.
 
 ## Stack
-Next.js 16 · React 19 · TypeScript · Tailwind CSS 4 · Supabase (Postgres, Auth, Realtime, Storage, Edge Functions) · MapLibre + OpenFreeMap · A-Frame · Vercel.
+Next.js 16 · React 19 · TypeScript · Tailwind CSS 4 · Supabase (Postgres, Auth, Realtime, Storage, Edge Functions) · MapLibre + OpenFreeMap · Vercel.

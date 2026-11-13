@@ -18,6 +18,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
 ## Avance
+- Fase 17: portada pública nueva, el "cartel de ruta": titular gigante con la letra Archivo, tiquete de ofertas, tabla de ruta con barrios, la mañana de Laura en cuatro paradas, tablero de salidas y recibo. Se quitó la escena 3D de A-Frame. Faltan las tres fotos (marcos "Foto pendiente", ver `app/ui/sitio/foto.tsx`) (rama `fase-17-portada`).
 - Fase 13 (cierre): reintento y limpieza de las notificaciones (migración 020), README al día y documento de entrega `docs/entrega.md` (rama `fase-13-cierre`).
 - Fase 12: notificaciones en el celular (Web Push) con una función de Supabase que las envía, tarjeta para activarlas en inicio y perfil (rama `fase-12-avisos`, migración 019, `docs/notificaciones.md`).
 - Fase 11: app web más parecida a una app: botón para instalarla (Android) o guía (iPhone), página sin conexión con service worker, CSP completa y `npm audit` en GitHub (rama `fase-11-app-web`).

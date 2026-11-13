@@ -10,7 +10,7 @@ Next.js 16 (App Router) · React 19 · TypeScript estricto · Tailwind 4 · Supa
 Si dudas de una API de Next 16, consulta la documentación oficial; no asumas.
 
 ## Organización (igual que Duelo 64, con `ui/` por zonas)
-- `app/` rutas. Grupos: `(sitio)` landing pública con A-Frame, `(auth)` login/registro/recuperar, `(app)` zona privada con barra inferior (`estudiante/`, `conductor/`, `viajes/`, `wallet/`, `perfil/`). `app/api/v1/` solo para lo que haga falta exponer a una futura app nativa.
+- `app/` rutas. Grupos: `(sitio)` landing pública, `(auth)` login/registro/recuperar, `(app)` zona privada con barra inferior (`estudiante/`, `conductor/`, `viajes/`, `wallet/`, `perfil/`). `app/api/v1/` solo para lo que haga falta exponer a una futura app nativa.
 - `app/lib/` lógica sin pantalla: `viaje.ts` (reglas puras del viaje, con pruebas), `viaje-online.ts` (hook de Realtime), `acciones-*.ts` (Server Actions), `supabase/client.ts` y `server.ts`.
 - `app/ui/` componentes en subcarpetas: `comun/`, `auth/`, `estudiante/`, `conductor/`, `sitio/`. Nombres de archivo en español y con guiones.
 - `supabase/migraciones/` SQL numerado (`001-perfiles.sql`, `002-...`). Todo cambio de base de datos va ahí, nunca solo en el panel.
@@ -22,7 +22,7 @@ Si dudas de una API de Next 16, consulta la documentación oficial; no asumas.
 3. Los cambios de datos pasan por Server Actions que llaman a funciones RPC de Supabase. Toda tabla con **RLS activado**; las reglas de seguridad viven en la base de datos, no en la pantalla.
 4. Componentes con `"use client"` solo si necesitan clics, estado, efectos o APIs del navegador. Las páginas con `metadata` son Server Components.
 5. Colores solo con los tokens de `app/globals.css` (`bg-fondo`, `bg-superficie`, `bg-primario`, `text-texto`, `text-texto-suave`, `text-secundario`). Nada de hex sueltos. `#2563EB` no se usa como color de texto (contraste 3,6:1): para texto azul, `text-secundario`. Hay modo claro y oscuro (ver `docs/identidad.md`): los tokens cambian solos; encima de `bg-primario` el texto va con `text-sobre-primario`.
-6. Fuentes: `font-titulo` (Inter) y `font-texto` (Manrope), cargadas con `next/font`.
+6. Fuentes: en la app, `font-titulo` (Inter) y `font-texto` (Manrope), cargadas con `next/font`. El sitio público usa **Archivo** (guardada en `app/ui/sitio/fuentes/`) y sus estilos van en `app/ui/sitio/portada.css`, siempre con los tokens de color.
 7. Accesibilidad: botones reales, `aria-label` en iconos, foco visible, `prefers-reduced-motion`, objetivos táctiles de al menos 44 px.
 8. A-Frame u otro 3D **solo en el sitio público**, cargado en el navegador y después del contenido, con imagen de respaldo. Nunca en la app.
 9. Comentarios en español y sencillos: dicen para qué sirve cada archivo y por qué, no repiten el código.
