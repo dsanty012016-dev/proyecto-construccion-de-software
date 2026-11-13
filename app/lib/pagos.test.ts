@@ -43,11 +43,11 @@ describe("suspensiones y recargas", () => {
     expect([1, 2, 3, 4, 5].map(diasDeSuspension)).toEqual([3, 7, 15, 30, 30]);
   });
 
-  it("recargas entre $2.000 y $500.000 sin pasar de $1.000.000", () => {
-    expect(problemaConRecarga(2000, 0)).toBeNull();
-    expect(problemaConRecarga(1999, 0)).toMatch(/2\.000/);
+  it("recargas entre $20.000 y $500.000 sin pasar de $1.000.000", () => {
+    expect(problemaConRecarga(20000, 0)).toBeNull();
+    expect(problemaConRecarga(19999, 0)).toMatch(/20\.000/);
     expect(problemaConRecarga(500001, 0)).toMatch(/500\.000/);
-    expect(problemaConRecarga(2500.5, 0)).toMatch(/entre/);
-    expect(problemaConRecarga(10000, 995000)).toMatch(/1\.000\.000/);
+    expect(problemaConRecarga(25000.5, 0)).toMatch(/entre/);
+    expect(problemaConRecarga(20000, 985000)).toMatch(/1\.000\.000/);
   });
 });

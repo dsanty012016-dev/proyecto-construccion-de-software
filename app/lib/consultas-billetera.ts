@@ -7,6 +7,29 @@ import type { Database } from "./supabase/tipos";
 // RLS (012) deja ver solo lo propio; los administradores ven los reportes.
 
 export type FilaMovimiento = Database["public"]["Tables"]["movimientos"]["Row"];
+export type FilaRecarga = Database["public"]["Tables"]["recargas"]["Row"];
+
+/** Una recarga propia por su referencia (RLS no deja ver las de otros). */
+export async function miRecarga(referencia: string): Promise<FilaRecarga | null> {
+  const supabase = await crearClienteServidor();
+  const { data } = await supabase.from("recargas").select("*").eq("id", referencia).maybeSingle();
+  return data;
+}
+
+/** Recargas que la persona abrió hace poco y Wompi todavía no ha confirmado. */
+export async function recargasEnProceso(personaId: string): Promise<FilaRecarga[]> {
+  const supabase = await crearClienteServidor();
+  const haceMediaHora = new Date(Date.now() - 30 * 60_000).toISOString();
+  const { data } = await supabase
+    .from("recargas")
+    .select("*")
+    .eq("persona_id", personaId)
+    .eq("estado", "pendiente")
+    .gt("creada_en", haceMediaHora)
+    .order("creada_en", { ascending: false })
+    .limit(3);
+  return data ?? [];
+}
 
 /** Saldo, últimos movimientos y la hora de la consulta (para agruparlos por día). */
 export async function miBilletera(personaId: string): Promise<{ saldo: number; movimientos: FilaMovimiento[]; ahora: number }> {
