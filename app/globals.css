@@ -216,6 +216,18 @@ html:has(#barra-sitio) {
 }
 
 /* Respeta a quien pide menos movimiento. */
+/* Cambio de modo "que invade" (boton-tema.tsx): el navegador pone la foto de
+   la página nueva encima de la vieja y tema-navegador.ts la va destapando con
+   una mancha de tentáculos. Aquí solo se apaga el fundido que trae por defecto. */
+html.tema-invade::view-transition-old(root),
+html.tema-invade::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.tema-invade::view-transition-new(root) {
+  z-index: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
