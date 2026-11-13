@@ -22,6 +22,7 @@ import { PALABRAS } from "@/app/lib/sentido";
 import { horaDe, venceSolicitud } from "@/app/lib/vencimientos";
 import { TarjetaOferta } from "@/app/ui/estudiante/tarjeta-oferta";
 import { Nota } from "@/app/ui/comun/nota";
+import { Placa } from "@/app/ui/comun/placa";
 
 export const metadata: Metadata = { title: "Tu viaje" };
 
@@ -44,27 +45,34 @@ export default async function PaginaViajeEstudiante() {
         {enVivo}
         <EncabezadoPantalla
           titulo={ofertas.length > 0 ? "Elige tu conductor" : "Buscando conductores"}
-          texto={
-            ofertas.length > 0
-              ? `${ofertas.length} ${ofertas.length === 1 ? "oferta" : "ofertas"} · siguen llegando`
-              : "Las ofertas aparecen aquí sin recargar"
-          }
+          texto={ofertas.length > 0 ? "Pagas al aceptar; la más barata va primero" : "Las ofertas aparecen aquí sin recargar"}
           volverA="/estudiante"
         />
-        <div className="mt-4">
-          <RutaCorta origen={viaje.origen_texto} destino={viaje.destino_texto} />
-        </div>
-
         {ofertas.length === 0 ? (
-          <p role="status" className="mt-6 text-center text-texto-suave">
-            Todavía no hay ofertas. Apenas un conductor te escriba su precio, aparece aquí.
-          </p>
+          <>
+            <div className="mt-4">
+              <RutaCorta origen={viaje.origen_texto} destino={viaje.destino_texto} />
+            </div>
+            <p role="status" className="mt-6 text-lg leading-snug text-texto-suave">
+              Todavía no hay ofertas. Apenas un conductor te escriba su precio, aparece aquí.
+            </p>
+          </>
         ) : (
-          <section aria-labelledby="titulo-ofertas" className="mt-2">
-            <h2 id="titulo-ofertas" className="sr-only">
-              Ofertas, de menor a mayor precio
-            </h2>
-            <ul>
+          // El tiquete de ofertas: el mismo de la portada, ahora con ofertas de verdad.
+          <section aria-labelledby="titulo-ofertas" className="mt-4 mb-5 rounded-2xl bg-superficie">
+            <header className="relative flex items-end justify-between gap-4 border-b-2 border-dashed border-texto-suave/40 px-4 pt-4 pb-3 before:absolute before:-bottom-2.5 before:-left-2.5 before:size-5 before:rounded-full before:bg-fondo after:absolute after:-right-2.5 after:-bottom-2.5 after:size-5 after:rounded-full after:bg-fondo">
+              <h2 id="titulo-ofertas" className="cifra text-[2rem]">
+                {ofertas.length} {ofertas.length === 1 ? "oferta" : "ofertas"}
+                <span className="sr-only">, de menor a mayor precio</span>
+              </h2>
+              <p className="min-w-0 text-right text-[13px] leading-snug text-texto-suave">
+                <span className="block truncate">
+                  {viaje.sentido === "regreso" ? `De la U a ${viaje.destino_texto}` : `De ${viaje.origen_texto} a la U`}
+                </span>
+                Siguen llegando
+              </p>
+            </header>
+            <ul className="px-4">
               {ofertas.map((oferta, i) => (
                 <TarjetaOferta key={oferta.ofertaId} oferta={oferta} saldo={saldo} destacada={i === 0} />
               ))}
@@ -123,7 +131,7 @@ export default async function PaginaViajeEstudiante() {
             {viaje.estado === "aceptado" ? `Te recoge en ${viaje.origen_texto}` : `Vas a ${viaje.destino_texto}`}
           </p>
         </div>
-        <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} />
+        <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} regreso={viaje.sentido === "regreso"} />
 
         <section aria-labelledby="titulo-conductor" className="space-y-3.5 rounded-2xl bg-superficie p-4">
           <h2 id="titulo-conductor" className="sr-only">
@@ -143,7 +151,7 @@ export default async function PaginaViajeEstudiante() {
               </p>
               {vehiculo && (
                 <p className="text-[13px] text-texto-suave">
-                  {vehiculo.marca} {vehiculo.modelo} {vehiculo.color}
+                  {vehiculo.marca} {vehiculo.modelo}, {vehiculo.color}
                 </p>
               )}
             </div>
@@ -158,17 +166,21 @@ export default async function PaginaViajeEstudiante() {
             )}
           </div>
           {vehiculo && (
-            <div className="flex items-center justify-between gap-3 border-t border-texto-suave/15 pt-3.5">
-              <span className="text-[13px] text-texto-suave">Busca la placa</span>
-              <span className="rounded-lg bg-texto px-3 py-1 font-titulo text-2xl font-bold tracking-[0.08em] text-fondo">{vehiculo.placa}</span>
+            <div className="flex items-center justify-between gap-3 border-t border-dashed border-texto-suave/40 pt-3.5">
+              <span className="text-[13px] leading-snug text-texto-suave">
+                Busca
+                <br />
+                la placa
+              </span>
+              <Placa placa={vehiculo.placa} grande />
             </div>
           )}
         </section>
 
         {viaje.pago_retenido > 0 && (
-          <p className="flex justify-between text-sm">
+          <p className="flex items-baseline justify-between text-sm">
             <span className="text-texto-suave">Pagado, retenido hasta llegar</span>
-            <strong className="font-titulo tabular-nums">{pesos(viaje.pago_retenido)}</strong>
+            <strong className="cifra text-xl">{pesos(viaje.pago_retenido)}</strong>
           </p>
         )}
 

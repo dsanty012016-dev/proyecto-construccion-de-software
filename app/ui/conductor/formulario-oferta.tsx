@@ -33,7 +33,7 @@ export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; p
       <input type="hidden" name="viaje" value={viajeId} />
       {estado.resultado === "error" && estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
 
-      <section aria-labelledby={`${idPrecio}-titulo`} className="space-y-4 rounded-[18px] bg-superficie p-5">
+      <section aria-labelledby={`${idPrecio}-titulo`} className="space-y-4 rounded-2xl bg-superficie p-5">
         <label id={`${idPrecio}-titulo`} htmlFor={idPrecio} className="block text-center text-sm font-semibold text-texto-suave">
           Tu precio
         </label>
@@ -71,11 +71,11 @@ export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; p
         <p id={`${idPrecio}-ayuda`} className={`text-center text-[13px] ${estado.errores?.precio ? "text-error" : "text-texto-suave"}`}>
           {estado.errores?.precio ?? `Entre ${pesos(PRECIO_MINIMO)} y ${pesos(PRECIO_MAXIMO)}, en pesos.`}
         </p>
-        <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-y-2 border-t border-texto-suave/15 pt-3.5 text-sm tabular-nums" aria-live="polite">
+        <dl className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-y-2 border-t border-dashed border-texto-suave/40 pt-3.5 text-sm tabular-nums" aria-live="polite">
           <dt className="text-texto-suave">Comisión UniGo ({PORCENTAJE_COMISION} %)</dt>
           <dd className="text-right text-texto-suave">{valido ? `−${pesos(comision(numero))}` : "—"}</dd>
           <dt className="font-bold">Recibes al terminar</dt>
-          <dd className="text-right font-titulo font-bold text-secundario">{valido ? pesos(gananciaConductor(numero)) : "—"}</dd>
+          <dd className={`text-right text-secundario ${valido ? "cifra text-2xl" : "font-bold"}`}>{valido ? pesos(gananciaConductor(numero)) : "—"}</dd>
         </dl>
       </section>
 

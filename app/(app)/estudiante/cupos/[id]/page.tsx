@@ -20,6 +20,7 @@ import { BotonCompartirViaje } from "@/app/ui/estudiante/boton-compartir-viaje";
 import { FormularioPuesto } from "@/app/ui/estudiante/formulario-puesto";
 import { MapaEnVivo } from "@/app/ui/estudiante/mapa-en-vivo";
 import { horaDe, venceCupo } from "@/app/lib/vencimientos";
+import { Placa } from "@/app/ui/comun/placa";
 
 export const metadata: Metadata = { title: "Cupo" };
 
@@ -66,7 +67,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
             </p>
           </div>
           {aprobado && vehiculo && (
-            <p className="rounded-lg bg-texto px-2.5 py-1 font-titulo text-sm font-bold tracking-wider text-fondo">{vehiculo.placa}</p>
+            <Placa placa={vehiculo.placa} />
           )}
         </div>
         {cupo.estado === "publicado" && (

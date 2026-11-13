@@ -24,13 +24,13 @@ export function InterruptorDisponible({
     <form action={accion} className="space-y-2">
       <input type="hidden" name="disponible" value={disponible ? "no" : "si"} />
       {/* Sobre el azul se conserva la paleta oscura (texto blanco) también en modo claro. */}
-      <div data-tema={disponible ? "oscuro" : undefined} className={`space-y-2.5 rounded-[18px] p-[18px] text-texto ${disponible ? "bg-primario" : "bg-superficie"}`}>
+      <div data-tema={disponible ? "oscuro" : undefined} className={`space-y-2.5 rounded-2xl p-[18px] text-texto ${disponible ? "bg-primario" : "bg-superficie"}`}>
         <div className="flex min-h-11 items-center gap-4">
           <div className="min-w-0 flex-1">
-            <p id="etiqueta-disponible" className="font-titulo text-[22px] font-bold tracking-tight">
+            <p id="etiqueta-disponible" className="cartel text-[2rem]">
               {disponible ? "Estás disponible" : "No estás disponible"}
             </p>
-            <p className={`text-sm ${disponible ? "text-texto" : "text-texto-suave"}`}>
+            <p className={`mt-1 text-sm ${disponible ? "text-texto" : "text-texto-suave"}`}>
               {disponible
                 ? "Te llegan solicitudes de viaje."
                 : !tieneVehiculo

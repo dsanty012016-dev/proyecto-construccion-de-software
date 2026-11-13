@@ -66,6 +66,16 @@
   }
 }
 
+/* Lo mismo para el botón claro que va encima de un bloque azul (bg-texto
+   dentro de data-tema="oscuro"): su borde inferior es azul noche. */
+@utility prensa-papel {
+  box-shadow: 0 3px 0 var(--color-noche);
+  &:active:not(:disabled) {
+    translate: 0 2px;
+    box-shadow: 0 1px 0 var(--color-noche);
+  }
+}
+
 /* ---------------------------------------------------------------------------
    Modo claro y modo oscuro.
    - Sin elegir nada, UniGo sigue el modo del celular (prefers-color-scheme).
