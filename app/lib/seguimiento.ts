@@ -6,6 +6,13 @@
 export const INTERVALO_UBICACION_MS = 5_000;
 /** Pasado este tiempo sin noticias, la ubicación se muestra como vieja. */
 export const UBICACION_VIEJA_MS = 30_000;
+export const EDAD_MAXIMA_LECTURA_MS = 10_000;
+
+/** La medición debe ser reciente; se toleran hasta 5 s de diferencia de reloj. */
+export function lecturaGpsReciente(medidoEn: number, ahoraMs: number): boolean {
+  return Number.isFinite(medidoEn) && Number.isFinite(ahoraMs)
+    && medidoEn > 0 && medidoEn <= ahoraMs + 5_000 && ahoraMs - medidoEn <= EDAD_MAXIMA_LECTURA_MS;
+}
 
 /** ¿Ya toca mandar otra ubicación? (la primera, siempre). */
 export function tocaEnviar(ultimoEnvioMs: number | null, ahoraMs: number): boolean {

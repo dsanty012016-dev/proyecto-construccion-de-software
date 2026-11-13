@@ -39,6 +39,11 @@ export function puedePagarPuesto(saleMs: number, ahoraMs: number): boolean {
   return ahoraMs <= limiteDePago(saleMs);
 }
 
+/** Un puesto impagado deja de bloquear al estudiante al vencer su plazo. */
+export function puestoSinPagoVencido(puesto: { estado: string; pagado: number }, saleMs: number, ahoraMs: number): boolean {
+  return puesto.estado === "aprobado" && puesto.pagado === 0 && !puedePagarPuesto(saleMs, ahoraMs);
+}
+
 /** Días de la suspensión número n (1, 2, 3...): 3, 7, 15 y luego 30. */
 export function diasDeSuspension(nivel: number): number {
   if (nivel <= 1) return 3;

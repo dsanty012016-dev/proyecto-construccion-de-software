@@ -24,6 +24,8 @@ Todo cambio en la base de datos (tablas, políticas RLS, funciones) se escribe a
 | `018-vencimientos.sql` | Solicitudes y cupos que se cancelan solos (pg_cron cada minuto) |
 | `019-notificaciones.sql` | Suscripciones del celular, avisos por evento y llamada a la función `enviar-avisos` (pg_net) |
 | `020-mantener-avisos.sql` | Reintento cada 2 minutos y limpieza de avisos viejos |
+| `021-vencer-puestos-impagados.sql` | Libera puestos y estudiantes al vencer el pago, sin strike; tarea cada minuto |
+| `022-entregas-avisos.sql` | Reservas y confirmaciones por celular para reintentar las notificaciones que fallan |
 
 ## Reglas
 - Nunca editar un script ya ejecutado en Supabase: se crea uno nuevo que lo corrija.
@@ -40,7 +42,7 @@ PGHOST=localhost PGUSER=postgres PGPASSWORD=postgres ./supabase/pruebas/correr.s
 ```
 
 ## Aplicar en Supabase
-El proyecto Unigo de Supabase ya tiene aplicadas las migraciones hasta la última que se haya fusionado. Para un proyecto nuevo:
+Fusionar una migración en GitHub no la ejecuta en Supabase. Comprueba cuál fue la última aplicada antes de ejecutar las pendientes. Para las correcciones 021 y 022, ver `docs/correcciones-fiabilidad.md`. Para un proyecto nuevo:
 1. Panel de Supabase → SQL Editor → pegar y ejecutar cada archivo **en orden**, uno por uno. No ejecutes nada de `supabase/pruebas/`.
 2. Authentication → Providers → Email: dejar activado **Confirm email**, para que solo entre quien de verdad tiene el correo institucional.
 3. Revisar en Database → Tables que todas digan "RLS enabled".

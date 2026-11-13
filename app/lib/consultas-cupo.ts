@@ -2,6 +2,7 @@ import "server-only";
 import { type FilaVehiculo, type PerfilPublico, perfilesPublicos } from "./consultas-viaje";
 import { crearClienteServidor } from "./supabase/server";
 import type { Database } from "./supabase/tipos";
+import { puestoSinPagoVencido } from "./pagos";
 
 // Lecturas de las pantallas de cupos. Qué ve cada quien lo decide RLS
 // (010-cupos.sql); los puestos libres salen de puestos_libres(), que no deja
@@ -69,7 +70,7 @@ export async function cupoActivoDelConductor(conductorId: string): Promise<CupoD
     .eq("cupo_id", cupo.id)
     .in("estado", ["pendiente", "aprobado"])
     .order("creado_en", { ascending: true });
-  const lista = puestos ?? [];
+  const lista = (puestos ?? []).filter((puesto) => !puestoSinPagoVencido(puesto, Date.parse(cupo.sale_en), Date.now()));
   const ids = lista.map((p) => p.estudiante_id);
   const [perfiles, telefonos, libres] = await Promise.all([perfilesPublicos(ids), telefonosDe(ids), libresDe([cupo.id])]);
 
@@ -150,7 +151,8 @@ export async function cupoParaEstudiante(cupoId: string, estudianteId: string): 
     conductor: perfiles.get(cupo.conductor_id) ?? null,
     vehiculo: vehiculos[0] ?? null,
     libres: libres.get(cupo.id) ?? 0,
-    miPuesto: miPuesto.data ?? null,
+    miPuesto: miPuesto.data && puestoSinPagoVencido(miPuesto.data, Date.parse(cupo.sale_en), Date.now())
+      ? { ...miPuesto.data, estado: "sin_pago" } : miPuesto.data ?? null,
     telefonoConductor: telefonos.get(cupo.conductor_id) ?? null,
     ahora: Date.now(),
   };
@@ -173,7 +175,7 @@ export async function puestoActivoDelEstudiante(estudianteId: string): Promise<{
     .in("estado", ["publicado", "en_curso"]);
   for (const cupo of cupos ?? []) {
     const puesto = lista.find((p) => p.cupo_id === cupo.id);
-    if (puesto) return { puesto, cupo };
+    if (puesto && !puestoSinPagoVencido(puesto, Date.parse(cupo.sale_en), Date.now())) return { puesto, cupo };
   }
   return null;
 }
