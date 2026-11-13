@@ -25,6 +25,18 @@ export function nombreCorto(nombre: string): string {
   return `${partes[0]} ${partes[partes.length - 1][0].toUpperCase()}.`;
 }
 
+/**
+ * Un lugar en pocas palabras, para las listas: se queda con lo que va antes
+ * de la primera coma, del paréntesis de la referencia o de "seccional"/"sede".
+ * "Universidad Santo Tomás, seccional Villavicencio (portería 2)" →
+ * "Universidad Santo Tomás". Si no hay nada que quitar, lo devuelve igual.
+ */
+export function lugarCorto(texto: string): string {
+  const limpio = texto.trim();
+  const corto = limpio.split(/\s*[,(]|\s+(?:seccional|sede)\s/i)[0].trim();
+  return corto || limpio;
+}
+
 /** Calificación promedio: 4.9 → "4,9"; sin calificaciones → "Nuevo". */
 export function calificacionTexto(promedio: number | null | undefined): string {
   if (promedio === null || promedio === undefined) return "Nuevo";

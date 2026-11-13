@@ -3,7 +3,7 @@ import Link from "next/link";
 import { gananciaConductor } from "@/app/lib/comision";
 import { historialDeCupos, type CupoEnHistorial } from "@/app/lib/consultas-cupo";
 import { historialDeViajes } from "@/app/lib/consultas-viaje";
-import { etiquetaEstado, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
+import { etiquetaEstado, fechaCorta, lugarCorto, nombreCorto, pesos } from "@/app/lib/formato";
 import { filtrarHistorial, type Item } from "@/app/lib/historial";
 import { recorridoDelPuesto } from "@/app/lib/sentido";
 import { perfilActual } from "@/app/lib/sesion";
@@ -78,8 +78,10 @@ function FilaViaje({ item }: { item: ItemViaje }) {
           {viaje.vencio ? "Venció sin conductor" : etiquetaEstado(viaje.estado)}
         </p>
       </div>
+      {/* Solo a dónde fue, resumido: el resto del recorrido no hace falta en la lista. */}
       <p className="font-semibold">
-        {viaje.origen_texto} → {viaje.destino_texto}
+        <span className="sr-only">Destino: </span>
+        {lugarCorto(viaje.destino_texto)}
       </p>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-texto-suave">{otraPersona ? nombreCorto(otraPersona) : "Sin conductor"}</p>
@@ -109,10 +111,8 @@ function FilaCupo({ item }: { item: CupoEnHistorial }) {
         <p className={`text-[13px] font-semibold ${terminado ? "text-secundario" : "text-texto-suave"}`}>{terminado ? "Terminado" : cupo.vencio ? "No salió" : "Cancelado"}</p>
       </div>
       <p className="font-semibold">
-        {(() => {
-          const ruta = soyConductor ? { origen: cupo.salida_texto, destino: cupo.destino_texto } : recorridoDelPuesto(cupo, puesto?.recogida_texto ?? null);
-          return `${ruta.origen} → ${ruta.destino}`;
-        })()}
+        <span className="sr-only">Destino: </span>
+        {lugarCorto(soyConductor ? cupo.destino_texto : recorridoDelPuesto(cupo, puesto?.recogida_texto ?? null).destino)}
       </p>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-texto-suave">
