@@ -55,7 +55,8 @@ const politica = {
   "manifest-src": ["'self'"],
   "object-src": ["'none'"],
   "base-uri": ["'self'"],
-  "form-action": ["'self'"],
+  // Wompi: al recargar, el formulario termina en su página de pago.
+  "form-action": ["'self'", "https://checkout.wompi.co"],
   "frame-ancestors": ["'none'"],
   "upgrade-insecure-requests": [],
 };

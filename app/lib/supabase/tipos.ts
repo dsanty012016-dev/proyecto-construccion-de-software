@@ -58,6 +58,21 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["billeteras"]["Insert"]>;
         Relationships: Relacion[];
       };
+      recargas: {
+        Row: {
+          creada_en: string;
+          estado: Database["public"]["Enums"]["estado_recarga"];
+          id: string;
+          medio: string | null;
+          monto: number;
+          persona_id: string;
+          resuelta_en: string | null;
+          transaccion: string | null;
+        };
+        Insert: { persona_id: string; monto: number };
+        Update: Partial<Database["public"]["Tables"]["recargas"]["Insert"]>;
+        Relationships: Relacion[];
+      };
       movimientos: {
         Row: {
           creado_en: string;
@@ -399,6 +414,8 @@ export type Database = {
       iniciar_cupo: { Args: { p_cupo: string }; Returns: undefined };
       pagar_puesto: { Args: { p_cupo: string }; Returns: undefined };
       recargar: { Args: { p_monto: number }; Returns: number };
+      iniciar_recarga: { Args: { p_monto: number }; Returns: string };
+      confirmar_recarga_wompi: { Args: { p_evento: Json }; Returns: string };
       pedir_puesto: {
         Args: { p_cupo: string; p_recogida_lat: number; p_recogida_lng: number; p_recogida_texto: string };
         Returns: string;
@@ -457,6 +474,7 @@ export type Database = {
       estado_cupo: "publicado" | "en_curso" | "terminado" | "cancelado";
       estado_documento: "pendiente" | "aprobado" | "rechazado";
       estado_oferta: "activa" | "retirada" | "aceptada" | "rechazada";
+      estado_recarga: "pendiente" | "aprobada" | "rechazada";
       estado_puesto: "pendiente" | "aprobado" | "rechazado" | "retirado" | "cancelado" | "sin_pago";
       tipo_movimiento: "recarga" | "pago_viaje" | "reembolso_viaje" | "ganancia" | "pago_puesto" | "reembolso_puesto";
       estado_viaje: "solicitado" | "aceptado" | "en_curso" | "terminado" | "cancelado";

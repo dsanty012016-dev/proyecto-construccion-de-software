@@ -14,7 +14,7 @@ Si cambias una regla, cámbiala en los dos y en sus pruebas.
 - **Roles:** cada cuenta es **estudiante** o **conductor**. Se elige al registrarse; quien entra con Google lo elige después, una sola vez.
 - **Precio:** lo pone el **conductor**. Los conductores disponibles ofertan su precio en una solicitud y el estudiante escoge una oferta (como InDrive). Límite técnico entre $1.000 y $100.000 para atajar errores de digitación (no es una tarifa).
 - **Viajes:** de **una sola persona** (un estudiante por viaje).
-- **Pagos:** solo **digitales**, sin efectivo. Por ahora una **billetera simulada** (saldo y recargas de prueba); la pasarela real (Wompi, Mercado Pago o ePayco) llega después sin cambiar la lógica.
+- **Pagos:** solo **digitales**, sin efectivo. El saldo de la billetera se recarga pagando con **Wompi** (Nequi, PSE, Bancolombia o tarjeta); mientras no haya llaves configuradas, sigue la recarga de prueba con saldo simulado. Detalle en `docs/pagos.md`.
 - **Comisión:** UniGo cobra el **10 % del precio de la oferta al conductor**. El estudiante paga el precio ofertado; el conductor recibe el 90 % (oferta de $6.500 → recibe $5.850).
 - **Teléfono:** estudiante y conductor se ven el celular solo mientras el viaje está aceptado o en curso.
 - **Compartir viaje:** el estudiante puede enviar un enlace para seguir su viaje en vivo (fase 4 parte 2, ver abajo).
@@ -81,7 +81,9 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 
 ## Billetera, cancelaciones y strikes (fase 4b, migración 012)
 **Decidido por el equipo**
-- Billetera **simulada** (pasarela real después). Recargas con monto libre desde **$2.000**.
+- Recargas con monto libre desde **$20.000** (decidido en la fase 20: la pasarela cobra un fijo por pago). Con Wompi configurado, la recarga es un pago real; sin él, es saldo simulado.
+- La **comisión de la pasarela la asume UniGo**: quien paga $20.000 recibe $20.000 de saldo.
+- Los **conductores retiran por Nequi, a mano** (un administrador transfiere). Pendiente de construir; faltan sus reglas (monto mínimo y qué saldo se puede retirar).
 - **Viaje por pedido:** el estudiante paga **al aceptar la oferta** (sin saldo no puede aceptar). El pago queda **retenido** y al terminar el viaje el conductor recibe el 90 % y UniGo el 10 %.
 - **Estudiante cancela con el conductor en camino:** se le cobra el **20 %** (el conductor recibe ese 20 % menos la comisión) y suma **1 strike**. Más adelante el cobro dependerá de cuánto avanzó el conductor (necesita el seguimiento en vivo). **Excepción:** si cancela reportando mal comportamiento o algo raro del conductor, no paga ni recibe strike; el reporte llega a los administradores.
 - **Conductor cancela un viaje aceptado:** devolución completa al estudiante y **1 strike** al conductor.

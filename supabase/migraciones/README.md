@@ -26,6 +26,7 @@ Todo cambio en la base de datos (tablas, políticas RLS, funciones) se escribe a
 | `020-mantener-avisos.sql` | Reintento cada 2 minutos y limpieza de avisos viejos |
 | `021-vencer-puestos-impagados.sql` | Libera puestos y estudiantes al vencer el pago, sin strike; tarea cada minuto |
 | `022-entregas-avisos.sql` | Reservas y confirmaciones por celular para reintentar las notificaciones que fallan |
+| `023-pasarela.sql` | Recargas con Wompi: intentos de recarga, aviso firmado que acredita el saldo e interruptor de la recarga de prueba (ver `docs/pagos.md`) |
 
 ## Reglas
 - Nunca editar un script ya ejecutado en Supabase: se crea uno nuevo que lo corrija.

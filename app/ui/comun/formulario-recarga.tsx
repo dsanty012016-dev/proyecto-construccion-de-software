@@ -1,19 +1,30 @@
 "use client";
 
 import { useActionState, useId, useRef, useState } from "react";
-import { recargar } from "@/app/lib/acciones-billetera";
+import { iniciarRecarga, recargar } from "@/app/lib/acciones-billetera";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { pesos } from "@/app/lib/formato";
 import { RECARGA_MINIMA } from "@/app/lib/pagos";
+import type { ModoDeRecarga } from "@/app/lib/pasarela";
 import { Aviso, BotonEnviar } from "@/app/ui/auth/campos";
 
-// Recarga de saldo de prueba (rediseño): tres montos rápidos y "Otro" para
-// escribir uno libre desde $2.000. La base vuelve a validar el monto.
-const ATAJOS = [5_000, 10_000, 20_000];
+// Recarga de saldo: tres montos rápidos y "Otro" para escribir uno libre
+// desde la recarga mínima. La base vuelve a validar el monto. Según el modo:
+// - "prueba": no hay pasarela; suma saldo simulado al instante.
+// - "wompi-pruebas" y "wompi": abre la recarga y manda a pagar a la página de
+//   Wompi (en pruebas, sin dinero real). El saldo llega cuando Wompi confirma.
+const ATAJOS = [20_000, 50_000, 100_000];
 
-export function FormularioRecarga() {
-  const [estado, accion] = useActionState(recargar, ESTADO_INICIAL);
-  const [monto, setMonto] = useState(estado.valores?.monto ?? String(ATAJOS[1]));
+const AYUDA: Record<ModoDeRecarga, string> = {
+  prueba: "Es dinero simulado mientras llega el pago real.",
+  "wompi-pruebas": "Pagas en la página de Wompi, en modo de pruebas: no se cobra dinero real.",
+  wompi: "Pagas con Nequi, PSE, Bancolombia o tarjeta en la página de Wompi y recibes el monto completo.",
+};
+
+export function FormularioRecarga({ modo }: { modo: ModoDeRecarga }) {
+  const conWompi = modo !== "prueba";
+  const [estado, accion] = useActionState(conWompi ? iniciarRecarga : recargar, ESTADO_INICIAL);
+  const [monto, setMonto] = useState(estado.valores?.monto ?? String(ATAJOS[0]));
   const [otro, setOtro] = useState(false);
   const campo = useRef<HTMLInputElement>(null);
   const id = useId();
@@ -26,7 +37,7 @@ export function FormularioRecarga() {
       {estado.resultado === "listo" && <Aviso tipo="listo">{estado.mensaje}</Aviso>}
       {estado.resultado === "error" && estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
 
-      <div role="group" aria-label="Monto a recargar" className="grid grid-cols-4 gap-2">
+      <div role="group" aria-label="Monto a recargar" className="grid grid-cols-[1fr_1fr_1.15fr_auto] gap-2">
         {ATAJOS.map((valor) => {
           const elegido = !escribiendo && numero === valor;
           return (
@@ -55,7 +66,7 @@ export function FormularioRecarga() {
             setTimeout(() => campo.current?.focus(), 0);
           }}
           aria-pressed={escribiendo}
-          className={`min-h-11 rounded-xl text-sm ${
+          className={`min-h-11 rounded-xl px-3 text-sm ${
             escribiendo ? "border-2 border-secundario bg-secundario/10 font-bold text-texto" : "border border-texto-suave/30 font-semibold text-texto"
           }`}
         >
@@ -86,9 +97,11 @@ export function FormularioRecarga() {
         <input type="hidden" name="monto" value={monto} />
       )}
 
-      <BotonEnviar enviando="Recargando…">{numero >= RECARGA_MINIMA ? `Recargar ${pesos(numero)}` : "Recargar"}</BotonEnviar>
+      <BotonEnviar enviando={conWompi ? "Abriendo Wompi…" : "Recargando…"}>
+        {numero >= RECARGA_MINIMA ? `${conWompi ? "Pagar" : "Recargar"} ${pesos(numero)}` : conWompi ? "Pagar" : "Recargar"}
+      </BotonEnviar>
       <p id={`${id}-ayuda`} className={`text-xs ${conError ? "text-error" : "text-texto-suave"}`}>
-        {estado.errores?.monto ?? `Desde ${pesos(RECARGA_MINIMA)}. Es dinero simulado mientras llega el pago real.`}
+        {estado.errores?.monto ?? `Desde ${pesos(RECARGA_MINIMA)}. ${AYUDA[modo]}`}
       </p>
     </form>
   );

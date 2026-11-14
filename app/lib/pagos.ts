@@ -1,10 +1,13 @@
 import { comision } from "./comision";
+import { pesos } from "./formato";
 
 // Reglas de dinero como funciones puras (la hora entra por parámetro). La base
-// las hace cumplir en 012-billetera.sql; aquí sirven para avisar en pantalla
+// las hace cumplir en 012-billetera.sql y 023-pasarela.sql; aquí sirven para avisar en pantalla
 // cuánto se cobra o se devuelve antes de confirmar. Pruebas en pagos.test.ts.
 
-export const RECARGA_MINIMA = 2_000;
+// Desde $20.000: la pasarela cobra un fijo por pago (lo asume UniGo) y en
+// recargas más pequeñas se comería casi toda la comisión de los viajes.
+export const RECARGA_MINIMA = 20_000;
 export const RECARGA_MAXIMA = 500_000;
 export const SALDO_MAXIMO = 1_000_000;
 export const COBRO_CANCELACION_VIAJE = 20; // % para el estudiante que cancela con el conductor en camino
@@ -55,8 +58,8 @@ export function diasDeSuspension(nivel: number): number {
 /** Revisa el monto de una recarga. Devuelve el mensaje de error o null. */
 export function problemaConRecarga(monto: number, saldoActual: number): string | null {
   if (!Number.isInteger(monto) || monto < RECARGA_MINIMA || monto > RECARGA_MAXIMA) {
-    return "La recarga debe ser entre $2.000 y $500.000.";
+    return `La recarga debe ser entre ${pesos(RECARGA_MINIMA)} y ${pesos(RECARGA_MAXIMA)}.`;
   }
-  if (saldoActual + monto > SALDO_MAXIMO) return "Tu saldo no puede pasar de $1.000.000.";
+  if (saldoActual + monto > SALDO_MAXIMO) return `Tu saldo no puede pasar de ${pesos(SALDO_MAXIMO)}.`;
   return null;
 }

@@ -18,6 +18,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
 ## Avance
+- Fase 20: pasarela de pagos. Recargas con Wompi (página de pago de Wompi, aviso firmado que revisa la base, pantalla de resultado), recarga mínima de $20.000 y recarga de prueba con interruptor. Sin llaves en Vercel todo sigue como antes. No se ha probado contra Wompi; pasos y pendientes en `docs/pagos.md` (rama `fase-20-pasarela`, migración 023).
 - Fase 19: pantallas del viaje con las piezas de la portada. Las ofertas del estudiante son un tiquete; la placa se dibuja como placa (`app/ui/comun/placa.tsx`); los pasos del viaje son una ruta con paradas; los bloques azules del conductor llevan título de cartel y el botón claro `prensa-papel` (rama `fase-19-viaje`).
 - Fase 18: la letra del cartel en toda la app y pantallas de acceso nuevas. Archivo reemplaza a Inter y Manrope; títulos con `cartel`, cifras con `cifra`, botones azules con `prensa`; entrar, registro y recuperar con el logo arriba y el título grande; la barra inferior marca la pestaña actual como una parada de la ruta (rama `fase-18-letra-y-acceso`).
 - Fase 17: portada pública nueva, el "cartel de ruta": titular gigante con la letra Archivo, tiquete de ofertas, tabla de ruta con barrios, la mañana de Laura en cuatro paradas, tablero de salidas y recibo. Se quitó la escena 3D de A-Frame. Faltan las tres fotos (marcos "Foto pendiente", ver `app/ui/sitio/foto.tsx`) (rama `fase-17-portada`).
