@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { miRecarga } from "@/app/lib/consultas-billetera";
-import { pesos } from "@/app/lib/formato";
+import { fechaCorta, pesos } from "@/app/lib/formato";
 import { perfilActual } from "@/app/lib/sesion";
 import { esReferencia } from "@/app/lib/wompi";
 import { EsperarRecarga } from "@/app/ui/comun/esperar-recarga";
+import { CopiarReferencia } from "@/app/ui/comun/copiar-referencia";
 
 export const metadata: Metadata = { title: "Tu recarga" };
 
@@ -28,15 +29,19 @@ export default async function PaginaRecarga({ params }: { params: Promise<{ refe
 
   return (
     <main className="flex flex-col gap-6 px-5 pt-10">
-      {recarga.estado === "pendiente" && (
+      {recarga.requiere_revision ? <header role="status" className="space-y-3">
+        <h1 className="cartel text-[2.75rem]">Estamos revisando tu recarga.</h1>
+        <p className="text-texto-suave">La operación de {monto} requiere revisión del equipo. Conserva esta referencia para consultar lo ocurrido; no hagas otro pago por esta misma operación.</p>
+        <Link href="/billetera/recargas" className={ENLACE}>Ver mis recargas</Link>
+      </header> : recarga.estado === "pendiente" && (
         <>
-          <EsperarRecarga />
           <header role="status">
             <h1 className="cartel text-[2.75rem]">Estamos confirmando tu pago.</h1>
             <p className="mt-3 text-lg leading-snug text-texto-suave">
-              Wompi nos avisa apenas apruebe tu recarga de {monto}. Suele tardar menos de un minuto y esta pantalla se actualiza sola.
+              Esperamos la confirmación de Wompi para tu recarga de {monto}. El tiempo depende del medio de pago.
             </p>
           </header>
+          <EsperarRecarga key={recarga.id} />
           <p className="text-sm text-texto-suave">
             Puedes salir de aquí: el saldo llega solo a tu billetera. Si no pagaste, no se te cobra nada y esta recarga se queda sin usar.
           </p>
@@ -46,7 +51,7 @@ export default async function PaginaRecarga({ params }: { params: Promise<{ refe
         </>
       )}
 
-      {recarga.estado === "aprobada" && (
+      {!recarga.requiere_revision && recarga.estado === "aprobada" && (
         <>
           <header role="status">
             <h1 className="cartel text-[2.75rem]">Recarga lista.</h1>
@@ -63,7 +68,7 @@ export default async function PaginaRecarga({ params }: { params: Promise<{ refe
         </>
       )}
 
-      {recarga.estado === "rechazada" && (
+      {!recarga.requiere_revision && recarga.estado === "rechazada" && (
         <>
           <header role="status">
             <h1 className="cartel text-[2.75rem]">El pago no se aprobó.</h1>
@@ -76,6 +81,12 @@ export default async function PaginaRecarga({ params }: { params: Promise<{ refe
           </Link>
         </>
       )}
+      <section aria-label="Datos de la recarga" className="space-y-2 border-t border-dashed border-texto-suave/40 pt-4 text-sm">
+        <p>Creada: {fechaCorta(recarga.creada_en)}</p>
+        <p>Referencia: <span className="select-all break-all">{recarga.id}</span></p>
+        {recarga.transaccion && <p>Transacción de Wompi: <span className="select-all break-all">{recarga.transaccion}</span></p>}
+        <CopiarReferencia referencia={recarga.id} />
+      </section>
     </main>
   );
 }

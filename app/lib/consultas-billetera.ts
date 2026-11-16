@@ -12,23 +12,32 @@ export type FilaRecarga = Database["public"]["Tables"]["recargas"]["Row"];
 /** Una recarga propia por su referencia (RLS no deja ver las de otros). */
 export async function miRecarga(referencia: string): Promise<FilaRecarga | null> {
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.from("recargas").select("*").eq("id", referencia).maybeSingle();
+  const { data, error } = await supabase.from("recargas").select("*").eq("id", referencia).maybeSingle();
+  if (error) throw new Error("No pudimos consultar la recarga. Intenta de nuevo.");
   return data;
 }
 
-/** Recargas que la persona abrió hace poco y Wompi todavía no ha confirmado. */
+/** Pendientes recientes, sin ocultar las que llevan más de media hora. */
 export async function recargasEnProceso(personaId: string): Promise<FilaRecarga[]> {
   const supabase = await crearClienteServidor();
-  const haceMediaHora = new Date(Date.now() - 30 * 60_000).toISOString();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("recargas")
     .select("*")
     .eq("persona_id", personaId)
     .eq("estado", "pendiente")
-    .gt("creada_en", haceMediaHora)
     .order("creada_en", { ascending: false })
-    .limit(3);
+    .limit(5);
+  if (error) throw new Error("No pudimos consultar tus recargas. Intenta de nuevo.");
   return data ?? [];
+}
+
+export async function historialDeRecargas(personaId: string, pagina: number): Promise<{ recargas: FilaRecarga[]; total: number }> {
+  const supabase = await crearClienteServidor();
+  const inicio = (pagina - 1) * 20;
+  const { data, error, count } = await supabase.from("recargas").select("*", { count: "exact" })
+    .eq("persona_id", personaId).order("creada_en", { ascending: false }).order("id").range(inicio, inicio + 19);
+  if (error) throw new Error("No pudimos consultar el historial de recargas.");
+  return { recargas: data ?? [], total: count ?? 0 };
 }
 
 /** Saldo, últimos movimientos y la hora de la consulta (para agruparlos por día). */
@@ -38,6 +47,7 @@ export async function miBilletera(personaId: string): Promise<{ saldo: number; m
     supabase.from("billeteras").select("saldo").eq("persona_id", personaId).maybeSingle(),
     supabase.from("movimientos").select("*").eq("persona_id", personaId).order("creado_en", { ascending: false }).limit(30),
   ]);
+  if (billetera.error || movimientos.error) throw new Error("No pudimos cargar tu billetera. Tu saldo no se ha cambiado.");
   return { saldo: billetera.data?.saldo ?? 0, movimientos: movimientos.data ?? [], ahora: Date.now() };
 }
 
@@ -46,7 +56,8 @@ export async function miBilletera(personaId: string): Promise<{ saldo: number; m
 // strikes reciben ese mismo resultado sin volver a consultar.
 export const miSaldo = cache(async (personaId: string): Promise<number> => {
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.from("billeteras").select("saldo").eq("persona_id", personaId).maybeSingle();
+  const { data, error } = await supabase.from("billeteras").select("saldo").eq("persona_id", personaId).maybeSingle();
+  if (error) throw new Error("No pudimos consultar tu saldo.");
   return data?.saldo ?? 0;
 });
 
@@ -63,6 +74,7 @@ export const estadoDeCuenta = cache(async (personaId: string): Promise<EstadoDeC
     supabase.from("strikes").select("id", { count: "exact", head: true }).eq("persona_id", personaId).eq("vigente", true),
     supabase.from("suspensiones").select("hasta").eq("persona_id", personaId).gt("hasta", ahora).order("hasta", { ascending: false }).limit(1),
   ]);
+  if (strikes.error || suspension.error) throw new Error("No pudimos consultar el estado de tu cuenta.");
   return { strikes: strikes.count ?? 0, suspendidoHasta: suspension.data?.[0]?.hasta ?? null };
 });
 

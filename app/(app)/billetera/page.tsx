@@ -50,7 +50,8 @@ export default async function PaginaBilletera() {
         <h2 id="titulo-recarga" className="text-base">
           Recargar
         </h2>
-        <FormularioRecarga modo={modo} />
+        <FormularioRecarga modo={modo} saldo={saldo} />
+        <Link href="/billetera/recargas" className="inline-flex min-h-11 items-center font-semibold">Ver todas mis recargas</Link>
         {enProceso.length > 0 && (
           <ul aria-label="Recargas en proceso" className="border-t border-dashed border-texto-suave/40 pt-1">
             {enProceso.map((recarga) => (
@@ -59,7 +60,7 @@ export default async function PaginaBilletera() {
                   href={`/billetera/recarga/${recarga.id}`}
                   className="flex min-h-11 items-center justify-between gap-3 text-sm text-texto hover:text-secundario"
                 >
-                  <span>Recarga de {pesos(recarga.monto)} en proceso</span>
+                  <span>Recarga de {pesos(recarga.monto)} {recarga.requiere_revision ? "en revisión" : "en proceso"}</span>
                   <span className="font-semibold text-secundario">Ver</span>
                 </Link>
               </li>
@@ -67,6 +68,12 @@ export default async function PaginaBilletera() {
           </ul>
         )}
       </section>
+
+      {perfil?.rol === "conductor" && <section className="space-y-2 border-t border-dashed border-texto-suave/40 pt-4" aria-labelledby="titulo-retirar">
+        <h2 id="titulo-retirar" className="text-base">Tus ganancias</h2>
+        <p className="text-sm text-texto-suave">Solicita desde $20.000 a tu Nequi. El equipo revisa tus documentos y el plazo máximo es de siete días.</p>
+        <Link href="/billetera/retiros" className="inline-flex min-h-12 items-center font-semibold">Retirar ganancias y ver solicitudes</Link>
+      </section>}
 
       <section aria-labelledby="titulo-movimientos">
         <h2 id="titulo-movimientos" className="text-base">
@@ -82,7 +89,7 @@ export default async function PaginaBilletera() {
                 {delDia.map((m) => (
                   <li key={m.id} className="flex items-center justify-between gap-3 border-b border-texto-suave/15 py-3 last:border-b-0">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{m.descripcion}</p>
+                      <p className="text-sm font-semibold break-words">{m.descripcion}</p>
                       <p className="text-xs text-texto-suave">
                         {horaCorta(m.creado_en).hora} {horaCorta(m.creado_en).periodo}
                       </p>

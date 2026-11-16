@@ -58,6 +58,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["billeteras"]["Insert"]>;
         Relationships: Relacion[];
       };
+      retiros: {
+        Row: {
+          id: string; conductor_id: string; monto: number; nequi: string;
+          estado: Database["public"]["Enums"]["estado_retiro"]; simulado: boolean;
+          solicitado_en: string; plazo_hasta: string; resuelto_en: string | null;
+          revisado_por: string | null; documentos_revisados_en: string | null;
+          referencia_pago: string | null; motivo: string | null;
+        };
+        Insert: { conductor_id: string; monto: number; nequi: string; simulado: boolean };
+        Update: Partial<Database["public"]["Tables"]["retiros"]["Insert"]>;
+        Relationships: Relacion[];
+      };
       recargas: {
         Row: {
           creada_en: string;
@@ -67,6 +79,7 @@ export type Database = {
           monto: number;
           persona_id: string;
           resuelta_en: string | null;
+          requiere_revision: boolean;
           transaccion: string | null;
         };
         Insert: { persona_id: string; monto: number };
@@ -408,6 +421,10 @@ export type Database = {
         }[];
       };
       cambiar_disponibilidad: { Args: { p_disponible: boolean }; Returns: undefined };
+      opciones_de_retiro: { Args: Record<string, never>; Returns: { disponible: number; simulado: boolean; documentacion_lista: boolean }[] };
+      solicitar_retiro: { Args: { p_monto: number; p_nequi: string }; Returns: string };
+      revisar_retiro: { Args: { p_retiro: string; p_pagado: boolean; p_documentacion_verificada: boolean; p_referencia?: string; p_motivo?: string }; Returns: undefined };
+      incidencias_de_pago: { Args: Record<string, never>; Returns: { id: string; recarga_id: string | null; transaccion: string; motivo: string; detectado_en: string }[] };
       cambiar_modo: { Args: { p_modo: Rol }; Returns: undefined };
       cancelar_cupo: { Args: { p_cupo: string }; Returns: undefined };
       cancelar_viaje: { Args: { p_viaje: string; p_justificacion?: string }; Returns: undefined };
@@ -415,7 +432,6 @@ export type Database = {
       pagar_puesto: { Args: { p_cupo: string }; Returns: undefined };
       recargar: { Args: { p_monto: number }; Returns: number };
       iniciar_recarga: { Args: { p_monto: number }; Returns: string };
-      confirmar_recarga_wompi: { Args: { p_evento: Json }; Returns: string };
       pedir_puesto: {
         Args: { p_cupo: string; p_recogida_lat: number; p_recogida_lng: number; p_recogida_texto: string };
         Returns: string;
@@ -476,7 +492,8 @@ export type Database = {
       estado_oferta: "activa" | "retirada" | "aceptada" | "rechazada";
       estado_recarga: "pendiente" | "aprobada" | "rechazada";
       estado_puesto: "pendiente" | "aprobado" | "rechazado" | "retirado" | "cancelado" | "sin_pago";
-      tipo_movimiento: "recarga" | "pago_viaje" | "reembolso_viaje" | "ganancia" | "pago_puesto" | "reembolso_puesto";
+      tipo_movimiento: "recarga" | "pago_viaje" | "reembolso_viaje" | "ganancia" | "pago_puesto" | "reembolso_puesto" | "retiro_reservado" | "retiro_devuelto";
+      estado_retiro: "solicitado" | "pagado" | "rechazado";
       estado_viaje: "solicitado" | "aceptado" | "en_curso" | "terminado" | "cancelado";
       rol_usuario: "estudiante" | "conductor";
       sentido_viaje: "ida" | "regreso";
