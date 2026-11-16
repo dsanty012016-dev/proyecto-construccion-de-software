@@ -1,74 +1,70 @@
-# Pagos: recargas con Wompi
+# Pagos y retiros
 
-Cómo entra dinero a la billetera de UniGo y qué hay que hacer para activarlo. Las reglas de negocio están en `docs/reglas.md`.
+La implementación incluye recargas con Wompi y retiros manuales por Nequi. Las pruebas automáticas usan proveedores y cuentas ficticias. No acreditan que se haya probado Wompi ni una transferencia real.
 
-## Estado
-- **Hecho (fase 20):** recargas con Wompi, probadas contra la base de datos y con pruebas automáticas. **No se ha probado contra Wompi** porque el equipo todavía no tiene cuenta ni llaves.
-- **Mientras no haya llaves** en Vercel, la billetera sigue igual que antes: recarga de prueba con saldo simulado.
-- **Falta:** retiros de los conductores (se decidió hacerlos a mano por Nequi; faltan sus reglas) y lo que se lista en "Antes de cobrar dinero real".
+## Reglas confirmadas
+- Recargas entre $20.000 y $500.000; saldo máximo $1.000.000. La comisión de Wompi la asume UniGo.
+- Retiros desde $20.000, por Nequi, con plazo máximo de siete días desde la solicitud.
+- El administrador revisa la documentación aprobada, la cédula y que el conductor sea titular del Nequi. La cédula por sí sola no verifica automáticamente la titularidad de una cuenta Nequi.
+- El retiro reserva saldo al solicitarlo. Al registrar el pago no se descuenta otra vez; rechazarlo devuelve la reserva una sola vez. Otro administrador debe revisar los retiros de un administrador.
+- El disponible está limitado por el saldo actual y las ganancias registradas, menos retiros reservados y más retiros devueltos. Recargar no aumenta ese límite de ganancias. La revisión del origen del saldo de prueba sigue siendo necesaria antes del dinero real.
+- La transferencia se hace fuera de UniGo. El administrador registra la referencia del comprobante, que no puede repetirse en otro retiro. UniGo no se conecta a Nequi para pagar ni verificar automáticamente el comprobante.
 
-## Decisiones del equipo
-- Pasarela: **Wompi** (sin mensualidad; cobra 2,65 % + $700 + IVA por pago aprobado).
-- El dinero entra por **recargas** a la billetera; los viajes se siguen pagando con saldo.
-- La comisión de la pasarela la **asume UniGo**: quien paga $20.000 recibe $20.000.
-- Recarga mínima **$20.000** (antes $2.000), máxima $500.000, saldo máximo $1.000.000.
-- Los conductores retiran **a mano por Nequi** (pendiente de construir).
+## Confirmación de una recarga
+1. `iniciar_recarga` abre el intento sin dar saldo. La app genera el enlace firmado de checkout.
+2. Wompi envía el evento a `/api/v1/pagos/wompi`. La ruta limita el cuerpo y lo pasa a la función de Supabase `confirmar-pago`.
+3. La función valida la firma mediante `privado.validar_evento_pago`, antes de consultar al proveedor. La firma debe cubrir ID, estado y monto.
+4. Consulta ese ID en el host fijo de Wompi del ambiente correspondiente con la llave privada del comercio. La referencia del evento puede no estar firmada: nunca se utiliza para elegir a quién acreditar.
+5. `privado.confirmar_pago_verificado` usa la referencia, monto, moneda y estado de la respuesta de Wompi; bloquea recarga y billetera y acredita una sola vez. Comprueba el tope también al acreditar, incluso si había varios intentos pendientes.
+6. Una anulación posterior, pago adicional, monto incorrecto o exceso de saldo se conserva como incidencia para revisión. No se descuenta ni reembolsa dinero automáticamente. El administrador ve las incidencias en `/admin`; la persona ve «En revisión».
 
-## Cómo funciona
-1. En **Billetera**, la persona elige el monto y toca **Pagar**.
-2. La app abre una recarga `pendiente` en la base (`iniciar_recarga`) y la manda a la página de pago de Wompi con esa referencia y una firma que impide cambiar el monto.
-3. La persona paga en Wompi con Nequi, PSE, Bancolombia o tarjeta. UniGo nunca ve esos datos.
-4. Wompi avisa el resultado a `/api/v1/pagos/wompi` con un evento firmado.
-5. La **base de datos** revisa la firma con el secreto de eventos (`confirmar_recarga_wompi`). Si es de Wompi y el pago se aprobó por el monto exacto, suma el saldo, deja el movimiento y manda la notificación. Cada recarga se acredita una sola vez aunque el aviso llegue repetido.
-6. Al volver de Wompi, la persona ve `/billetera/recarga/<referencia>`, que se actualiza sola hasta que llega el aviso.
+La función antigua `public.confirmar_recarga_wompi` queda desactivada en 024. Las funciones de confirmación nuevas y el secreto de eventos son privados: ni `anon` ni `authenticated` pueden llamarlas. Los fallos temporales devuelven 503 para permitir el reintento; no se responde éxito antes de persistir el resultado.
 
-La app no puede dar saldo por su cuenta: solo un evento firmado por Wompi lo hace. Por eso el secreto de eventos vive en la base y no en Vercel.
+La billetera muestra errores de lectura sin sustituirlos por saldo cero. El historial conserva recargas antiguas, su referencia y resultado. Tras tres minutos la pantalla explica que terminó el refresco automático y permite consultar de nuevo sin pagar otra vez.
 
-| Pieza | Dónde |
-|---|---|
-| Tablas y funciones | `supabase/migraciones/023-pasarela.sql` |
-| Firma del pago y dirección de Wompi | `app/lib/wompi.ts` (pruebas en `wompi.test.ts`) |
-| Llaves y modo (prueba, Wompi en pruebas, Wompi real) | `app/lib/pasarela.ts` |
-| Abrir la recarga | `iniciarRecarga` en `app/lib/acciones-billetera.ts` |
-| Recibir el aviso de Wompi | `app/api/v1/pagos/wompi/route.ts` |
-| Resultado de la recarga | `app/(app)/billetera/recarga/[referencia]/page.tsx` |
-| Pruebas de la base | `supabase/pruebas/pasarela.sql` |
+## Orden de publicación
+Aplicar 023 si falta. Después ejecutar **024 y 025, por separado y en ese orden**: 024 añade valores al enum que 025 utiliza. No ejecutar `supabase/pruebas/` en una base real. Fusionar una rama no aplica SQL ni publica una función de Supabase.
 
-## Activar en modo de pruebas
-Nadie paga dinero real en este modo. Lo hace una persona del equipo; las llaves no se comparten por chat ni se suben al repositorio.
+Antes de ejecutar SQL sobre un proyecto conectado, mostrar los archivos exactos y confirmar la última migración aplicada. Los archivos de esta entrega son:
+- `supabase/migraciones/024-seguridad-pagos.sql`
+- `supabase/migraciones/025-retiros-conductores.sql`
 
-1. **Crear la cuenta** en `comercios.wompi.co`. Como persona natural pide cédula, RUT y una cuenta Bancolombia con más de 30 días.
-2. En el panel de Wompi, en la sección de desarrolladores, copiar las llaves **de pruebas**: la llave pública (`pub_test_...`), el secreto de integridad (`test_integrity_...`) y el secreto de eventos (`test_events_...`).
-3. **Aplicar la migración 023** en Supabase (SQL Editor), después de comprobar que 021 y 022 ya están aplicadas.
-4. **Guardar el secreto de eventos** en la base, también en el SQL Editor:
-   ```sql
-   update privado.ajustes_pago set secreto_eventos = 'test_events_...';
-   ```
-5. En **Vercel → Settings → Environment Variables** (Production), agregar:
-   - `WOMPI_LLAVE_PUBLICA` = `pub_test_...`
-   - `WOMPI_SECRETO_INTEGRIDAD` = `test_integrity_...`
+Después publicar `confirmar-pago` con verificación JWT desactivada (autentica la firma de Wompi) y por último publicar la app Next.js. Desde un equipo autenticado y vinculado al proyecto correcto:
 
-   y volver a desplegar.
-6. En el panel de Wompi, poner como **URL de eventos de pruebas**: `https://unigoproject.vercel.app/api/v1/pagos/wompi`
-7. Probar una recarga. Datos de prueba de Wompi: Nequi `3991111111` (aprueba) y `3992222222` (rechaza); tarjeta `4242 4242 4242 4242` (aprueba) y `4111 1111 1111 1111` (rechaza), con cualquier fecha futura y CVC.
+```bash
+supabase functions deploy confirmar-pago --no-verify-jwt
+```
 
-Si la recarga se queda en "Estamos confirmando tu pago", casi siempre es la URL de eventos (paso 6) o el secreto de eventos (paso 4).
+La función usa `SUPABASE_DB_URL`, proporcionada por Supabase, para llamar a las funciones privadas. No necesita una llave de servicio en el navegador.
 
-## Antes de cobrar dinero real
-- [ ] **Consulta legal: guardar saldo.** Recibir dinero de muchas personas y guardarlo puede considerarse captación, reservada a entidades vigiladas. Preguntar si el modelo de saldo recargable es viable o si hay que pasar a pago por viaje.
-- [ ] **Consulta legal: transporte.** El transporte pagado en vehículos particulares está en discusión en Colombia (proyecto de ley radicado en febrero de 2026). Confirmar con la universidad o un abogado.
-- [ ] **Impuestos.** El dinero llega a la cuenta de una persona del equipo: definir quién y qué obligaciones tiene.
-- [ ] **Retiros de conductores** construidos y probados.
-- [ ] **Política de privacidad** actualizada: Wompi procesa el pago; UniGo guarda el número de la transacción y el medio de pago.
-- [ ] Cambiar en Vercel las dos llaves por las **de producción** (`pub_prod_...`, `prod_integrity_...`), guardar en la base el secreto de eventos de producción y poner la URL de eventos de producción en Wompi.
-- [ ] **Cerrar la recarga de prueba** el mismo día:
-  ```sql
-  update privado.ajustes_pago set recarga_simulada = false;
-  ```
-- [ ] Decidir qué pasa con el saldo de prueba que ya tengan las cuentas (hoy se quedaría como si fuera real).
-- [ ] Quitar de la portada la frase "todavía no se cobra dinero real".
+## Configuración de Wompi en pruebas
+Las llaves se guardan en los paneles correspondientes; nunca en el repositorio, capturas, registros ni chat.
 
-## Lo que esta fase no hace
-- **Reversos:** si Wompi anula un pago que ya se había aprobado, el saldo no se descuenta solo. Hay que revisarlo a mano.
-- **Comisión de la pasarela en las cuentas:** el panel de administración no descuenta lo que cobra Wompi de las ganancias de UniGo.
-- **Recargas abandonadas:** quedan como `pendiente` y no estorban; no se borran.
+| Lugar | Variable o ajuste | Valor de pruebas |
+|---|---|---|
+| Vercel | `WOMPI_LLAVE_PUBLICA` | Prefijo `pub_test_` |
+| Vercel | `WOMPI_SECRETO_INTEGRIDAD` | Prefijo `test_integrity_` |
+| Supabase → Edge Function Secrets | `WOMPI_LLAVE_PRIVADA` | Prefijo `prv_test_` |
+| `privado.ajustes_pago` | `secreto_eventos` | Prefijo `test_events_` |
+| Wompi → eventos de pruebas | URL | `https://unigoproject.vercel.app/api/v1/pagos/wompi` |
+
+La consulta de transacciones utiliza autenticación privada según la [documentación oficial de Wompi](https://docs.wompi.co/docs/colombia/transacciones/). Publicar de nuevo la app después de cambiar sus variables. Sin las llaves de checkout continúa la recarga simulada; con llaves incompletas no debe iniciarse un piloto de pagos.
+
+Probar en el ambiente de Wompi de pruebas: aprobación, rechazo, aviso repetido, retorno antes del aviso y reintento tras una caída. Comprobar el saldo, movimiento y referencia en el historial. Las pruebas ficticias de GitHub no reemplazan esta prueba del comercio.
+
+## Separar pruebas y producción
+024 añade `saldos_de_prueba_revisados=false`. Mientras sea falso o siga habilitada `recarga_simulada`, los eventos de producción se rechazan. Los retiros se marcan como simulados si la base no está completamente configurada para producción; esa marca no cambia al cambiar los ajustes.
+
+Antes de pasar a dinero real, el equipo debe conciliar saldos y ganancias ficticias, intentos pendientes y retiros simulados. **No se borran ni convierten saldos automáticamente.** Solo después de resolverlos, cerrar `recarga_simulada`, registrar la revisión de saldos y cambiar todas las llaves al mismo ambiente de producción. La bandera no limpia datos: es una constancia de la revisión del equipo.
+
+Siguen pendientes la prueba del comercio, la conciliación operativa y las decisiones legales, tributarias y de privacidad del piloto. No quitar el aviso de dinero simulado hasta completar la puesta en marcha.
+
+## Archivos y comprobaciones
+- 023: base original de recargas; 024: confirmación privada e incidencias; 025: reservas y retiros.
+- `supabase/functions/confirmar-pago/`: consulta autenticada y confirmación.
+- `app/lib/acciones-retiros.ts`, `consultas-retiros.ts`, `retiros.ts`: operaciones y validación.
+- `/billetera/recargas`, `/billetera/retiros`, `/admin`: historial y revisión.
+- `supabase/pruebas/pasarela.sql` y `seguridad-pagos.sql`: comprobaciones aisladas de firma, permisos, topes, reservas y revisión. El doble `prueba.confirmar_pago` existe únicamente en esa base de pruebas.
+
+Las incidencias se muestran para conciliación manual; esta entrega no incluye una acción que ajuste saldos o haga reembolsos en Wompi. Un plazo vencido se destaca al administrador; no ejecuta un pago automático.
+

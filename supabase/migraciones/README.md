@@ -27,6 +27,8 @@ Todo cambio en la base de datos (tablas, políticas RLS, funciones) se escribe a
 | `021-vencer-puestos-impagados.sql` | Libera puestos y estudiantes al vencer el pago, sin strike; tarea cada minuto |
 | `022-entregas-avisos.sql` | Reservas y confirmaciones por celular para reintentar las notificaciones que fallan |
 | `023-pasarela.sql` | Recargas con Wompi: intentos de recarga, aviso firmado que acredita el saldo e interruptor de la recarga de prueba (ver `docs/pagos.md`) |
+| `024-seguridad-pagos.sql` | Cierra la confirmación pública antigua, exige consulta autenticada a Wompi, revisa topes al acreditar, registra incidencias y protege la transición desde saldos ficticios |
+| `025-retiros-conductores.sql` | Retiros por Nequi desde $20.000, reserva de saldo, siete días y revisión documentada por otro administrador |
 
 ## Reglas
 - Nunca editar un script ya ejecutado en Supabase: se crea uno nuevo que lo corrija.
@@ -43,6 +45,8 @@ PGHOST=localhost PGUSER=postgres PGPASSWORD=postgres ./supabase/pruebas/correr.s
 ```
 
 ## Aplicar en Supabase
+Para pagos y retiros, seguir el orden completo de `docs/pagos.md`: 024 y 025 se ejecutan por separado, después se publica `confirmar-pago` y por último la app. El cambio no activa cobros reales ni transfiere a Nequi.
+
 Fusionar una migración en GitHub no la ejecuta en Supabase. Comprueba cuál fue la última aplicada antes de ejecutar las pendientes. Para las correcciones 021 y 022, ver `docs/correcciones-fiabilidad.md`. Para un proyecto nuevo:
 1. Panel de Supabase → SQL Editor → pegar y ejecutar cada archivo **en orden**, uno por uno. No ejecutes nada de `supabase/pruebas/`.
 2. Authentication → Providers → Email: dejar activado **Confirm email**, para que solo entre quien de verdad tiene el correo institucional.

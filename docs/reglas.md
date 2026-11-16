@@ -83,7 +83,7 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 **Decidido por el equipo**
 - Recargas con monto libre desde **$20.000** (decidido en la fase 20: la pasarela cobra un fijo por pago). Con Wompi configurado, la recarga es un pago real; sin él, es saldo simulado.
 - La **comisión de la pasarela la asume UniGo**: quien paga $20.000 recibe $20.000 de saldo.
-- Los **conductores retiran por Nequi, a mano** (un administrador transfiere). Pendiente de construir; faltan sus reglas (monto mínimo y qué saldo se puede retirar).
+- Los **conductores retiran por Nequi, a mano**, desde **$20.000**, en máximo **siete días desde la solicitud**. Un administrador revisa la documentación aprobada, la cédula y la titularidad del Nequi, realiza la transferencia y registra su referencia. No puede revisar su propio retiro. Se reserva el saldo al solicitarlo; el rechazo lo devuelve una sola vez. El disponible se limita al saldo actual y las ganancias registradas menos retiros reservados, más devoluciones de retiros. Ver `docs/pagos.md`.
 - **Viaje por pedido:** el estudiante paga **al aceptar la oferta** (sin saldo no puede aceptar). El pago queda **retenido** y al terminar el viaje el conductor recibe el 90 % y UniGo el 10 %.
 - **Estudiante cancela con el conductor en camino:** se le cobra el **20 %** (el conductor recibe ese 20 % menos la comisión) y suma **1 strike**. Más adelante el cobro dependerá de cuánto avanzó el conductor (necesita el seguimiento en vivo). **Excepción:** si cancela reportando mal comportamiento o algo raro del conductor, no paga ni recibe strike; el reporte llega a los administradores.
 - **Conductor cancela un viaje aceptado:** devolución completa al estudiante y **1 strike** al conductor.

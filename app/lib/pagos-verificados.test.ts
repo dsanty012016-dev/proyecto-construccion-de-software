@@ -39,6 +39,21 @@ describe("confirmación de pagos en el servidor", () => {
     const p = preparar(); p.confirmar.mockRejectedValue(new Error("Base no disponible"));
     expect((await p.manejar(p.peticion())).status).toBe(503);
   });
+  it.each(["{", JSON.stringify({ data: null }), "x".repeat(100001)])("no acredita respuestas inválidas del proveedor", async (cuerpo) => {
+    const p = preparar(); p.consultar.mockResolvedValue(new Response(cuerpo));
+    expect((await p.manejar(p.peticion())).status).toBe(503); expect(p.confirmar).not.toHaveBeenCalled();
+  });
+  it("no entrega datos personales del proveedor a la base ni filtra errores", async () => {
+    const p = preparar(); p.consultar.mockResolvedValue(Response.json({ data: { ...transaccion, customer_email: "ficticio@ejemplo.test", payment_method: { phone_number: "3001112233" } } }));
+    p.confirmar.mockRejectedValue(new Error("Error interno confidencial"));
+    const respuesta = await p.manejar(p.peticion());
+    expect(p.confirmar).toHaveBeenCalledWith({ referencia: "no-confiable" }, transaccion);
+    expect(respuesta.status).toBe(503); expect(await respuesta.json()).toEqual({ recibido: false });
+  });
+  it("una caída de red permite reintentar sin acreditar", async () => {
+    const p = preparar(); p.consultar.mockRejectedValue(new Error("Red caída"));
+    expect((await p.manejar(p.peticion())).status).toBe(503); expect(p.confirmar).not.toHaveBeenCalled();
+  });
   it("no acepta el host o ruta dentro del ID del aviso", async () => {
     const p = preparar(); p.validar.mockResolvedValue({ ...aviso, transaccion: "../otro" });
     expect((await p.manejar(p.peticion())).status).toBe(400); expect(p.consultar).not.toHaveBeenCalled();

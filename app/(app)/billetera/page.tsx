@@ -35,7 +35,7 @@ export default async function PaginaBilletera() {
     <main className="space-y-6 px-5 pt-6">
       <header>
         <h1 className="font-texto text-sm font-semibold text-texto-suave">Tu saldo</h1>
-        <p className="mt-1 cifra text-[4rem]">{pesos(saldo)}</p>
+        <p className="mt-1 cifra text-[4rem] break-all">{pesos(saldo)}</p>
         <p className="mt-2 text-[13px] text-texto-suave">
           {modo !== "wompi" && "Saldo de prueba · "}
           {cuenta.strikes} de {STRIKES_PARA_SUSPENDER} strikes
@@ -87,14 +87,14 @@ export default async function PaginaBilletera() {
               <h3 className="font-texto text-xs font-bold text-texto-suave">{dia}</h3>
               <ul>
                 {delDia.map((m) => (
-                  <li key={m.id} className="flex items-center justify-between gap-3 border-b border-texto-suave/15 py-3 last:border-b-0">
-                    <div className="min-w-0">
+                  <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-texto-suave/15 py-3 last:border-b-0">
+                    <div className="min-w-0 flex-1 basis-40">
                       <p className="text-sm font-semibold break-words">{m.descripcion}</p>
                       <p className="text-xs text-texto-suave">
                         {horaCorta(m.creado_en).hora} {horaCorta(m.creado_en).periodo}
                       </p>
                     </div>
-                    <p className={`shrink-0 font-titulo font-bold tabular-nums ${m.monto > 0 ? "text-secundario" : "text-texto"}`}>
+                    <p className={`max-w-full break-all font-titulo font-bold tabular-nums ${m.monto > 0 ? "text-secundario" : "text-texto"}`}>
                       {m.monto > 0 ? "+" : "−"}
                       {pesos(Math.abs(m.monto))}
                     </p>

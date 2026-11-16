@@ -93,4 +93,15 @@ select prueba.falla($$select * from public.incidencias_de_pago()$$,'administrado
 select prueba.como(:'seg_admin');
 select prueba.ok((select count(*)>=1 from public.incidencias_de_pago()),'el administrador puede consultar los pagos que requieren revisión');
 reset role;
+-- La configuración de producción no convierte automáticamente el saldo ficticio.
+begin;
+update privado.ajustes_pago set secreto_eventos='prod_events_secreto_de_prueba',recarga_simulada=false;
+select prueba.falla(format('select * from privado.validar_evento_pago(%L)',
+  jsonb_set(prueba.evento_wompi(:'seg_rec_a','seg-prod','APPROVED',2000000,'prod_events_secreto_de_prueba'),'{environment}','"prod"')),
+  'saldos de prueba','producción exige revisión explícita de los saldos ficticios');
+update privado.ajustes_pago set saldos_de_prueba_revisados=true,recarga_simulada=true;
+select prueba.falla(format('select * from privado.validar_evento_pago(%L)',
+  jsonb_set(prueba.evento_wompi(:'seg_rec_a','seg-prod','APPROVED',2000000,'prod_events_secreto_de_prueba'),'{environment}','"prod"')),
+  'saldos de prueba','producción también exige cerrar las recargas ficticias');
+rollback;
 update privado.ajustes_pago set secreto_eventos=null;
