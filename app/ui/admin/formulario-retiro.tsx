@@ -1,17 +1,22 @@
 "use client";
-import { useActionState, useId, useState } from "react";
+import { startTransition, useActionState, useId, useState } from "react";
 import { revisarRetiro } from "@/app/lib/acciones-retiros";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
-import { Aviso, BotonEnviar, Campo } from "@/app/ui/auth/campos";
+import { Aviso, Campo } from "@/app/ui/auth/campos";
 
 export function FormularioRevisarRetiro({ retiroId, simulado, documentoDisponible }: { retiroId: string; simulado: boolean; documentoDisponible: boolean }) {
-  const [estado, accion] = useActionState(revisarRetiro, ESTADO_INICIAL);
+  const [estado, accion, pendiente] = useActionState(revisarRetiro, ESTADO_INICIAL);
   const [resultado, setResultado] = useState(documentoDisponible ? "pagado" : "rechazado");
   const id = useId();
   if (estado.resultado === "listo") return <Aviso tipo="listo">{estado.mensaje}</Aviso>;
-  // React reinicia los campos después de la acción, incluso al devolver errores.
-  // Conservamos la selección y lo escrito para que corregir no cambie el resultado.
-  return <form action={accion} onReset={(evento) => evento.preventDefault()} noValidate className="space-y-3">
+  // El envío manual conserva los campos al corregir errores: una revisión
+  // rechazada nunca debe cambiar a pagada por el reinicio del formulario.
+  return <form onSubmit={(evento) => {
+    evento.preventDefault();
+    if (pendiente) return;
+    const formulario = new FormData(evento.currentTarget);
+    startTransition(() => accion(formulario));
+  }} aria-busy={pendiente} noValidate className="space-y-3">
     <input type="hidden" name="retiro" value={retiroId} />
     {estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
     <label htmlFor={`${id}-resultado`} className="block text-sm font-semibold">Resultado de la revisión</label>
@@ -28,6 +33,6 @@ export function FormularioRevisarRetiro({ retiroId, simulado, documentoDisponibl
       <Campo etiqueta={simulado ? "Referencia de prueba" : "Referencia del pago en Nequi"} name="referencia" autoComplete="off" error={estado.errores?.referencia} required />
       <p className="text-sm text-texto-suave">{simulado ? "Esta operación es simulada: no hagas una transferencia real." : "Primero realiza el pago en Nequi. UniGo guarda la referencia y la revisión; este botón no transfiere dinero."}</p>
     </> : <Campo etiqueta="Motivo del rechazo" name="motivo" maxLength={300} error={estado.errores?.motivo} required />}
-    <BotonEnviar enviando="Guardando…">{resultado === "pagado" ? "Guardar pago registrado" : "Confirmar rechazo"}</BotonEnviar>
+    <button type="submit" disabled={pendiente} className="prensa min-h-12 w-full rounded-xl bg-primario px-4 py-3 font-semibold text-sobre-primario disabled:opacity-60">{pendiente ? "Guardando…" : resultado === "pagado" ? "Guardar pago registrado" : "Confirmar rechazo"}</button>
   </form>;
 }
