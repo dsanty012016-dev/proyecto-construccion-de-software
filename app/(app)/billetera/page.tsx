@@ -35,7 +35,7 @@ export default async function PaginaBilletera() {
     <main className="space-y-6 px-5 pt-6">
       <header>
         <h1 className="font-texto text-sm font-semibold text-texto-suave">Tu saldo</h1>
-        <p className="mt-1 cifra text-[4rem] break-all">{pesos(saldo)}</p>
+        <p className="mt-1 cifra text-[clamp(2rem,16vw,4rem)] break-all">{pesos(saldo)}</p>
         <p className="mt-2 text-[13px] text-texto-suave">
           {modo !== "wompi" && "Saldo de prueba · "}
           {cuenta.strikes} de {STRIKES_PARA_SUSPENDER} strikes

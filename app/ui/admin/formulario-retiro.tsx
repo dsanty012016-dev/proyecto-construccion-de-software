@@ -9,7 +9,9 @@ export function FormularioRevisarRetiro({ retiroId, simulado, documentoDisponibl
   const [resultado, setResultado] = useState(documentoDisponible ? "pagado" : "rechazado");
   const id = useId();
   if (estado.resultado === "listo") return <Aviso tipo="listo">{estado.mensaje}</Aviso>;
-  return <form action={accion} noValidate className="space-y-3">
+  // React reinicia los campos después de la acción, incluso al devolver errores.
+  // Conservamos la selección y lo escrito para que corregir no cambie el resultado.
+  return <form action={accion} onReset={(evento) => evento.preventDefault()} noValidate className="space-y-3">
     <input type="hidden" name="retiro" value={retiroId} />
     {estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
     <label htmlFor={`${id}-resultado`} className="block text-sm font-semibold">Resultado de la revisión</label>
