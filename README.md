@@ -12,6 +12,7 @@ App web instalable (PWA) de movilidad para estudiantes de la Universidad Santo T
 - Cupos con hora fija: puestos, aprobación, pago, orden de recogida o de bajada.
 - Verificación de conductores (documentos revisados por un administrador).
 - Billetera simulada, comisión del 10 %, cancelaciones, strikes y suspensiones.
+- Recargas Wompi con confirmación autenticada, historial y retiros manuales por Nequi con revisión de documentos. La activación del comercio y el paso a dinero real requieren la configuración de [`docs/pagos.md`](docs/pagos.md).
 - Solicitudes y cupos que vencen solos.
 - Notificaciones en el celular, instalación como app y pantalla sin conexión.
 
@@ -39,7 +40,8 @@ Las pruebas de la base de datos corren en GitHub en cada subida; para correrlas 
 - [`docs/supabase-auth.md`](docs/supabase-auth.md): configuración de inicio de sesión y correos.
 - [`docs/notificaciones.md`](docs/notificaciones.md): configuración de las notificaciones.
 - [`docs/identidad.md`](docs/identidad.md): colores, tipografía y logos. `docs/diseno/`: mockups.
-- `supabase/migraciones/`: base de datos (001 a 020). `supabase/pruebas/`: sus pruebas. `supabase/functions/`: envío de notificaciones.
+- [`docs/pagos.md`](docs/pagos.md): recargas, retiros y orden de publicación seguro.
+- `supabase/migraciones/`: base de datos (001 a 025). `supabase/pruebas/`: sus pruebas. `supabase/functions/`: notificaciones y confirmación de pagos.
 - `docs/landing-original/`: la landing en HTML del equipo, conservada como referencia.
 
 ## Stack

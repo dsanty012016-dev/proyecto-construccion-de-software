@@ -1362,4 +1362,5 @@ select prueba.ok(
 
 \ir pasarela.sql
 \ir correcciones.sql
+\ir seguridad-pagos.sql
 \echo '== Todas las pruebas pasaron'
