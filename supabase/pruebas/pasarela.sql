@@ -110,7 +110,7 @@ select public.iniciar_recarga(20000);
 select prueba.falla($$select public.iniciar_recarga(20000)$$, 'sin terminar', 'no se abren más de cinco recargas pendientes en una hora');
 reset role;
 update public.billeteras set saldo = 990000 where persona_id = :'pas_lina';
-delete from public.recargas where persona_id = :'pas_lina' and estado = 'pendiente';
+update public.recargas set estado = 'rechazada' where persona_id = :'pas_lina' and estado = 'pendiente';
 set role authenticated;
 select prueba.falla($$select public.iniciar_recarga(20000)$$, '$1.000.000', 'no se abre una recarga que pase el tope de saldo');
 

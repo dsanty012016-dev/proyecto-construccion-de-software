@@ -3,6 +3,7 @@ import type { Database } from "./supabase/tipos";
 import { crearClienteServidor } from "./supabase/server";
 
 export type FilaRetiro = Database["public"]["Tables"]["retiros"]["Row"];
+export function horaDeRevision() { return Date.now(); }
 export async function opcionesDeRetiro() {
   const supabase = await crearClienteServidor();
   const { data, error } = await supabase.rpc("opciones_de_retiro");

@@ -3,13 +3,12 @@ import { reportesRecientes } from "@/app/lib/consultas-billetera";
 import { conductoresPorRevisar } from "@/app/lib/consultas-verificacion";
 import { nombreDocumento } from "@/app/lib/documentos";
 import { fechaCorta, pesos } from "@/app/lib/formato";
-import { cedulasParaRevisarRetiros, incidenciasDePago, retirosPorRevisar } from "@/app/lib/consultas-retiros";
+import { cedulasParaRevisarRetiros, horaDeRevision, incidenciasDePago, retirosPorRevisar } from "@/app/lib/consultas-retiros";
 import { exigirAdmin } from "@/app/lib/sesion";
 import { FormularioRevisar } from "@/app/ui/admin/formulario-revisar";
 import { Aviso } from "@/app/ui/auth/campos";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { FormularioRevisarRetiro } from "@/app/ui/admin/formulario-retiro";
-import Link from "next/link";
 
 export const metadata: Metadata = { title: "Administración" };
 
@@ -21,6 +20,7 @@ export default async function PaginaAdmin() {
   const cedulas = await cedulasParaRevisarRetiros(retiros.filter((retiro) => retiro.conductor_id !== usuario.id).map((retiro) => retiro.conductor_id));
   const deOtros = conductores.filter((c) => c.conductorId !== usuario.id);
   const tengoPropios = deOtros.length !== conductores.length;
+  const ahora = horaDeRevision();
 
   return (
     <main className="space-y-5 px-5 pt-6">
@@ -32,7 +32,7 @@ export default async function PaginaAdmin() {
           <h3 className="flex flex-wrap justify-between gap-2 font-bold"><span>{retiro.nombre}</span><span>{pesos(retiro.monto)}</span></h3>
           <p className="text-sm">Nequi {retiro.nequi} · {retiro.simulado ? "Solicitud de prueba" : "Dinero real"}</p>
           <p className="text-sm text-texto-suave">Solicitado: {fechaCorta(retiro.solicitado_en)}. Plazo máximo: {fechaCorta(retiro.plazo_hasta)}.</p>
-          {Date.parse(retiro.plazo_hasta) < Date.now() && <p className="text-sm font-semibold text-error">El plazo de siete días ya se cumplió. Revisa esta solicitud con prioridad.</p>}
+          {Date.parse(retiro.plazo_hasta) < ahora && <p className="text-sm font-semibold text-error">El plazo de siete días ya se cumplió. Revisa esta solicitud con prioridad.</p>}
           {retiro.conductor_id === usuario.id ? <p className="text-sm">Otro administrador debe revisar tu solicitud.</p> : <>
             {cedulas.get(retiro.conductor_id) ? <a href={cedulas.get(retiro.conductor_id)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center font-semibold">Abrir cédula del conductor (enlace de cinco minutos)</a> : <p className="text-sm text-error">La cédula no está disponible. Vuelve a cargar antes de registrar un pago.</p>}
             <FormularioRevisarRetiro retiroId={retiro.id} simulado={retiro.simulado} documentoDisponible={cedulas.has(retiro.conductor_id)} />
@@ -46,7 +46,7 @@ export default async function PaginaAdmin() {
           <p className="font-semibold">{{ referencia_desconocida: "Referencia no encontrada", monto_distinto: "El monto o la moneda no coincide", limite_saldo: "El pago excede el saldo permitido", anulacion: "Wompi anuló un pago acreditado", pago_adicional: "Hay un pago adicional para esta recarga", transaccion_reutilizada: "La transacción ya aparece en otra recarga", estado_inconsistente: "Cambió el estado de un pago acreditado" }[incidencia.motivo] ?? "Revisión de pago"}</p>
           <p className="break-all">Transacción: {incidencia.transaccion}</p>
           <p className="text-texto-suave">{fechaCorta(incidencia.detectado_en)}</p>
-          {incidencia.recarga_id && <Link href={`/billetera/recarga/${incidencia.recarga_id}`} className="inline-flex min-h-11 items-center font-semibold">Consultar recarga</Link>}
+          {incidencia.recarga_id && <p className="break-all">Referencia de recarga: {incidencia.recarga_id}</p>}
         </li>)}</ul>
         <p className="text-sm text-texto-suave">No modifiques el saldo sin conciliar la operación con Wompi. La incidencia conserva lo ocurrido para revisarlo con el equipo.</p>
       </section>
