@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UniGo · Prueba de trayectos frecuentes</title>
+  <style>
+    @font-face { font-family: Archivo; src: url("../../app/ui/comun/fuentes/archivo-latino.ttf") format("truetype"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+    :root {
+      color-scheme: light dark;
+      --fondo: #f4f7fb;
+      --superficie: #fff;
+      --texto: #0b1220;
+      --suave: #475569;
+      --linea: #637389;
+      --primario: #2563eb;
+      --sobre-primario: #f8fafc;
+      --secundario: #1d4ed8;
+      font-family: Archivo, system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --fondo: #0b1220; --superficie: #172033; --texto: #f8fafc; --suave: #a2afc3; --linea: #8493aa; --secundario: #60a5fa; }
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--fondo); color: var(--texto); overflow-wrap: anywhere; }
+    main { width: min(100% - 2rem, 34rem); margin-inline: auto; padding-block: 1.75rem 3rem; }
+    header { border-bottom: 1px solid var(--linea); padding-bottom: 1.25rem; }
+    h1, h2, p, dl, dd { margin: 0; }
+    h1, h2 { line-height: 1.12; text-wrap: balance; }
+    h1 { font-size: 2.5rem; font-stretch: 62%; font-weight: 900; margin: 0.45rem 0; }
+    h2 { font-size: 1.35rem; }
+    h2:focus { outline-offset: 4px; }
+    .marca { color: var(--secundario); font-weight: 800; font-size: 1.15rem; }
+    .suave { color: var(--suave); }
+    .apilado { display: grid; gap: 1rem; }
+    .etapa { margin-top: 1.5rem; }
+    .entradas { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .entradas button { flex: 1 1 8rem; }
+    button, select {
+      color: inherit; font: inherit; border-radius: 0.65rem;
+      background: var(--superficie); border: 1px solid var(--linea);
+      padding: 0.65rem 0.8rem; min-height: 2.75rem;
+    }
+    button { font-weight: 700; cursor: pointer; }
+    button[aria-pressed="true"] { border: 2px solid var(--secundario); color: var(--secundario); text-decoration: underline; text-underline-offset: 0.25em; }
+    .primario { color: var(--sobre-primario); background: var(--primario); border-color: var(--primario); }
+    :focus-visible { outline: 3px solid var(--secundario); outline-offset: 3px; }
+    .campo { display: grid; gap: 0.3rem; min-width: 0; }
+    .campo label, dt { font-weight: 700; }
+    select { width: 100%; }
+    .borrador { background: var(--superficie); border-radius: 1rem; padding: 1rem; }
+    .resumen { margin-block: 0.25rem; }
+    .resumen > div { padding-block: 0.65rem; border-bottom: 1px solid var(--linea); }
+    .resumen > div:last-child { border-bottom: 0; }
+    .resumen dt { font-size: 0.9rem; color: var(--suave); }
+    fieldset { min-width: 0; border: 0; padding: 0; margin: 0; }
+    legend { font-weight: 700; margin-bottom: 0.5rem; }
+    .oferta { display: flex; align-items: center; min-height: 2.75rem; gap: 0.65rem; padding-block: 0.5rem; }
+    .oferta input { margin: 0; width: 1.1rem; height: 1.1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="marca">UniGo</p>
+      <h1>Pedir viaje</h1>
+      <p class="suave">Prototipo con recorridos y ofertas ficticios. Las acciones se simulan en esta página.</p>
+    </header>
+
+    <section id="edicion" class="etapa apilado" aria-labelledby="titulo-edicion">
+      <h2 id="titulo-edicion" tabindex="-1">Prepara tu recorrido</h2>
+      <div class="entradas" role="group" aria-label="Cómo empezar">
+        <button type="button" data-modo="manual" aria-pressed="true">Desde cero</button>
+        <button type="button" data-modo="lugar" aria-pressed="false">Usar lugar frecuente</button>
+        <button type="button" data-modo="repetir" aria-pressed="false">Repetir trayecto</button>
+      </div>
+      <p id="contexto" class="suave" role="status">Elige el sentido y el punto que vas a usar.</p>
+      <form id="borrador" class="apilado">
+        <div class="campo">
+          <label for="sentido">Sentido del viaje</label>
+          <select id="sentido" required>
+            <option value="">Elige un sentido</option>
+            <option value="ida">Hacia la universidad</option>
+            <option value="regreso">Desde la universidad</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="punto" id="etiqueta-punto">Punto fuera de la universidad</label>
+          <select id="punto" required>
+            <option value="">Elige un punto</option>
+            <option value="barzal">Barzal · esquina de la panadería</option>
+            <option value="parque">La Esperanza · entrada del parque</option>
+          </select>
+        </div>
+        <button class="primario" type="submit">Revisar trayecto</button>
+      </form>
+    </section>
+
+    <section id="revision" class="etapa apilado" aria-labelledby="titulo-revision" hidden>
+      <h2 id="titulo-revision" tabindex="-1">Confirma tu trayecto</h2>
+      <dl class="borrador resumen">
+        <div><dt>Sentido</dt><dd id="resumen-sentido"></dd></div>
+        <div><dt>Origen</dt><dd id="resumen-origen"></dd></div>
+        <div><dt>Destino</dt><dd id="resumen-destino"></dd></div>
+        <div><dt>Salida</dt><dd>Ahora · viaje por pedido</dd></div>
+        <div><dt>Precio</dt><dd>Se elige con una oferta nueva.</dd></div>
+      </dl>
+      <button class="primario" id="simular" type="button">Simular búsqueda ahora</button>
+      <button type="button" data-editar>Cambiar trayecto</button>
+    </section>
+
+    <section id="ofertas" class="etapa apilado" aria-labelledby="titulo-ofertas" hidden>
+      <h2 id="titulo-ofertas" tabindex="-1">Elige una oferta de prueba</h2>
+      <p id="ruta-ofertas" class="suave"></p>
+      <form id="formulario-ofertas" class="apilado">
+        <fieldset class="borrador">
+          <legend>Ofertas para esta búsqueda</legend>
+          <label class="oferta"><input required type="radio" name="oferta" value="6700"> Oferta por $6.700</label>
+          <label class="oferta"><input type="radio" name="oferta" value="7400"> Oferta por $7.400</label>
+        </fieldset>
+        <button type="submit" class="primario">Confirmar oferta de prueba</button>
+      </form>
+      <button type="button" data-editar>Cambiar trayecto</button>
+    </section>
+
+    <section id="fin" class="etapa apilado" aria-labelledby="titulo-fin" hidden>
+      <h2 id="titulo-fin" tabindex="-1">Prueba completada</h2>
+      <p id="resultado" class="borrador"></p>
+      <button type="button" id="reiniciar">Probar otra opción</button>
+    </section>
+  </main>
+  <script>
+    const buscar = (id) => document.getElementById(id);
+    const campus = "Universidad Santo Tomás";
+    const sentido = buscar("sentido");
+    const punto = buscar("punto");
+    const ofertas = buscar("formulario-ofertas");
+    const atajos = [...document.querySelectorAll("[data-modo]")];
+    const modoTexto = {
+      manual: "Elige el sentido y el punto que vas a usar.",
+      lugar: "Se cargó tu lugar de ejemplo en Barzal. Elige el sentido de hoy y comprueba el punto.",
+      repetir: "Se cargó un trayecto anterior desde Barzal hacia la U. Revisa si sigue siendo el que necesitas.",
+    };
+    let ruta = "";
+
+    function mostrar(etapa) {
+      for (const id of ["edicion", "revision", "ofertas", "fin"]) buscar(id).hidden = id !== etapa;
+      buscar(etapa).querySelector("h2").focus();
+    }
+
+    function actualizarEtiqueta() {
+      buscar("etiqueta-punto").textContent = sentido.value === "ida" ? "Punto de recogida"
+        : sentido.value === "regreso" ? "Punto donde te bajas" : "Punto fuera de la universidad";
+    }
+
+    function empezar(modo) {
+      for (const boton of atajos) boton.setAttribute("aria-pressed", String(boton.dataset.modo === modo));
+      sentido.value = modo === "repetir" ? "ida" : "";
+      punto.value = modo === "manual" ? "" : "barzal";
+      ofertas.reset();
+      buscar("contexto").textContent = modoTexto[modo];
+      actualizarEtiqueta();
+    }
+
+    for (const boton of atajos) boton.addEventListener("click", () => empezar(boton.dataset.modo));
+    sentido.addEventListener("change", actualizarEtiqueta);
+    buscar("borrador").addEventListener("submit", (evento) => {
+      evento.preventDefault();
+      const elegido = punto.selectedOptions[0].textContent;
+      const regreso = sentido.value === "regreso";
+      const origen = regreso ? campus : elegido;
+      const destino = regreso ? elegido : campus;
+      ruta = "De " + origen + " a " + destino + ".";
+      buscar("resumen-sentido").textContent = sentido.selectedOptions[0].textContent;
+      buscar("resumen-origen").textContent = origen;
+      buscar("resumen-destino").textContent = destino;
+      mostrar("revision");
+    });
+    buscar("simular").addEventListener("click", () => {
+      ofertas.reset();
+      buscar("ruta-ofertas").textContent = ruta + " Salida ahora.";
+      mostrar("ofertas");
+    });
+    for (const boton of document.querySelectorAll("[data-editar]")) {
+      boton.addEventListener("click", () => mostrar("edicion"));
+    }
+    ofertas.addEventListener("submit", (evento) => {
+      evento.preventDefault();
+      const precio = Number(new FormData(ofertas).get("oferta"));
+      buscar("resultado").textContent = ruta + " Elegiste una oferta de prueba por $" + new Intl.NumberFormat("es-CO", { useGrouping: "always" }).format(precio) + ".";
+      mostrar("fin");
+    });
+    buscar("reiniciar").addEventListener("click", () => {
+      empezar("manual");
+      mostrar("edicion");
+    });
+  </script>
+</body>
+</html>
