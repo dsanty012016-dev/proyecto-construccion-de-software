@@ -67,6 +67,21 @@ export interface EstadoDeCuenta {
   suspendidoHasta: string | null;
 }
 
+export const FALTAS_POR_PAGINA = 20;
+
+/** Historial propio, incluidas las faltas que generaron una suspensión anterior. */
+export async function historialDeFaltas(personaId: string, pagina: number) {
+  const supabase = await crearClienteServidor();
+  const inicio = (pagina - 1) * FALTAS_POR_PAGINA;
+  const { data, error, count } = await supabase.from("strikes")
+    .select("id,motivo,creado_en,vigente", { count: "exact" })
+    .eq("persona_id", personaId)
+    .order("creado_en", { ascending: false }).order("id")
+    .range(inicio, inicio + FALTAS_POR_PAGINA - 1);
+  if (error) throw new Error("No pudimos consultar tu historial de faltas.");
+  return { faltas: data ?? [], total: count ?? 0 };
+}
+
 export const estadoDeCuenta = cache(async (personaId: string): Promise<EstadoDeCuenta> => {
   const supabase = await crearClienteServidor();
   const ahora = new Date().toISOString();

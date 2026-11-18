@@ -17,8 +17,8 @@ export function CancelarViaje({ viajeId, quien, precio }: { viajeId: string; qui
   const { cobro, devolucion } = cancelacionDeViaje(precio);
   const aviso =
     quien === "estudiante"
-      ? `¿Cancelar? Se te cobra ${pesos(cobro)} (20 %), recuperas ${pesos(devolucion)} y sumas 1 strike.`
-      : "¿Cancelar? El estudiante recupera todo su dinero y tú sumas 1 strike.";
+      ? `¿Cancelar? Se te cobra ${pesos(cobro)} (20 %), recuperas ${pesos(devolucion)} y sumas una falta.`
+      : "¿Cancelar? El estudiante recupera todo su dinero y tú sumas una falta.";
 
   return (
     <div className="space-y-3">
@@ -34,17 +34,17 @@ export function CancelarViaje({ viajeId, quien, precio }: { viajeId: string; qui
           {quien === "estudiante" && cobro > 0 ? `Cancelar viaje · te cuesta ${pesos(cobro)}` : "Cancelar viaje"}
         </BotonAccion>
         <p className="mt-2 text-center text-[13px] text-texto-suave">
-          {quien === "estudiante" ? "Cobra el 20 % y suma un strike." : "El estudiante recupera todo y tú sumas un strike."}
+          {quien === "estudiante" ? "Cobra el 20 % y suma una falta." : "El estudiante recupera todo y tú sumas una falta."}
         </p>
       </div>
 
       {quien === "estudiante" && (
         <details className="rounded-2xl border border-texto-suave/20 px-4 py-1">
-          <summary className="min-h-11 cursor-pointer content-center text-sm font-semibold text-secundario">¿Pasó algo con el conductor? Repórtalo y cancela sin costo</summary>
+          <summary className="min-h-11 cursor-pointer content-center text-sm font-semibold text-secundario">Reportar un problema con el conductor y cancelar</summary>
           <form action={accion} className="mt-1 mb-3 space-y-2">
             <input type="hidden" name="viaje" value={viajeId} />
             <label htmlFor={idMotivo} className="block text-sm text-texto-suave">
-              Cuéntanos qué pasó. Cancelas sin costo ni strike y un administrador revisa el reporte.
+              Cuéntanos qué pasó. Cancelas sin costo ni falta y un administrador revisa el reporte.
             </label>
             <textarea
               id={idMotivo}

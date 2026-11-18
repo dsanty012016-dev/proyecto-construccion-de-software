@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { estadoDeCuenta, miBilletera, recargasEnProceso, type FilaMovimiento } from "@/app/lib/consultas-billetera";
+import { miBilletera, recargasEnProceso, type FilaMovimiento } from "@/app/lib/consultas-billetera";
 import { diaRelativo, horaCorta, pesos } from "@/app/lib/formato";
-import { STRIKES_PARA_SUSPENDER } from "@/app/lib/pagos";
 import { modoDeRecarga } from "@/app/lib/pasarela";
 import { perfilActual } from "@/app/lib/sesion";
 import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
@@ -18,9 +17,8 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
   const volverA = destinoDeRecarga((await searchParams).volver);
   const { usuario, perfil } = await perfilActual();
   const modo = modoDeRecarga();
-  const [{ saldo, movimientos, ahora }, cuenta, enProceso] = await Promise.all([
+  const [{ saldo, movimientos, ahora }, enProceso] = await Promise.all([
     miBilletera(usuario.id),
-    estadoDeCuenta(usuario.id),
     recargasEnProceso(usuario.id),
   ]);
 
@@ -39,14 +37,12 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
         <h1 className="font-texto text-sm font-semibold text-texto-suave">Tu saldo</h1>
         <p className="mt-1 cifra whitespace-nowrap" style={{ fontSize: `clamp(1.5rem,${Math.min(16, 90 / pesos(saldo).length)}vw,4rem)` }}>{pesos(saldo)}</p>
         <p className="mt-2 text-[13px] text-texto-suave">
-          {modo === "prueba" ? "Simulación interna · " : modo === "wompi-pruebas" ? "Wompi Sandbox · " : modo === "wompi" ? "Pagos con dinero real · " : "Recargas no disponibles · "}
-          {cuenta.strikes} de {STRIKES_PARA_SUSPENDER} strikes
+          {modo === "prueba" ? "Simulación interna" : modo === "wompi-pruebas" ? "Wompi Sandbox" : modo === "wompi" ? "Pagos con dinero real" : "Recargas no disponibles"}
           {perfil?.rol === "conductor" && " · tus ganancias llegan ya sin el 10 % de UniGo"}
         </p>
       </header>
 
-      {/* Los strikes ya se ven arriba; aquí solo el aviso de suspensión. */}
-      {cuenta.suspendidoHasta && <EstadoCuenta personaId={usuario.id} />}
+      <EstadoCuenta personaId={usuario.id} siempre />
 
       <section aria-labelledby="titulo-recarga" className="space-y-3">
         <h2 id="titulo-recarga" className="text-base">

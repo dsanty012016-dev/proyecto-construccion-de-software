@@ -20,6 +20,7 @@ import { IconoEstrella, IconoTelefono } from "@/app/ui/comun/iconos-app";
 import { Mapa } from "@/app/ui/comun/mapa";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 import { BotonCompartirViaje } from "@/app/ui/estudiante/boton-compartir-viaje";
+import { EnlaceDeAyuda } from "@/app/ui/comun/ayuda-unigo";
 import { FormularioPuesto } from "@/app/ui/estudiante/formulario-puesto";
 import { MapaEnVivo } from "@/app/ui/estudiante/mapa-en-vivo";
 import { horaDe, venceCupo } from "@/app/lib/vencimientos";
@@ -135,6 +136,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
             </p>
           )}
           {pagado && <BotonCompartirViaje compartir={compartirPuesto.bind(null, cupo.id)} />}
+          {pagado && <EnlaceDeAyuda motivo={{ tipo: "cupo", referencia: cupo.id }} />}
           {telefonoConductor && (
             <a
               href={`tel:${telefonoConductor}`}
@@ -154,7 +156,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
                 if (!aprobado) return "¿Retirar tu solicitud de este cupo?";
                 const salida = salidaDeCupo(miPuesto.pagado, saleMs, ahora);
                 if (!salida.tarde) return miPuesto.pagado > 0 ? `¿Dejar tu puesto? Recuperas ${pesos(salida.devolucion)}.` : "¿Dejar tu puesto?";
-                return `Faltan menos de 40 minutos: ${miPuesto.pagado > 0 ? `se te cobra ${pesos(salida.cobro)} (30 %), recuperas ${pesos(salida.devolucion)} y ` : ""}sumas 1 strike. ¿Dejar tu puesto?`;
+                return `Faltan menos de 40 minutos: ${miPuesto.pagado > 0 ? `se te cobra ${pesos(salida.cobro)} (30 %), recuperas ${pesos(salida.devolucion)} y ` : ""}sumas una falta. ¿Dejar tu puesto?`;
               })()}
             >
               {aprobado ? "Dejar mi puesto" : "Retirar solicitud"}

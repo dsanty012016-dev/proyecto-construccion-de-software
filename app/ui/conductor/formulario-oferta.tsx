@@ -87,7 +87,7 @@ export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; p
 
       <BotonEnviar enviando="Enviando oferta…">{valido ? `Enviar oferta de ${pesos(numero)}` : "Enviar oferta"}</BotonEnviar>
       <p className="text-center text-[13px] leading-relaxed text-texto-suave">
-        Puedes retirarla mientras no la acepten. Si la aceptan y luego cancelas, el estudiante recupera todo y sumas un strike.
+        Puedes retirarla mientras no la acepten. Si la aceptan y luego cancelas, el estudiante recupera todo y sumas una falta.
       </p>
     </form>
   );
