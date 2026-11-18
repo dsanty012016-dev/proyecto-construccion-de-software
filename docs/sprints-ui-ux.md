@@ -65,13 +65,13 @@ Validación realizada: lint, 248 pruebas de reglas, compilación y 236 comprobac
 - U08: ayuda separada de cancelar en viajes y cupos activos. El equipo eligió WhatsApp para ayuda de viajes y revisión de faltas.
 - U21: acceso a `/perfil/faltas` desde Perfil y Billetera, historial propio con fecha y motivo, y explicación de reglas y suspensiones.
 
-WhatsApp usa la variable de servidor `UNIGO_WHATSAPP_AYUDA`, con el número internacional del equipo. Cuando falta una configuración válida, los enlaces se ocultan. Confirmar número y responsable antes de activar el canal. Los borradores llevan la referencia del viaje, cupo o falta. El usuario envía el mensaje desde WhatsApp.
+WhatsApp usa la variable de servidor `UNIGO_WHATSAPP_AYUDA`, con el número internacional confirmado por el equipo. Cuando falta una configuración válida, los enlaces se ocultan. Los borradores llevan la referencia del viaje, cupo o falta. El usuario envía el mensaje desde WhatsApp. El responsable del canal revisa las solicitudes en un plazo de 7 días.
 
 ## Decisiones que se concretarán en sus sprints
 
 - Sprint 2: la simulación exige activación expresa; Wompi incompleto informa indisponibilidad. La búsqueda de direcciones se conserva como mejora opcional que requiere elegir servicio.
 - Sprint 3: confirmado nombre y celular editables, correo institucional fijo en este flujo y revisión de documentos en máximo siete días desde cada envío.
-- Sprint 4: WhatsApp confirmado para ayuda de viajes y solicitudes de revisión de faltas. Confirmar el número del equipo, responsables y horario si existe.
+- Sprint 4: WhatsApp confirmado para ayuda y revisión de faltas. El equipo definió el número, la persona responsable y un plazo de revisión de 7 días.
 - Sprint 5: quién puede resolver una incidencia monetaria y qué comprobaciones exige la conciliación.
 - Sprint 6: fotografías propias/autorizadas; validar utilidad de favoritos y repetición antes de construirlos.
 
