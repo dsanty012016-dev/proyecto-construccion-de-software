@@ -1364,4 +1364,5 @@ select prueba.ok(
 \ir correcciones.sql
 \ir seguridad-pagos.sql
 \ir perfil-contacto.sql
+\ir historial-administracion.sql
 \echo '== Todas las pruebas pasaron'

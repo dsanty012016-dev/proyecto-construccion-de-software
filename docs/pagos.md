@@ -76,5 +76,5 @@ Siguen pendientes la prueba del comercio, la conciliación operativa y las decis
 - `/billetera/recargas`, `/billetera/retiros`, `/admin`: historial y revisión.
 - `supabase/pruebas/pasarela.sql` y `seguridad-pagos.sql`: comprobaciones aisladas de firma, permisos, topes, reservas y revisión. El doble `prueba.confirmar_pago` existe únicamente en esa base de pruebas.
 
-Las incidencias se muestran para conciliación manual; esta entrega no incluye una acción que ajuste saldos o haga reembolsos en Wompi. Un plazo vencido se destaca al administrador; no ejecuta un pago automático.
+Las incidencias se revisan desde Administración → Incidencias Wompi. Un administrador compara referencia, transacción, monto, estado del proveedor y movimientos de UniGo. El panel muestra las coincidencias por persona, monto y hora de resolución, ya que esos movimientos no llevan la referencia de la recarga. Si falta una referencia o un movimiento, se deja constancia en el resultado. Al cerrar se guardan responsable, fecha y nota. El cierre solo registra la revisión y conserva la marca financiera de la recarga. Un plazo de retiro vencido se destaca para revisión.
 

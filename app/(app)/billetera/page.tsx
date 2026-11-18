@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { miBilletera, recargasEnProceso, type FilaMovimiento } from "@/app/lib/consultas-billetera";
+import { cuposDeMovimientos } from "@/app/lib/consultas-comprobantes";
 import { diaRelativo, horaCorta, pesos } from "@/app/lib/formato";
 import { modoDeRecarga } from "@/app/lib/pasarela";
 import { perfilActual } from "@/app/lib/sesion";
@@ -21,6 +22,7 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
     miBilletera(usuario.id),
     recargasEnProceso(usuario.id),
   ]);
+  const cupos = await cuposDeMovimientos(movimientos);
 
   // Vienen del más nuevo al más viejo; se agrupan seguidos por día.
   const dias: { dia: string; movimientos: FilaMovimiento[] }[] = [];
@@ -88,20 +90,25 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
             <div key={dia} className="mt-3">
               <h3 className="font-texto text-xs font-bold text-texto-suave">{dia}</h3>
               <ul>
-                {delDia.map((m) => (
+                {delDia.map((m) => {
+                  const cupo = m.puesto_id ? cupos.get(m.puesto_id) : null;
+                  const detalle = m.viaje_id ? `/viajes/${m.viaje_id}` : cupo ? `/viajes/cupo/${cupo}` : null;
+                  return (
                   <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-texto-suave/15 py-3 last:border-b-0">
                     <div className="min-w-0 flex-1 basis-40">
                       <p className="text-sm font-semibold break-words">{m.descripcion}</p>
                       <p className="text-xs text-texto-suave">
                         {horaCorta(m.creado_en).hora} {horaCorta(m.creado_en).periodo}
                       </p>
+                      {detalle && <Link href={`${detalle}?volver=%2Fbilletera`} className="inline-flex min-h-11 items-center text-sm font-semibold text-secundario underline underline-offset-4">Ver detalle del {cupo ? "cupo" : "viaje"}</Link>}
                     </div>
                     <p className={`max-w-full break-all font-titulo font-bold tabular-nums ${m.monto > 0 ? "text-secundario" : "text-texto"}`}>
                       {m.monto > 0 ? "+" : "−"}
                       {pesos(Math.abs(m.monto))}
                     </p>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </div>
           ))

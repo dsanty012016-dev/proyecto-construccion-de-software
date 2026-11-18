@@ -25,6 +25,7 @@ export interface Filtro {
 }
 
 export const SIN_FILTRO: Filtro = { tipo: "todos", estado: "todos", pendientes: false };
+export const VIAJES_POR_PAGINA = 15;
 
 function estadoDe(item: ItemFiltrable): string {
   return item.tipo === "viaje" ? item.dato.viaje.estado : item.dato.cupo.estado;
@@ -54,11 +55,12 @@ export function filtrarHistorial<T extends ItemFiltrable>(items: readonly T[], f
  * Enlace a /viajes con un filtro. Omite lo que está en "todos" para que la
  * URL quede corta y "sin filtros" sea simplemente /viajes.
  */
-export function enlaceDeFiltro(filtro: Filtro): string {
+export function enlaceDeFiltro(filtro: Filtro, pagina = 1): string {
   const partes = new URLSearchParams();
   if (filtro.tipo !== "todos") partes.set("tipo", filtro.tipo);
   if (filtro.estado !== "todos") partes.set("estado", filtro.estado);
   if (filtro.pendientes) partes.set("pendientes", "1");
+  if (pagina > 1) partes.set("pagina", String(pagina));
   const consulta = partes.toString();
   return consulta ? `/viajes?${consulta}` : "/viajes";
 }

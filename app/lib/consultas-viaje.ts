@@ -201,15 +201,16 @@ export interface ItemHistorial {
   calificado: boolean;
 }
 
-export async function historialDeViajes(usuarioId: string): Promise<ItemHistorial[]> {
+export async function historialDeViajes(usuarioId: string, ids?: string[]): Promise<ItemHistorial[]> {
+  if (ids?.length === 0) return [];
   const supabase = await crearClienteServidor();
-  const { data: viajes } = await supabase
+  const consulta = supabase
     .from("viajes")
     .select("*")
     .or(`estudiante_id.eq.${usuarioId},conductor_id.eq.${usuarioId}`)
     .in("estado", ["terminado", "cancelado"])
-    .order("creado_en", { ascending: false })
-    .limit(30).throwOnError();
+    .order("creado_en", { ascending: false });
+  const { data: viajes } = await (ids ? consulta.in("id", ids) : consulta.limit(30)).throwOnError();
   const lista = viajes ?? [];
   if (lista.length === 0) return [];
 

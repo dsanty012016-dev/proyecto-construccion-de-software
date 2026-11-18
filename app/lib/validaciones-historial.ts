@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ESTADOS, SIN_FILTRO, TIPOS, type Filtro } from "./historial";
+import { destinoSeguro } from "./rutas";
 
 // Lectura de los filtros de "Mis viajes" desde la URL (/viajes?tipo=cupo...).
 // La URL la puede escribir cualquiera, así que nunca se confía en ella: lo
@@ -24,4 +25,11 @@ export type ParametrosUrl = Record<string, string | string[] | undefined>;
 /** Convierte los parámetros de la URL en un filtro válido. */
 export function leerFiltro(parametros: ParametrosUrl): Filtro {
   return esquemaFiltro.parse(parametros);
+}
+
+export const referenciaDeViaje = z.uuid();
+
+export function volverDelComprobante(parametros: ParametrosUrl): string {
+  const destino = destinoSeguro(typeof parametros.volver === "string" ? parametros.volver : null, "/viajes");
+  return destino === "/billetera" || destino === "/viajes" || destino.startsWith("/viajes?") ? destino : "/viajes";
 }
