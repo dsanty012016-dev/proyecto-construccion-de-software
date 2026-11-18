@@ -11,10 +11,10 @@ import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 export const metadata: Metadata = { title: "Administración" };
 
 const COLAS = [
-  { clave: "retiros", nombre: "Retiros", unidad: "pendientes" },
-  { clave: "incidencias", nombre: "Incidencias Wompi", unidad: "pendientes" },
-  { clave: "documentos", nombre: "Documentos", unidad: "pendientes" },
-  { clave: "reportes", nombre: "Reportes", unidad: "recibidos" },
+  { clave: "retiros", nombre: "Retiros", unidad: "pendiente" },
+  { clave: "incidencias", nombre: "Incidencias Wompi", unidad: "pendiente" },
+  { clave: "documentos", nombre: "Documentos", unidad: "pendiente" },
+  { clave: "reportes", nombre: "Reportes", unidad: "recibido" },
 ] as const;
 
 export default async function PaginaAdmin({ searchParams }: { searchParams: Promise<ParametrosUrl> }) {
@@ -37,7 +37,9 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
               <Link href={`/admin?cola=${clave}`} aria-current={cola === clave ? "page" : undefined}
                 className={`flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg px-2 py-2 ${cola === clave ? "bg-superficie" : ""}`}>
                 <span className="font-semibold text-secundario">{nombre}</span>
-                <span className="text-sm tabular-nums text-texto-suave">{contadores[clave]} {unidad}</span>
+                <span className="text-sm tabular-nums text-texto-suave">
+                  {contadores[clave]} {unidad}{contadores[clave] === 1 ? "" : "s"}
+                </span>
               </Link>
             </li>
           ))}
