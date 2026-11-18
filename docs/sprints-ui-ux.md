@@ -69,12 +69,21 @@ WhatsApp usa la variable de servidor `UNIGO_WHATSAPP_AYUDA`, con el número inte
 
 Para activar o actualizar el canal, guarda la variable en **Production** en Vercel y vuelve a desplegar. Con una cuenta de UniGo, abre **Perfil → Ayuda de UniGo → Abrir WhatsApp**. Comprueba que el chat sea el del equipo y que se vea el plazo de revisión. Puedes verificar el destino del enlace sin enviar un mensaje. Consulta también **Ayuda con este viaje** desde un viaje activo.
 
+## Sprint 5
+
+- U17: detalle de viajes y cupos con recorrido, fecha, estado y movimientos propios. Billetera enlaza a los recorridos asociados.
+- U18: los filtros se aplican sobre el historial de la cuenta antes de paginar. Cada página mezcla viajes y cupos en orden de fecha y conserva filtros y página al volver de un detalle.
+- U19: accesos separados con contadores para retiros, incidencias, documentos y reportes. Los plazos de revisión se ven en su cola.
+- U20: historial administrativo de retiros con búsqueda por referencia de pago, e incidencias abiertas y cerradas con fecha, responsable y nota de la comparación.
+
+La migración [027](../supabase/migraciones/027-historial-administracion.sql) debe aplicarse después de aprobar las pruebas de base y antes de desplegar la aplicación.
+
 ## Decisiones que se concretarán en sus sprints
 
 - Sprint 2: la simulación exige activación expresa; Wompi incompleto informa indisponibilidad. La búsqueda de direcciones se conserva como mejora opcional que requiere elegir servicio.
 - Sprint 3: confirmado nombre y celular editables, correo institucional fijo en este flujo y revisión de documentos en máximo siete días desde cada envío.
 - Sprint 4: WhatsApp confirmado para ayuda y revisión de faltas. El equipo definió el número, la persona responsable y un plazo de revisión de 7 días.
-- Sprint 5: quién puede resolver una incidencia monetaria y qué comprobaciones exige la conciliación.
+- Sprint 5: cualquier administrador puede cerrar una incidencia después de comparar referencia, transacción, monto, estado de Wompi y movimientos de UniGo. Guarda el resultado de la revisión. El cierre es administrativo y conserva la marca financiera de revisión de la recarga.
 - Sprint 6: fotografías propias/autorizadas; validar utilidad de favoritos y repetición antes de construirlos.
 
 ## Registro de entregas

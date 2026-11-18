@@ -201,28 +201,38 @@ function viajo(p: FilaPuesto) {
   return p.estado === "aprobado" && p.pagado > 0;
 }
 
-export async function historialDeCupos(usuarioId: string): Promise<CupoEnHistorial[]> {
+export async function historialDeCupos(usuarioId: string, idsDePagina?: string[]): Promise<CupoEnHistorial[]> {
+  if (idsDePagina?.length === 0) return [];
   const supabase = await crearClienteServidor();
+  const propiosConsulta = supabase.from("cupos").select("*").eq("conductor_id", usuarioId)
+    .in("estado", ["terminado", "cancelado"]).order("sale_en", { ascending: false });
+  const puestosConsulta = supabase.from("puestos").select("*").eq("estudiante_id", usuarioId)
+    .in("estado", ["aprobado", "cancelado"]);
   const [comoConductor, misPuestos] = await Promise.all([
-    supabase.from("cupos").select("*").eq("conductor_id", usuarioId).in("estado", ["terminado", "cancelado"]).order("sale_en", { ascending: false }).limit(20).throwOnError(),
-    supabase.from("puestos").select("*").eq("estudiante_id", usuarioId).in("estado", ["aprobado", "cancelado"]).limit(40).throwOnError(),
+    (idsDePagina ? propiosConsulta.in("id", idsDePagina) : propiosConsulta.limit(20)).throwOnError(),
+    (idsDePagina ? puestosConsulta.in("cupo_id", idsDePagina) : puestosConsulta.limit(40)).throwOnError(),
   ]);
   const propios = comoConductor.data ?? [];
   const puestosMios = misPuestos.data ?? [];
 
-  const [puestosDeMisCupos, cuposDeMisPuestos, calificadas] = await Promise.all([
+  const [puestosDeMisCupos, cuposDeMisPuestos] = await Promise.all([
     propios.length
       ? supabase.from("puestos").select("*").in("cupo_id", propios.map((c) => c.id)).eq("estado", "aprobado").gt("pagado", 0).throwOnError()
       : Promise.resolve({ data: [] as FilaPuesto[] }),
     puestosMios.length
       ? supabase.from("cupos").select("*").in("id", puestosMios.map((p) => p.cupo_id)).in("estado", ["terminado", "cancelado"]).throwOnError()
       : Promise.resolve({ data: [] as FilaCupo[] }),
-    supabase.from("calificaciones").select("puesto_id").eq("autor_id", usuarioId).not("puesto_id", "is", null).throwOnError(),
   ]);
   const pasajeros = puestosDeMisCupos.data ?? [];
-  const yaCalifique = new Set((calificadas.data ?? []).map((c) => c.puesto_id));
+  const idsPuestos = [...pasajeros, ...puestosMios].map((p) => p.id);
   const ids = [...pasajeros.map((p) => p.estudiante_id), ...(cuposDeMisPuestos.data ?? []).map((c) => c.conductor_id)];
-  const perfiles = await perfilesPublicos(ids);
+  const [perfiles, calificadas] = await Promise.all([
+    perfilesPublicos(ids),
+    idsPuestos.length
+      ? supabase.from("calificaciones").select("puesto_id").eq("autor_id", usuarioId).in("puesto_id", idsPuestos).throwOnError()
+      : Promise.resolve({ data: [] }),
+  ]);
+  const yaCalifique = new Set((calificadas.data ?? []).map((c) => c.puesto_id));
   const nombre = (id: string) => perfiles.get(id)?.nombre ?? "";
 
   const lista: CupoEnHistorial[] = propios.map((cupo) => {

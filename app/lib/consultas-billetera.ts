@@ -102,13 +102,15 @@ export interface ReporteParaAdmin {
 }
 
 /** Reportes de mal comportamiento, para el panel de administración. */
-export async function reportesRecientes(): Promise<ReporteParaAdmin[]> {
+export async function reportesRecientes(pagina = 1): Promise<ReporteParaAdmin[]> {
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.from("reportes").select("*").order("creado_en", { ascending: false }).limit(30);
+  const inicio = (pagina - 1) * 20;
+  const { data } = await supabase.from("reportes").select("*").order("creado_en", { ascending: false })
+    .order("id").range(inicio, inicio + 19).throwOnError();
   const lista = data ?? [];
   if (lista.length === 0) return [];
   const ids = [...new Set(lista.flatMap((r) => [r.autor_id, r.sobre_id]))];
-  const { data: perfiles } = await supabase.from("perfiles").select("id, nombre").in("id", ids);
+  const { data: perfiles } = await supabase.from("perfiles").select("id, nombre").in("id", ids).throwOnError();
   const nombre = (id: string) => perfiles?.find((p) => p.id === id)?.nombre ?? "Alguien";
   return lista.map((r) => ({ id: r.id, motivo: r.motivo, creadoEn: r.creado_en, autor: nombre(r.autor_id), sobre: nombre(r.sobre_id) }));
 }

@@ -1,7 +1,7 @@
 // Pruebas de la lectura de los filtros de "Mis viajes" desde la URL.
 import { describe, expect, it } from "vitest";
 import { SIN_FILTRO } from "./historial";
-import { leerFiltro } from "./validaciones-historial";
+import { leerFiltro, volverDelComprobante } from "./validaciones-historial";
 
 describe("leerFiltro", () => {
   it("sin parámetros no filtra nada", () => {
@@ -32,5 +32,17 @@ describe("leerFiltro", () => {
 
   it("ignora parámetros que no son filtros", () => {
     expect(leerFiltro({ otro: "1", estado: "cancelado" })).toEqual({ ...SIN_FILTRO, estado: "cancelado" });
+  });
+});
+
+describe("volver desde un detalle", () => {
+  it("conserva los filtros y la página del historial o regresa a Billetera", () => {
+    expect(volverDelComprobante({ volver: "/viajes?tipo=cupo&pagina=3" })).toBe("/viajes?tipo=cupo&pagina=3");
+    expect(volverDelComprobante({ volver: "/billetera" })).toBe("/billetera");
+  });
+
+  it("acepta únicamente destinos del historial o Billetera", () => {
+    expect(volverDelComprobante({ volver: "/viajes/cupo/otro" })).toBe("/viajes");
+    expect(volverDelComprobante({ volver: ["/billetera", "/viajes"] })).toBe("/viajes");
   });
 });

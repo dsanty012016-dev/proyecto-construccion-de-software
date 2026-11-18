@@ -426,6 +426,20 @@ export type Database = {
       solicitar_retiro: { Args: { p_monto: number; p_nequi: string }; Returns: string };
       revisar_retiro: { Args: { p_retiro: string; p_pagado: boolean; p_documentacion_verificada: boolean; p_referencia?: string; p_motivo?: string }; Returns: undefined };
       incidencias_de_pago: { Args: Record<string, never>; Returns: { id: string; recarga_id: string | null; transaccion: string; motivo: string; detectado_en: string }[] };
+      historial_viajes_pagina: {
+        Args: { p_tipo: string; p_estado: string; p_pendientes: boolean; p_pagina: number };
+        Returns: { id: string; tipo: string; fecha: string }[];
+      };
+      historial_incidencias_pago: {
+        Args: { p_resueltas: boolean; p_pagina: number };
+        Returns: {
+          id: string; recarga_id: string | null; transaccion: string; motivo: string; detectado_en: string;
+          resuelta_en: string | null; revisada_por: string | null; responsable: string | null; nota_revision: string | null;
+          monto: number | null; estado_recarga: string | null; transaccion_recarga: string | null;
+          creditos_coincidentes: number | null; total: number;
+        }[];
+      };
+      cerrar_incidencia_pago: { Args: { p_incidencia: string; p_verificada: boolean; p_nota: string }; Returns: undefined };
       cambiar_modo: { Args: { p_modo: Rol }; Returns: undefined };
       cancelar_cupo: { Args: { p_cupo: string }; Returns: undefined };
       cancelar_viaje: { Args: { p_viaje: string; p_justificacion?: string }; Returns: undefined };

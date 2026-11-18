@@ -37,14 +37,15 @@ export interface ConductorPorRevisar {
 }
 
 /** Para el panel de administración: conductores con documentos pendientes. */
-export async function conductoresPorRevisar(): Promise<ConductorPorRevisar[]> {
+export async function conductoresPorRevisar(pagina = 1): Promise<ConductorPorRevisar[]> {
   const supabase = await crearClienteServidor();
+  const inicio = (pagina - 1) * 20;
   const { data: pendientes } = await supabase
     .from("documentos_conductor")
     .select("*")
     .eq("estado", "pendiente")
     .order("enviado_en", { ascending: true })
-    .limit(60).throwOnError();
+    .order("id").range(inicio, inicio + 19).throwOnError();
   const lista = pendientes ?? [];
   if (lista.length === 0) return [];
 

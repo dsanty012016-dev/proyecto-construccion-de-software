@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { gananciaConductor } from "@/app/lib/comision";
-import { historialDeCupos, type CupoEnHistorial } from "@/app/lib/consultas-cupo";
-import { historialDeViajes } from "@/app/lib/consultas-viaje";
+import type { CupoEnHistorial } from "@/app/lib/consultas-cupo";
+import type { ItemHistorial } from "@/app/lib/consultas-viaje";
+import { paginaDeViajes } from "@/app/lib/consultas-historial";
 import { etiquetaEstado, fechaCorta, lugarCorto, nombreCorto, pesos } from "@/app/lib/formato";
-import { filtrarHistorial, type Item } from "@/app/lib/historial";
+import { enlaceDeFiltro } from "@/app/lib/historial";
+import { paginaValida } from "@/app/lib/retiros";
 import { recorridoDelPuesto } from "@/app/lib/sentido";
 import { perfilActual } from "@/app/lib/sesion";
 import { leerFiltro, type ParametrosUrl } from "@/app/lib/validaciones-historial";
@@ -12,27 +14,19 @@ import { FiltrosHistorial } from "@/app/ui/comun/filtros-historial";
 
 export const metadata: Metadata = { title: "Mis viajes" };
 
-type ItemViaje = Awaited<ReturnType<typeof historialDeViajes>>[number];
-
 const BOTON_CALIFICAR =
   "flex min-h-11 w-full items-center justify-center rounded-xl border border-texto-suave/30 text-sm font-semibold text-texto hover:bg-superficie";
 
 // Historial de viajes por pedido y de cupos (terminados y cancelados), de
 // los dos roles, del más reciente al más viejo. Desde aquí se califica lo que falte.
-// Los filtros viven en la URL (?tipo=cupo&estado=terminado&pendientes=1) y se
-// aplican aquí, sobre lo que ya traen las consultas.
+// Los filtros y la página se mantienen en la URL.
 export default async function PaginaViajes({ searchParams }: { searchParams: Promise<ParametrosUrl> }) {
-  const [{ usuario }, filtro] = await Promise.all([perfilActual(), searchParams.then(leerFiltro)]);
-  const [viajes, cupos] = await Promise.all([historialDeViajes(usuario.id), historialDeCupos(usuario.id)]);
-  const items: Item[] = [
-    ...viajes.map((v) => ({
-      tipo: "viaje" as const,
-      fecha: Date.parse(v.viaje.terminado_en ?? v.viaje.cancelado_en ?? v.viaje.creado_en),
-      dato: v,
-    })),
-    ...cupos.map((c) => ({ tipo: "cupo" as const, fecha: Date.parse(c.cupo.sale_en), dato: c })),
-  ].sort((a, b) => b.fecha - a.fecha);
-  const visibles = filtrarHistorial(items, filtro);
+  const [{ usuario }, parametros] = await Promise.all([perfilActual(), searchParams]);
+  const filtro = leerFiltro(parametros);
+  const pagina = paginaValida(typeof parametros.pagina === "string" ? parametros.pagina : undefined);
+  const { items, hayMas } = await paginaDeViajes(usuario.id, filtro, pagina);
+  const url = enlaceDeFiltro(filtro, pagina);
+  const volver = `?volver=${encodeURIComponent(url)}`;
 
   return (
     <main className="space-y-5 px-5 pt-6">
@@ -41,48 +35,50 @@ export default async function PaginaViajes({ searchParams }: { searchParams: Pro
         <p className="text-sm text-texto-suave">Viajes por pedido y cupos con hora fija, como estudiante y como conductor.</p>
       </header>
 
+      <FiltrosHistorial filtro={filtro} />
       {items.length === 0 ? (
-        <p role="status" className="text-texto-suave">
-          Aún no tienes viajes terminados. Cuando termines uno, aparece aquí para calificarlo.
-        </p>
-      ) : (
-        <>
-          <FiltrosHistorial filtro={filtro} />
-          {visibles.length === 0 ? (
-            <div role="status" className="space-y-3 rounded-2xl bg-superficie p-5">
-              <p className="font-semibold">No hay viajes con estos filtros</p>
-              <Link href="/viajes" className="inline-flex min-h-11 items-center font-semibold text-secundario underline-offset-4 hover:underline">
-                Quitar los filtros
-              </Link>
-            </div>
-          ) : (
-            <ul>
-              {visibles.map((item) =>
-                item.tipo === "viaje" ? <FilaViaje key={`v-${item.dato.viaje.id}`} item={item.dato} /> : <FilaCupo key={`c-${item.dato.cupo.id}`} item={item.dato} />,
-              )}
-            </ul>
+        <div role="status" className="space-y-2 rounded-2xl bg-superficie p-4">
+          <p className="font-semibold">
+            {pagina > 1 ? "Esta página quedó vacía." : url === "/viajes" ? "Aún no tienes viajes en el historial." : "No hay viajes con estos filtros."}
+          </p>
+          {pagina > 1 ? (
+            <Link href={enlaceDeFiltro(filtro)} className={BOTON_CALIFICAR}>Volver a la primera página</Link>
+          ) : url !== "/viajes" && (
+            <Link href="/viajes" className={BOTON_CALIFICAR}>Quitar los filtros</Link>
           )}
-        </>
+        </div>
+      ) : (
+        <ul>
+          {items.map((item) => item.tipo === "viaje"
+            ? <FilaViaje key={`v-${item.dato.viaje.id}`} item={item.dato} detalle={`/viajes/${item.dato.viaje.id}${volver}`} />
+            : <FilaCupo key={`c-${item.dato.cupo.id}`} item={item.dato} detalle={`/viajes/cupo/${item.dato.cupo.id}${volver}`} />)}
+        </ul>
+      )}
+      {(pagina > 1 || hayMas) && (
+        <nav aria-label="Páginas del historial" className="flex flex-wrap items-center gap-x-4 pb-5 text-sm">
+          <span className="text-texto-suave">Página {pagina}</span>
+          {pagina > 1 && <Link className="inline-flex min-h-11 items-center font-semibold text-secundario" href={enlaceDeFiltro(filtro, pagina - 1)}>Más recientes</Link>}
+          {hayMas && <Link className="inline-flex min-h-11 items-center font-semibold text-secundario" href={enlaceDeFiltro(filtro, pagina + 1)}>Más antiguos</Link>}
+        </nav>
       )}
     </main>
   );
 }
 
-function FilaViaje({ item }: { item: ItemViaje }) {
+function FilaViaje({ item, detalle }: { item: ItemHistorial; detalle: string }) {
   const { viaje, otraPersona, calificado } = item;
   return (
     <li className="space-y-2 border-b border-texto-suave/15 py-4 last:border-b-0">
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <p className="text-[13px] text-texto-suave">{fechaCorta(viaje.terminado_en ?? viaje.cancelado_en ?? viaje.creado_en)}</p>
         <p className={`text-[13px] font-semibold ${viaje.estado === "cancelado" ? "text-texto-suave" : "text-secundario"}`}>
           {viaje.vencio ? "Venció sin conductor" : etiquetaEstado(viaje.estado)}
         </p>
       </div>
-      {/* Solo a dónde fue, resumido: el resto del recorrido no hace falta en la lista. */}
-      <p className="font-semibold">
-        <span className="sr-only">Destino: </span>
+      <Link href={detalle} className="flex min-h-11 items-center font-semibold text-secundario underline underline-offset-4">
+        <span className="sr-only">Detalle del viaje a&nbsp;</span>
         {lugarCorto(viaje.destino_texto)}
-      </p>
+      </Link>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-texto-suave">{otraPersona ? nombreCorto(otraPersona) : "Sin conductor"}</p>
         {viaje.precio !== null && viaje.estado === "terminado" && <p className="font-titulo font-bold tabular-nums">{pesos(viaje.precio)}</p>}
@@ -99,21 +95,21 @@ function FilaViaje({ item }: { item: ItemViaje }) {
   );
 }
 
-function FilaCupo({ item }: { item: CupoEnHistorial }) {
+function FilaCupo({ item, detalle }: { item: CupoEnHistorial; detalle: string }) {
   const { cupo, soyConductor, puesto, otros, porCalificar } = item;
   const terminado = cupo.estado === "terminado";
   const quien = otros.map(nombreCorto).filter(Boolean);
   const monto = soyConductor ? gananciaConductor(cupo.precio) * otros.length : (puesto?.pagado ?? 0);
   return (
     <li className="space-y-2 border-b border-texto-suave/15 py-4 last:border-b-0">
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <p className="text-[13px] text-texto-suave">Cupo · sale {fechaCorta(cupo.sale_en)}</p>
         <p className={`text-[13px] font-semibold ${terminado ? "text-secundario" : "text-texto-suave"}`}>{terminado ? "Terminado" : cupo.vencio ? "No salió" : "Cancelado"}</p>
       </div>
-      <p className="font-semibold">
-        <span className="sr-only">Destino: </span>
+      <Link href={detalle} className="flex min-h-11 items-center font-semibold text-secundario underline underline-offset-4">
+        <span className="sr-only">Detalle del cupo a&nbsp;</span>
         {lugarCorto(soyConductor ? cupo.destino_texto : recorridoDelPuesto(cupo, puesto?.recogida_texto ?? null).destino)}
-      </p>
+      </Link>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-texto-suave">
           {soyConductor
