@@ -26,6 +26,10 @@ insert into public.calificaciones (viaje_id, autor_id, calificado_id, estrellas)
 select v.id, :'hist_est', :'hist_cond', 5 from public.viajes v
 where v.estudiante_id = :'hist_est' and v.estado = 'terminado' and v.origen_texto <> 'Barrio 31';
 
+insert into public.documentos_conductor(conductor_id,tipo,ruta,estado,autorizado_en)
+select :'hist_cond', t.tipo, :'hist_cond' || '/' || t.tipo || '.jpg', 'aprobado', now()
+from unnest(enum_range(null::public.tipo_documento)) t(tipo);
+
 insert into public.cupos(conductor_id, universidad_id, salida_lat, salida_lng, salida_texto,
   destino_lat, destino_lng, destino_texto, sale_en, puestos, precio, estado)
 values (:'hist_cond', :'hist_u', 4, -73, 'Barrio cupo', 4.1, -73.1, 'Universidad',
