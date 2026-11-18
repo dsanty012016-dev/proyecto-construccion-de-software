@@ -14,8 +14,8 @@ export function SelectorRol() {
     <form action={accion} className="space-y-3">
       {estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
       {[
-        { valor: "estudiante", titulo: "Soy estudiante", texto: "Quiero pedir viajes a la universidad." },
-        { valor: "conductor", titulo: "Soy conductor", texto: "Quiero llevar compañeros en mi carro o moto. Antes, el equipo revisa tus documentos." },
+        { valor: "estudiante", titulo: "Empezar como estudiante", texto: "Quiero pedir viajes a la universidad." },
+        { valor: "conductor", titulo: "Empezar como conductor", texto: "Quiero llevar compañeros. Registraré mi vehículo y enviaré cédula, licencia y tarjeta de propiedad. La revisión tarda máximo 7 días desde cada envío." },
       ].map((opcion) => (
         <button
           key={opcion.valor}
@@ -29,7 +29,7 @@ export function SelectorRol() {
           <span className="mt-1 block text-sm text-texto-suave">{opcion.texto}</span>
         </button>
       ))}
-      <p className="text-sm text-texto-suave">Después puedes cambiar de modo desde tu perfil.</p>
+      <p className="text-sm text-texto-suave">Puedes cambiar de modo desde Perfil usando la misma cuenta; no necesitas registrarte otra vez.</p>
     </form>
   );
 }

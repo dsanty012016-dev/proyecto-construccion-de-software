@@ -38,7 +38,7 @@ Validación realizada: lint, 248 pruebas de reglas, compilación y 236 comprobac
 
 ## Sprint 2
 
-**Estado:** implementado y validado; publicación mediante PR y despliegue. Rama `sprint-2-pagos-recuperacion`.
+**Estado:** publicado mediante [PR #46](https://github.com/dsanty012016-dev/proyecto-construccion-de-software/pull/46), commit `0d0d10a`. Rama `sprint-2-pagos-recuperacion`.
 
 - U06: las consultas fallidas muestran un error contextual y permiten volver a consultar.
 - U07: mapa con reintento y límite de espera; conserva los campos, distingue dirección de punto y permite recuperarse del fallo de GPS.
@@ -48,10 +48,22 @@ Validación realizada: lint, 248 pruebas de reglas, compilación y 236 comprobac
 
 305 pruebas y 179 comprobaciones de navegador aprobadas, además de lint y compilación. La verificación visual incluye datos ficticios y el motor real de MapLibre con red controlada. Detalles en [sprint-2-validacion.md](sprint-2-validacion.md). Próxima entrega: sprint 3, registro y preparación.
 
+## Sprint 3
+
+**Estado:** implementado y validado; pendiente de comprobaciones de GitHub y publicación. Rama `sprint-3-registro-preparacion`.
+
+- U11: documentos enviados/aprobados diferenciados, fecha límite de siete días, rechazo explicado, reemplazo plegado y consulta de estado.
+- U12: preparación con siguiente paso posible y acción principal antes del progreso.
+- U16: edición del nombre y celular propios; correo institucional fijo en este flujo; guardado mediante RPC con RLS.
+- U22: modo inicial reversible, con requisitos de conducción claros.
+- U23: reenvío con respuesta neutral, espera de 60 segundos y reinicio efectivo si se escribió mal el correo.
+
+344 pruebas, 118 comprobaciones de navegador y 17 contra Next local aprobadas. La migración 026 debe pasar las pruebas de base y aplicarse antes de publicar la app. Detalles y límites en [sprint-3-validacion.md](sprint-3-validacion.md). Próximo: sprint 4, ayuda y confianza.
+
 ## Decisiones que se concretarán en sus sprints
 
 - Sprint 2: la simulación exige activación expresa; Wompi incompleto informa indisponibilidad. La búsqueda de direcciones se conserva como mejora opcional que requiere elegir servicio.
-- Sprint 3: qué datos de contacto se pueden editar y qué plazo de revisión documental puede cumplir el equipo.
+- Sprint 3: confirmado nombre y celular editables, correo institucional fijo en este flujo y revisión de documentos en máximo siete días desde cada envío.
 - Sprint 4: canal, responsables y alcance de ayuda; no prometer atención inmediata sin operación real.
 - Sprint 5: quién puede resolver una incidencia monetaria y qué comprobaciones exige la conciliación.
 - Sprint 6: fotografías propias/autorizadas; validar utilidad de favoritos y repetición antes de construirlos.
@@ -62,3 +74,4 @@ Cada cierre debe indicar PR y commit, mejoras resueltas, pruebas realizadas, lí
 
 - **18 de noviembre de 2026 · Sprint 1:** U01–U05, U13 y U15 implementadas y verificadas; 248 pruebas y 236 comprobaciones de navegador aprobadas. Se añade la corrección compatible de Next.js 16.4.3 a 16.4.6 necesaria para publicar. PR y commit quedan en el historial de la rama y en el cierre de la entrega. Próxima entrega: sprint 2, pagos y recuperación.
 - **18 de noviembre de 2026 · Sprint 2:** U06, U07, U09, U10 y U14 implementadas y verificadas; 305 pruebas, 179 comprobaciones de navegador y 12 comprobaciones visuales adicionales aprobadas. PR, commit y despliegue se registran en el cierre de la entrega. Próxima entrega: sprint 3, registro y preparación.
+- **18 de noviembre de 2026 · Sprint 3:** U11, U12, U16, U22 y U23 implementadas y verificadas. Incluye migración 026 de contacto y las reglas de edición/revisión confirmadas por el responsable. PR, aplicación de base y despliegue se registran en el cierre. Próximo: sprint 4, ayuda y confianza.

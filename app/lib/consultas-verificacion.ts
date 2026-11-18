@@ -12,6 +12,8 @@ export type FilaDocumento = Database["public"]["Tables"]["documentos_conductor"]
 
 const VIGENCIA_ENLACE_SEGUNDOS = 300;
 
+export function horaDeRevisionDocumentos(): number { return Date.now(); }
+
 /** Documentos del conductor, uno por tipo (undefined si no lo ha enviado). */
 export async function misDocumentos(conductorId: string): Promise<Partial<Record<TipoDocumento, FilaDocumento>>> {
   const supabase = await crearClienteServidor();

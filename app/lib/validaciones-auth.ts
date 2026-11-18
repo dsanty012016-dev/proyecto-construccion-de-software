@@ -34,13 +34,17 @@ const telefono = z
   .refine((valor) => /^3\d{9}$/.test(valor), "El celular debe tener 10 dígitos y empezar por 3.")
   .transform((valor) => `+57${valor}`);
 
-export const esquemaRegistro = z
-  .object({
-    nombre: z
+const nombre = z
       .string({ error: "Escribe tu nombre." })
       .trim()
       .min(2, "Escribe tu nombre completo.")
-      .max(80, "El nombre es demasiado largo."),
+      .max(80, "El nombre es demasiado largo.");
+
+export const esquemaContacto = z.object({ nombre, telefono });
+
+export const esquemaRegistro = z
+  .object({
+    nombre,
     correo: correoInstitucional,
     telefono,
     rol: z.enum(["estudiante", "conductor"], {

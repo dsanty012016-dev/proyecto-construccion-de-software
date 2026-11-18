@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useId } from "react";
+import { useActionState, useId, useState } from "react";
 import { registrarse } from "@/app/lib/acciones-auth";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { LARGO_MINIMO_CLAVE } from "@/app/lib/validaciones-auth";
 import { Aviso, BotonEnviar, Campo, CampoClave, ResumenErrores } from "./campos";
+import { FormularioConfirmacion } from "./formulario-confirmacion";
 
 // Formulario de "Crear cuenta" (mockup Registro). Al terminar muestra que
 // llegó un correo para activar la cuenta.
@@ -14,6 +15,7 @@ export function FormularioRegistro() {
   const idTerminos = useId();
   const e = estado.errores ?? {};
   const v = estado.valores ?? {};
+  const [rolElegido, setRolElegido] = useState("");
 
   if (estado.resultado === "listo") {
     return (
@@ -23,6 +25,7 @@ export function FormularioRegistro() {
           Si no lo ves en unos minutos, revisa la carpeta de correo no deseado.
           El enlace solo sirve una vez.
         </p>
+        <FormularioConfirmacion correoInicial={v.correo} esperaInicial={estado.reintentarEn} />
       </div>
     );
   }
@@ -66,14 +69,15 @@ export function FormularioRegistro() {
 
       <div>
         <label htmlFor={idRol} className="mb-1.5 block text-[15px] font-semibold">
-          Tipo de usuario
+          ¿Cómo quieres empezar?
         </label>
         <select
           id={idRol}
           name="rol"
           defaultValue={v.rol ?? ""}
+          onChange={(e) => setRolElegido(e.target.value)}
           aria-invalid={e.rol ? true : undefined}
-          aria-describedby={e.rol ? `${idRol}-error` : undefined}
+          aria-describedby={`${idRol}-ayuda${e.rol ? ` ${idRol}-error` : ""}`}
           className={`h-13 w-full rounded-xl border-2 bg-superficie px-4 text-texto focus:border-secundario ${e.rol ? "border-error" : "border-texto-suave/60"}`}
           required
         >
@@ -83,6 +87,7 @@ export function FormularioRegistro() {
           <option value="estudiante">Estudiante: quiero pedir viajes</option>
           <option value="conductor">Conductor: quiero llevar compañeros</option>
         </select>
+        <p id={`${idRol}-ayuda`} className="mt-2 text-sm text-texto-suave">Puedes cambiar de modo desde Perfil con la misma cuenta. {rolElegido === "conductor" ? "Para conducir registrarás tu vehículo y enviarás cédula, licencia y tarjeta de propiedad; la revisión tarda máximo 7 días desde cada envío." : "Si después quieres conducir, registrarás tu vehículo y tus documentos."}</p>
         {e.rol && (
           <p id={`${idRol}-error`} className="mt-1.5 text-sm text-error">
             {e.rol}

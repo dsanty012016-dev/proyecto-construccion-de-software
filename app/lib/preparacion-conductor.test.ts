@@ -1,0 +1,20 @@
+import { describe, expect, it } from "vitest";
+import { preparacionConductor, revisionDocumento, type DocumentosPreparacion } from "./preparacion-conductor";
+const enviado = "2026-11-18T12:00:00Z", ahora = Date.parse(enviado);
+const pendientes: DocumentosPreparacion = { cedula: { estado: "pendiente", enviado_en: enviado }, licencia: { estado: "pendiente", enviado_en: enviado }, tarjeta_propiedad: { estado: "pendiente", enviado_en: enviado } };
+const aprobados: DocumentosPreparacion = Object.fromEntries(Object.entries(pendientes).map(([t,d])=>[t,{...d,estado:"aprobado"}]));
+describe("siguiente paso del conductor", () => {
+  it("empieza por el vehículo", () => expect(preparacionConductor(false, {}, false).paso).toBe("vehiculo"));
+  it("pide documentos después del vehículo", () => expect(preparacionConductor(true, {}, false).paso).toBe("documentos"));
+  it("enviar los tres no equivale a aprobarlos", () => expect(preparacionConductor(true, pendientes, false)).toMatchObject({ enviados:3, aprobados:0, paso:"revision", verificado:false }));
+  it("un rechazo requiere corregir antes de esperar", () => expect(preparacionConductor(true, {...pendientes, licencia:{estado:"rechazado", enviado_en:enviado}}, false).paso).toBe("documentos"));
+  it("una aprobación parcial se conserva mientras se espera", () => expect(preparacionConductor(true, {...pendientes, cedula:aprobados.cedula}, false)).toMatchObject({ aprobados:1, enviados:3, paso:"revision" }));
+  it("falta activar disponibilidad después de aprobar", () => expect(preparacionConductor(true, aprobados, false).paso).toBe("disponibilidad"));
+  it("la cuenta lista no recibe una preparación nueva", () => expect(preparacionConductor(true, aprobados, true).paso).toBe("listo"));
+  it("aprobar documentos no reemplaza registrar vehículo", () => expect(preparacionConductor(false, aprobados, false).paso).toBe("vehiculo"));
+  it("el plazo es de siete días desde cada envío", () => expect(revisionDocumento(pendientes.cedula!, ahora).limite).toBe(ahora+7*86400000));
+  it("al llegar al límite todavía no venció", () => expect(revisionDocumento(pendientes.cedula!, ahora+7*86400000).vencido).toBe(false));
+  it("un pendiente atrasado sigue pendiente, sin aprobación automática", () => expect(revisionDocumento(pendientes.cedula!, ahora+8*86400000).vencido).toBe(true));
+  it("un documento aprobado no se presenta atrasado", () => expect(revisionDocumento(aprobados.cedula!, ahora+8*86400000).vencido).toBe(false));
+  it("una fecha inválida no inventa un plazo", () => expect(revisionDocumento({estado:"pendiente",enviado_en:"inválida"}, ahora)).toEqual({limite:null,vencido:false}));
+});
