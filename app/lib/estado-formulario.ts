@@ -9,6 +9,8 @@ export interface EstadoFormulario {
   errores?: ErroresCampos;
   /** Lo que la persona escribió (sin contraseñas), para no borrárselo. */
   valores?: Record<string, string>;
+  /** Fin de la espera para volver a solicitar un correo (marca de tiempo). */
+  reintentarEn?: number;
 }
 
 export const ESTADO_INICIAL: EstadoFormulario = { resultado: "inicial" };

@@ -3,6 +3,7 @@ import { destinoSeguro } from "@/app/lib/rutas";
 import { Aviso } from "@/app/ui/auth/campos";
 import { EncabezadoLogo, PieEnlace } from "@/app/ui/auth/encabezado";
 import { FormularioEntrar } from "@/app/ui/auth/formulario-entrar";
+import Link from "next/link";
 
 export const metadata: Metadata = { title: "Iniciar sesión" };
 
@@ -26,6 +27,7 @@ export default async function PaginaEntrar({
         </div>
       )}
       <FormularioEntrar siguiente={siguiente ? destinoSeguro(siguiente) : undefined} />
+      <Link href="/confirmar-correo" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-secundario">Confirmar mi correo o pedir otro enlace</Link>
       <PieEnlace texto="¿No tienes cuenta?" enlace="Crear cuenta" href="/registro" />
     </>
   );

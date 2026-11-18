@@ -99,8 +99,28 @@ export async function registrarse(
   // quién está registrado); por eso el mensaje es el mismo en ambos casos.
   return {
     resultado: "listo",
-    mensaje: `Te enviamos un enlace a ${correo}. Ábrelo para activar tu cuenta.`,
+    mensaje: `Revisa ${correo}. Si la cuenta necesita confirmación, recibirás un enlace para activarla.`,
+    valores: { correo },
+    reintentarEn: Date.now() + 60_000,
   };
+}
+
+export async function reenviarConfirmacion(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
+  const datos = datosDelFormulario(formulario);
+  const validado = esquemaRecuperar.safeParse(datos);
+  if (!validado.success) return { resultado: "error", errores: erroresPorCampo(validado.error), valores: { correo: (datos.correo ?? "").slice(0, 254) } };
+  const valores = { correo: validado.data.correo };
+  const reintentarEn = Date.now() + 60_000;
+  try {
+    const supabase = await crearClienteServidor();
+    const { error } = await supabase.auth.resend({ type: "signup", email: validado.data.correo, options: { emailRedirectTo: `${await origen()}/auth/confirmar` } });
+    if (error && (!error.status || error.status >= 500)) return { resultado: "error", mensaje: "No pudimos solicitar el correo. Revisa tu conexión e inténtalo cuando termine la espera.", valores, reintentarEn };
+  } catch {
+    return { resultado: "error", mensaje: "No pudimos solicitar el correo. Revisa tu conexión e inténtalo cuando termine la espera.", valores, reintentarEn };
+  }
+  // Misma respuesta para correos desconocidos, ya confirmados o limitados.
+  // Supabase aplica sus límites de envío en el servidor; el contador es ayuda de interfaz.
+  return { resultado: "listo", mensaje: "Si ese correo tiene una cuenta pendiente de confirmación, recibirás un enlace. Revisa también el correo no deseado. Si ya confirmaste la cuenta, inicia sesión.", valores, reintentarEn };
 }
 
 export async function entrar(

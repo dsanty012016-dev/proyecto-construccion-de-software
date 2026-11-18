@@ -365,6 +365,7 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      actualizar_contacto: { Args: { p_nombre: string; p_telefono: string }; Returns: undefined };
       aceptar_oferta: { Args: { p_oferta: string }; Returns: undefined };
       aceptar_politica: { Args: { p_version: string }; Returns: undefined };
       guardar_suscripcion: { Args: { p_endpoint: string; p_p256dh: string; p_auth: string }; Returns: undefined };

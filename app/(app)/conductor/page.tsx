@@ -20,6 +20,7 @@ import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
 import { PastillaSaldo } from "@/app/ui/comun/pastilla-saldo";
 import { InterruptorDisponible } from "@/app/ui/conductor/interruptor-disponible";
 import { Nota } from "@/app/ui/comun/nota";
+import { PreparacionConductor } from "@/app/ui/conductor/preparacion-conductor";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -42,10 +43,10 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
     misDocumentos(usuario.id),
   ]);
   const aprobados = TIPOS_DOCUMENTO.filter((t) => documentos[t]?.estado === "aprobado").length;
-  const rechazados = TIPOS_DOCUMENTO.filter((t) => documentos[t]?.estado === "rechazado").length;
   const verificado = aprobados === TIPOS_DOCUMENTO.length;
   // Sin disponibilidad, RLS no le muestra solicitudes: ni se piden.
-  const abiertas = perfil.disponible && !activo ? await solicitudesAbiertas(usuario.id) : null;
+  const preparado = !!vehiculo && verificado;
+  const abiertas = perfil.disponible && preparado && !activo ? await solicitudesAbiertas(usuario.id) : null;
   const solicitudes = abiertas?.solicitudes ?? [];
   const ahora = abiertas?.ahora ?? 0;
   const lineaResumen = (
@@ -78,25 +79,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       <InstalarApp cerrable />
       <ActivarNotificaciones key={usuario.id} />
 
-      {!verificado && (
-        <Link href="/conductor/documentos" className={FILA_ENLACE}>
-          <span className="cifra text-2xl">{aprobados}/3</span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-bold">{rechazados > 0 ? "Hay un documento por corregir" : "Verifica tu cuenta"}</span>
-            <span className="block text-[13px] text-texto-suave">
-              {Object.keys(documentos).length === 0 ? "Sube cédula, licencia y tarjeta de propiedad" : "Documentos aprobados"}
-            </span>
-          </span>
-          <IconoSiguiente className="size-5 text-texto-suave" />
-        </Link>
-      )}
-
-      {!vehiculo && (
-        <Link href="/conductor/vehiculo" className={FILA_ENLACE}>
-          <span className="min-w-0 flex-1 font-bold">Registra tu vehículo</span>
-          <IconoSiguiente className="size-5 text-texto-suave" />
-        </Link>
-      )}
+      {!activo && !miCupo && <PreparacionConductor tieneVehiculo={!!vehiculo} documentos={documentos} disponible={perfil.disponible} />}
 
       {activo ? (
         <section aria-labelledby="titulo-viaje-activo" data-tema="oscuro" className="space-y-3 rounded-2xl bg-primario p-[18px] text-texto">
@@ -111,9 +94,9 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
             Ver mi viaje
           </Link>
         </section>
-      ) : (
+      ) : preparado ? (
         <InterruptorDisponible disponible={perfil.disponible} tieneVehiculo={!!vehiculo} verificado={verificado} resumen={lineaResumen} />
-      )}
+      ) : null}
 
       {miCupo ? (
         <Link href="/conductor/cupo" className={FILA_ENLACE}>
@@ -129,7 +112,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
           <IconoSiguiente className="size-5 text-texto-suave" />
         </Link>
       ) : (
-        verificado && (
+        preparado && (
           <Link href="/conductor/cupo/nuevo" className={FILA_ENLACE}>
             <span className="min-w-0 flex-1">
               <span className="block font-bold">¿Vas o sales de la U a una hora fija?</span>
@@ -147,6 +130,8 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
         </h2>
         {activo ? (
           <p className="mt-2 text-sm text-texto-suave">Termina tu viaje actual para ver nuevas solicitudes.</p>
+        ) : !preparado ? (
+          <p className="mt-2 text-sm text-texto-suave">Completa la preparación de tu cuenta para recibir solicitudes. El siguiente paso está indicado arriba.</p>
         ) : !perfil.disponible ? (
           <p className="mt-2 text-sm text-texto-suave">Ponte disponible para ver las solicitudes de los estudiantes.</p>
         ) : solicitudes.length === 0 ? (

@@ -18,6 +18,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
 ## Avance
+- Sprint 3 de UI/UX: preparación del conductor, estados/plazo documental de siete días, edición de nombre/celular y recuperación del correo de confirmación. Alcance y pruebas en `docs/sprint-3-validacion.md`; nueva RPC en migración 026 (rama `sprint-3-registro-preparacion`).
 - Sprint 2 de UI/UX: recuperación de consultas, mapa y compartir; modos de recarga explícitos, saldo/faltante y retorno a la tarea. Alcance y validación en `docs/sprints-ui-ux.md` y `docs/sprint-2-validacion.md` (rama `sprint-2-pagos-recuperacion`).
 - Mejoras de experiencia organizadas en seis sprints: alcance, criterios de cierre y decisiones en `docs/sprints-ui-ux.md`. Sprint 1: lectura y accesibilidad (rama `sprint-1-lectura-accesibilidad`).
 - Seguridad de pagos y retiros: confirmación privada con consulta a Wompi, incidencias, tope al acreditar, historial y errores visibles. Retiros manuales por Nequi desde $20.000, reserva de saldo, siete días y revisión de documentación por otro administrador (rama `seguridad-pagos-billetera`, migraciones 024–025). La implementación y las pruebas aisladas no activan el comercio; publicación y pendientes en `docs/pagos.md`.

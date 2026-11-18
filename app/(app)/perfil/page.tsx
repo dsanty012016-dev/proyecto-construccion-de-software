@@ -8,6 +8,7 @@ import { ActivarNotificaciones } from "@/app/ui/comun/activar-notificaciones";
 import { BotonSalir } from "@/app/ui/comun/boton-salir";
 import { InstalarApp } from "@/app/ui/comun/instalar-app";
 import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
+import { FormularioContacto } from "@/app/ui/comun/formulario-contacto";
 
 export const metadata: Metadata = { title: "Perfil" };
 
@@ -21,26 +22,30 @@ export default async function PaginaPerfil() {
 
   return (
     <main className="space-y-7 px-5 pt-6 pb-4">
-      <header className="flex items-center gap-4">
+      <header className="flex flex-wrap items-center gap-4">
         <Avatar nombre={perfil?.nombre ?? "?"} grande />
-        <div className="min-w-0">
-          <h1 className="truncate pb-1 cartel text-[2.125rem]">{perfil?.nombre}</h1>
+        <div className="min-w-0 flex-1 basis-[12em]">
+          <h1 className="pb-1 cartel text-[2.125rem] [overflow-wrap:anywhere]">{perfil?.nombre}</h1>
           <p className="text-sm font-semibold text-secundario">{conductor ? "Conductor" : "Estudiante"}</p>
         </div>
       </header>
 
       <dl className="divide-y divide-texto-suave/15 border-y border-texto-suave/15 text-sm">
-        <div className="flex items-baseline justify-between gap-4 py-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3">
           <dt className="text-texto-suave">Correo</dt>
           <dd className="min-w-0 text-right font-semibold break-all">{usuario.email}</dd>
         </div>
         {perfil?.telefono && (
-          <div className="flex items-baseline justify-between gap-4 py-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3">
             <dt className="text-texto-suave">Celular</dt>
             <dd className="font-semibold tabular-nums">{perfil.telefono}</dd>
           </div>
         )}
       </dl>
+      {perfil && <details className="border-b border-texto-suave/20 pb-4">
+        <summary className="min-h-11 cursor-pointer py-3 font-semibold text-secundario">Editar mi nombre y celular</summary>
+        <FormularioContacto nombre={perfil.nombre} telefono={perfil.telefono} />
+      </details>}
 
       <EstadoCuenta personaId={usuario.id} siempre />
       <InstalarApp />
