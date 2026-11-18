@@ -16,7 +16,7 @@ export interface Pasarela {
   secretoIntegridad: string;
 }
 
-/** Las llaves de Wompi, o null si no están (entonces la billetera sigue con la recarga de prueba). */
+/** Las llaves válidas de Wompi, o null si no están completas o no coinciden. */
 export function pasarela(): Pasarela | null {
   const llavePublica = process.env.WOMPI_LLAVE_PUBLICA;
   const secretoIntegridad = process.env.WOMPI_SECRETO_INTEGRIDAD;
@@ -27,13 +27,15 @@ export function pasarela(): Pasarela | null {
   return { ambiente, llavePublica, secretoIntegridad };
 }
 
-/** Cómo se muestra la recarga: de prueba (sin pasarela), Wompi en pruebas o Wompi con dinero real. */
-export type ModoDeRecarga = "prueba" | "wompi-pruebas" | "wompi";
+/** Simulación expresa, Wompi de pruebas/real o recargas indisponibles. */
+export type ModoDeRecarga = "prueba" | "wompi-pruebas" | "wompi" | "no-disponible";
 
 export function modoDeRecarga(): ModoDeRecarga {
   const configurada = pasarela();
-  if (!configurada) return "prueba";
-  return configurada.ambiente === "real" ? "wompi" : "wompi-pruebas";
+  if (configurada) return configurada.ambiente === "real" ? "wompi" : "wompi-pruebas";
+  // Una configuración incompleta nunca se sustituye por dinero ficticio.
+  if (process.env.WOMPI_LLAVE_PUBLICA || process.env.WOMPI_SECRETO_INTEGRIDAD) return "no-disponible";
+  return process.env.UNIGO_RECARGA_SIMULADA === "true" ? "prueba" : "no-disponible";
 }
 
 /**

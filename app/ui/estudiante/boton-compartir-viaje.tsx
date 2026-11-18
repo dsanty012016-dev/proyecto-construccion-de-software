@@ -17,7 +17,13 @@ export function BotonCompartirViaje({ compartir: pedirEnlace }: { compartir: () 
   function compartir() {
     setAviso(null);
     empezar(async () => {
-      const respuesta = await pedirEnlace();
+      let respuesta: Awaited<ReturnType<typeof pedirEnlace>>;
+      try {
+        respuesta = await pedirEnlace();
+      } catch {
+        setAviso({ tipo: "error", texto: "No pudimos crear el enlace. Revisa tu conexión y vuelve a intentarlo." });
+        return;
+      }
       if (!respuesta.token) {
         setAviso({ tipo: "error", texto: respuesta.mensaje ?? "No pudimos crear el enlace." });
         return;
@@ -48,10 +54,10 @@ export function BotonCompartirViaje({ compartir: pedirEnlace }: { compartir: () 
         type="button"
         onClick={compartir}
         disabled={pendiente}
-        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-texto-suave/30 font-titulo font-semibold text-texto hover:bg-superficie disabled:opacity-70"
+        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-texto-suave/30 px-4 py-3 font-titulo font-semibold text-texto hover:bg-superficie disabled:opacity-70"
       >
-        <IconoCompartir className="size-5 text-secundario" />
-        {pendiente ? "Creando enlace…" : "Compartir viaje"}
+        <IconoCompartir className="size-5 shrink-0 text-secundario" />
+        {pendiente ? "Creando enlace…" : aviso?.tipo === "error" ? "Reintentar compartir viaje" : "Compartir viaje"}
       </button>
       {aviso && (
         <p role={aviso.tipo === "error" ? "alert" : "status"} className={`text-center text-[13px] ${aviso.tipo === "error" ? "text-error" : "text-texto-suave"}`}>
@@ -68,7 +74,7 @@ export function BotonCompartirViaje({ compartir: pedirEnlace }: { compartir: () 
             readOnly
             value={enlace}
             onFocus={(e) => e.currentTarget.select()}
-            className="h-11 w-full rounded-xl border border-texto-suave/60 bg-superficie px-3 text-xs text-texto-suave outline-none focus:border-secundario"
+            className="h-11 w-full rounded-xl border border-texto-suave/60 bg-superficie px-3 text-xs text-texto-suave focus:border-secundario"
           />
         </div>
       )}

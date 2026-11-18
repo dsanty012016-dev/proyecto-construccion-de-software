@@ -85,6 +85,7 @@ export function FormularioPuesto({ cupoId, salida, destino, sentido }: Props) {
         <input type="hidden" name="recogida_lng" value={guardado?.lng ?? ""} />
       </section>
 
+      <p className="text-sm text-texto-suave">Escribir la dirección no selecciona el punto. Elígelo en el mapa o usa tu ubicación actual. Si ambos fallan, reintenta antes de pedir el puesto.</p>
       <Campo
         etiqueta="Dirección o barrio"
         name="direccion"

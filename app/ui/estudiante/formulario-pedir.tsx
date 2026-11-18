@@ -103,6 +103,7 @@ export function FormularioPedir({ sede, sentidoInicial = "ida" }: { sede: Sede; 
       </section>
 
       <section aria-labelledby="titulo-direccion" className="space-y-4">
+        <p className="text-sm text-texto-suave">La dirección y la referencia ayudan a encontrarte; no seleccionan el punto. Elígelo en el mapa o usa tu ubicación actual. Si ambos fallan, reintenta antes de enviar.</p>
         <h2 id="titulo-direccion" className="text-base">
           2. {regreso ? "Dile al conductor a dónde vas" : "Ayuda al conductor a encontrarte"}
         </h2>

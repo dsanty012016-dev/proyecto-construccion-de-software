@@ -24,7 +24,7 @@ El equipo autorizó trabajar por sprints a partir de la revisión de 25 mejoras.
 
 ## Sprint 1
 
-**Estado:** implementado y validado. Rama `sprint-1-lectura-accesibilidad`. El sprint 2 queda pendiente de iniciar tras presentar su bloque de cambios.
+**Estado:** publicado mediante [PR #45](https://github.com/dsanty012016-dev/proyecto-construccion-de-software/pull/45), commit `0ebb6bb`. Rama `sprint-1-lectura-accesibilidad`.
 
 - U01: el precio de una oferta y la ganancia se leen completos al ampliar texto.
 - U02: los botones principales crecen con etiquetas de varias líneas.
@@ -36,9 +36,21 @@ El equipo autorizó trabajar por sprints a partir de la revisión de 25 mejoras.
 
 Validación realizada: lint, 248 pruebas de reglas, compilación y 236 comprobaciones de navegador con datos ficticios, texto ampliado, dos temas y teclado. La publicación se comprueba mediante el PR y el despliegue. Detalles y límites en [sprint-1-validacion.md](sprint-1-validacion.md). No se ejecutan cobros, transferencias, SQL ni cambios de credenciales en esta entrega.
 
+## Sprint 2
+
+**Estado:** implementado y validado; publicación mediante PR y despliegue. Rama `sprint-2-pagos-recuperacion`.
+
+- U06: las consultas fallidas muestran un error contextual y permiten volver a consultar.
+- U07: mapa con reintento y límite de espera; conserva los campos, distingue dirección de punto y permite recuperarse del fallo de GPS.
+- U09: simulación interna expresa, Wompi Sandbox, dinero real e indisponibilidad se identifican por separado; el servidor bloquea la simulación fuera del modo autorizado.
+- U10: saldo y faltante del puesto visibles; retorno al cupo/viaje desde la recarga, con nueva consulta de estado y plazo y sin pago automático.
+- U14: compartir informa fallos y permite reintentar o copiar manualmente el enlace.
+
+305 pruebas y 179 comprobaciones de navegador aprobadas, además de lint y compilación. La verificación visual incluye datos ficticios y el motor real de MapLibre con red controlada. Detalles en [sprint-2-validacion.md](sprint-2-validacion.md). Próxima entrega: sprint 3, registro y preparación.
+
 ## Decisiones que se concretarán en sus sprints
 
-- Sprint 2: tratamiento explícito del modo simulado si se espera Wompi y servicio elegido para buscar direcciones, si se incorpora.
+- Sprint 2: la simulación exige activación expresa; Wompi incompleto informa indisponibilidad. La búsqueda de direcciones se conserva como mejora opcional que requiere elegir servicio.
 - Sprint 3: qué datos de contacto se pueden editar y qué plazo de revisión documental puede cumplir el equipo.
 - Sprint 4: canal, responsables y alcance de ayuda; no prometer atención inmediata sin operación real.
 - Sprint 5: quién puede resolver una incidencia monetaria y qué comprobaciones exige la conciliación.
@@ -49,3 +61,4 @@ Validación realizada: lint, 248 pruebas de reglas, compilación y 236 comprobac
 Cada cierre debe indicar PR y commit, mejoras resueltas, pruebas realizadas, límites y próxima entrega. Una mejora propuesta no se marca resuelta solo por añadir su texto al plan.
 
 - **18 de noviembre de 2026 · Sprint 1:** U01–U05, U13 y U15 implementadas y verificadas; 248 pruebas y 236 comprobaciones de navegador aprobadas. Se añade la corrección compatible de Next.js 16.4.3 a 16.4.6 necesaria para publicar. PR y commit quedan en el historial de la rama y en el cierre de la entrega. Próxima entrega: sprint 2, pagos y recuperación.
+- **18 de noviembre de 2026 · Sprint 2:** U06, U07, U09, U10 y U14 implementadas y verificadas; 305 pruebas, 179 comprobaciones de navegador y 12 comprobaciones visuales adicionales aprobadas. PR, commit y despliegue se registran en el cierre de la entrega. Próxima entrega: sprint 3, registro y preparación.

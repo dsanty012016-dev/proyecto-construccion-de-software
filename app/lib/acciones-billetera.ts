@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import type { EstadoFormulario } from "./estado-formulario";
 import { pesos } from "./formato";
 import { RECARGA_MAXIMA, RECARGA_MINIMA } from "./pagos";
-import { origenDelSitio, pasarela } from "./pasarela";
+import { modoDeRecarga, origenDelSitio, pasarela } from "./pasarela";
+import { destinoDeRecarga } from "./retorno-recarga";
 import { crearClienteServidor } from "./supabase/server";
 import { datosDelFormulario } from "./validaciones-auth";
 import { urlDeCheckout } from "./wompi";
@@ -21,13 +22,16 @@ function leerMonto(datos: Record<string, string>): { monto: number } | { error: 
   return { monto };
 }
 
-// Recarga de saldo de prueba (billetera simulada), para cuando no hay
-// pasarela configurada. Los topes los hace cumplir la función recargar de la
+// Recarga de saldo ficticio: exige simulación explícita y Wompi sin configurar.
+// Los topes los hace cumplir la función recargar de la
 // base (012-billetera.sql) y se apaga desde allá (023-pasarela.sql).
 export async function recargar(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
   const datos = datosDelFormulario(formulario);
   const leido = leerMonto(datos);
   if ("error" in leido) return leido.error;
+  if (modoDeRecarga() !== "prueba") {
+    return { resultado: "error", mensaje: "La recarga simulada no está habilitada. Vuelve a consultar la billetera.", valores: datos };
+  }
   const supabase = await crearClienteServidor();
   const { error } = await supabase.rpc("recargar", { p_monto: leido.monto });
   if (error) {
@@ -38,7 +42,9 @@ export async function recargar(_anterior: EstadoFormulario, formulario: FormData
     };
   }
   revalidatePath("/", "layout");
-  return { resultado: "listo", mensaje: `Recargaste ${pesos(leido.monto)}.` };
+  const destino = destinoDeRecarga(datos.volver);
+  if (destino) redirect(destino);
+  return { resultado: "listo", mensaje: `Añadiste ${pesos(leido.monto)} de saldo simulado.` };
 }
 
 // Recarga con dinero de verdad (o de pruebas de Wompi): abre la recarga en la
@@ -63,13 +69,15 @@ export async function iniciarRecarga(_anterior: EstadoFormulario, formulario: Fo
     };
   }
   // redirect lanza una señal que Next atrapa: por eso va fuera de cualquier try.
+  const destino = destinoDeRecarga(datos.volver);
+  const retorno = `${await origenDelSitio()}/billetera/recarga/${referencia}${destino ? `?volver=${encodeURIComponent(destino)}` : ""}`;
   redirect(
     urlDeCheckout({
       llavePublica: configurada.llavePublica,
       secretoIntegridad: configurada.secretoIntegridad,
       referencia,
       monto: leido.monto,
-      volverA: `${await origenDelSitio()}/billetera/recarga/${referencia}`,
+      volverA: retorno,
     }),
   );
 }

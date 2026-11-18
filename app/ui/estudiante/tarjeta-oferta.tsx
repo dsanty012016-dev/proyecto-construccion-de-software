@@ -6,12 +6,13 @@ import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { Nota } from "@/app/ui/comun/nota";
 import { Placa } from "@/app/ui/comun/placa";
+import { enlaceParaRecargar } from "@/app/lib/retorno-recarga";
 
 // Una oferta de un conductor, como renglón del tiquete de ofertas: quién es,
 // su vehículo con la placa y su precio. Aceptarla paga en ese momento y cierra
 // la búsqueda (la regla la hace cumplir aceptar_oferta en la base). La más
 // barata va con el botón azul.
-export function TarjetaOferta({ oferta, saldo, destacada }: { oferta: ConductorConOferta; saldo: number; destacada?: boolean }) {
+export function TarjetaOferta({ oferta, saldo, destacada, viajeId }: { oferta: ConductorConOferta; saldo: number; destacada?: boolean; viajeId?: string }) {
   const { conductor, vehiculo } = oferta;
   const nombre = nombreCorto(conductor.nombre);
   const alcanza = saldo >= oferta.precio;
@@ -51,7 +52,7 @@ export function TarjetaOferta({ oferta, saldo, destacada }: { oferta: ConductorC
       ) : (
         <p className="text-sm">
           Te faltan <strong className="tabular-nums">{pesos(oferta.precio - saldo)}</strong> de saldo.{" "}
-          <Link href="/billetera" className="font-bold">
+          <Link href={enlaceParaRecargar(viajeId ? `/estudiante/viaje?viaje=${viajeId}` : null)} className="inline-flex min-h-11 items-center font-bold text-secundario">
             Recargar
           </Link>
         </p>

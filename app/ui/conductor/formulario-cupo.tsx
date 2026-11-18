@@ -196,6 +196,7 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
         </div>
       </section>
 
+      <p className="text-sm text-texto-suave">La dirección describe el lugar; no selecciona el punto. Elígelo en el mapa o usa tu ubicación actual. Si ambos fallan, reintenta antes de publicar.</p>
       <BotonEnviar enviando="Publicando…" deshabilitado={!punto || muyCerca || !uValido}>
         Publicar cupo
       </BotonEnviar>

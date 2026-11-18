@@ -1,25 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { estadoDeCuenta, miBilletera, recargasEnProceso, type FilaMovimiento, type FilaRecarga } from "@/app/lib/consultas-billetera";
+import { estadoDeCuenta, miBilletera, recargasEnProceso, type FilaMovimiento } from "@/app/lib/consultas-billetera";
 import { diaRelativo, horaCorta, pesos } from "@/app/lib/formato";
 import { STRIKES_PARA_SUSPENDER } from "@/app/lib/pagos";
 import { modoDeRecarga } from "@/app/lib/pasarela";
 import { perfilActual } from "@/app/lib/sesion";
 import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
 import { FormularioRecarga } from "@/app/ui/comun/formulario-recarga";
+import { destinoDeRecarga, textoDeRetorno } from "@/app/lib/retorno-recarga";
 
 export const metadata: Metadata = { title: "Billetera" };
 
 // Billetera: el saldo grande sobre el fondo, la recarga con montos rápidos y
-// los movimientos agrupados por día. Si hay pasarela configurada (Wompi), la
-// recarga es un pago; si no, sigue siendo saldo de prueba (docs/pagos.md).
-export default async function PaginaBilletera() {
+// los movimientos agrupados por día. El modo de recarga es explícito; una
+// configuración incompleta no habilita saldo ficticio (docs/pagos.md).
+export default async function PaginaBilletera({ searchParams }: { searchParams: Promise<{ volver?: string | string[] }> }) {
+  const volverA = destinoDeRecarga((await searchParams).volver);
   const { usuario, perfil } = await perfilActual();
   const modo = modoDeRecarga();
   const [{ saldo, movimientos, ahora }, cuenta, enProceso] = await Promise.all([
     miBilletera(usuario.id),
     estadoDeCuenta(usuario.id),
-    modo === "prueba" ? Promise.resolve<FilaRecarga[]>([]) : recargasEnProceso(usuario.id),
+    recargasEnProceso(usuario.id),
   ]);
 
   // Vienen del más nuevo al más viejo; se agrupan seguidos por día.
@@ -35,9 +37,9 @@ export default async function PaginaBilletera() {
     <main className="space-y-6 px-5 pt-6">
       <header>
         <h1 className="font-texto text-sm font-semibold text-texto-suave">Tu saldo</h1>
-        <p className="mt-1 cifra text-[clamp(2rem,16vw,4rem)] break-all">{pesos(saldo)}</p>
+        <p className="mt-1 cifra whitespace-nowrap" style={{ fontSize: `clamp(1.5rem,${Math.min(16, 90 / pesos(saldo).length)}vw,4rem)` }}>{pesos(saldo)}</p>
         <p className="mt-2 text-[13px] text-texto-suave">
-          {modo !== "wompi" && "Saldo de prueba · "}
+          {modo === "prueba" ? "Simulación interna · " : modo === "wompi-pruebas" ? "Wompi Sandbox · " : modo === "wompi" ? "Pagos con dinero real · " : "Recargas no disponibles · "}
           {cuenta.strikes} de {STRIKES_PARA_SUSPENDER} strikes
           {perfil?.rol === "conductor" && " · tus ganancias llegan ya sin el 10 % de UniGo"}
         </p>
@@ -50,14 +52,18 @@ export default async function PaginaBilletera() {
         <h2 id="titulo-recarga" className="text-base">
           Recargar
         </h2>
-        <FormularioRecarga modo={modo} saldo={saldo} />
+        {volverA && <div className="space-y-2 rounded-xl border border-texto-suave/30 p-3 text-sm">
+          <p>Recargar no acepta ofertas ni paga puestos, y no amplía el plazo para pagar. Al volver se comprobarán el saldo, el estado y el plazo.</p>
+          <Link href={volverA} className="inline-flex min-h-11 items-center font-semibold text-secundario">{textoDeRetorno(volverA)}</Link>
+        </div>}
+        <FormularioRecarga modo={modo} saldo={saldo} volverA={volverA} />
         <Link href="/billetera/recargas" className="inline-flex min-h-11 items-center font-semibold">Ver todas mis recargas</Link>
         {enProceso.length > 0 && (
           <ul aria-label="Recargas en proceso" className="border-t border-dashed border-texto-suave/40 pt-1">
             {enProceso.map((recarga) => (
               <li key={recarga.id}>
                 <Link
-                  href={`/billetera/recarga/${recarga.id}`}
+                  href={`/billetera/recarga/${recarga.id}${volverA ? `?volver=${encodeURIComponent(volverA)}` : ""}`}
                   className="flex min-h-11 items-center justify-between gap-3 text-sm text-texto hover:text-secundario"
                 >
                   <span>Recarga de {pesos(recarga.monto)} {recarga.requiere_revision ? "en revisión" : "en proceso"}</span>

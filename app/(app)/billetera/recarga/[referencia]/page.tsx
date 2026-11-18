@@ -7,6 +7,7 @@ import { perfilActual } from "@/app/lib/sesion";
 import { esReferencia } from "@/app/lib/wompi";
 import { EsperarRecarga } from "@/app/ui/comun/esperar-recarga";
 import { CopiarReferencia } from "@/app/ui/comun/copiar-referencia";
+import { destinoDeRecarga, enlaceParaRecargar, textoDeRetorno } from "@/app/lib/retorno-recarga";
 
 export const metadata: Metadata = { title: "Tu recarga" };
 
@@ -19,7 +20,9 @@ const BOTON =
   "flex min-h-14 w-full items-center justify-center rounded-xl bg-primario px-4 py-3 text-center prensa text-[17px] font-bold text-sobre-primario hover:bg-primario/85";
 const ENLACE = "flex min-h-11 w-full items-center justify-center rounded-xl font-semibold text-texto-suave hover:text-texto";
 
-export default async function PaginaRecarga({ params }: { params: Promise<{ referencia: string }> }) {
+export default async function PaginaRecarga({ params, searchParams }: { params: Promise<{ referencia: string }>; searchParams: Promise<{ volver?: string | string[] }> }) {
+  const volverA = destinoDeRecarga((await searchParams).volver);
+  const billetera = enlaceParaRecargar(volverA);
   const { referencia } = await params;
   if (!esReferencia(referencia)) notFound();
   await perfilActual();
@@ -45,7 +48,7 @@ export default async function PaginaRecarga({ params }: { params: Promise<{ refe
           <p className="text-sm text-texto-suave">
             Puedes salir de aquí: el saldo llega solo a tu billetera. Si no pagaste, no se te cobra nada y esta recarga se queda sin usar.
           </p>
-          <Link href="/billetera" className={ENLACE}>
+          <Link href={billetera} className={ENLACE}>
             Volver a mi billetera
           </Link>
         </>
@@ -59,10 +62,11 @@ export default async function PaginaRecarga({ params }: { params: Promise<{ refe
               Ya tienes <strong className="text-texto">{monto}</strong> más en tu billetera.
             </p>
           </header>
-          <Link href="/inicio" className={BOTON}>
-            Ir al inicio
+          {volverA && <p className="text-sm text-texto-suave">Vuelve para comprobar si tu cupo o viaje sigue disponible. La recarga no confirma un puesto ni realiza otro pago.</p>}
+          <Link href={volverA ?? "/inicio"} className={BOTON}>
+            {volverA ? textoDeRetorno(volverA) : "Ir al inicio"}
           </Link>
-          <Link href="/billetera" className={ENLACE}>
+          <Link href={billetera} className={ENLACE}>
             Ver mi billetera
           </Link>
         </>
@@ -76,7 +80,7 @@ export default async function PaginaRecarga({ params }: { params: Promise<{ refe
               Wompi no aprobó el pago de {monto}, así que tu billetera quedó igual. Puedes intentar de nuevo con otro medio de pago.
             </p>
           </header>
-          <Link href="/billetera" className={BOTON}>
+          <Link href={billetera} className={BOTON}>
             Intentar de nuevo
           </Link>
         </>
