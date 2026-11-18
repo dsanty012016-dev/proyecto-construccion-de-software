@@ -10,7 +10,7 @@ vi.mock("./supabase/server", () => ({ crearClienteServidor: async () => ({ from:
   consulta.then = (resolver: (r: Respuesta) => unknown) => Promise.resolve(dobles.resultados[tabla]).then(resolver);
   return consulta;
 } }) }));
-import { miBilletera, miRecarga, recargasEnProceso } from "./consultas-billetera";
+import { historialDeFaltas, miBilletera, miRecarga, recargasEnProceso } from "./consultas-billetera";
 
 beforeEach(() => {
   dobles.consultas.length = 0;
@@ -40,5 +40,14 @@ describe("consultar dinero", () => {
   it("un error de recargas pendientes tampoco se oculta", async () => {
     dobles.resultados.recargas = { data: null, error: { message: "Sin conexión" } };
     await expect(recargasEnProceso("persona")).rejects.toThrow("No pudimos consultar");
+  });
+});
+
+describe("historial de faltas", () => {
+  it("distingue un fallo de consulta de un historial sin faltas", async () => {
+    dobles.resultados.strikes = { data: null, error: { message: "Sin conexión" } };
+    await expect(historialDeFaltas("persona", 1)).rejects.toThrow("No pudimos consultar tu historial de faltas.");
+    dobles.resultados.strikes = { data: [], error: null, count: 0 };
+    await expect(historialDeFaltas("persona", 1)).resolves.toEqual({ faltas: [], total: 0 });
   });
 });

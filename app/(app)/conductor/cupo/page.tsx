@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cancelarCupo, iniciarCupo, responderPuesto, terminarCupo } from "@/app/lib/acciones-cupo";
+import { EnlaceDeAyuda } from "@/app/ui/comun/ayuda-unigo";
 import { reportarUbicacionCupo } from "@/app/lib/acciones-seguimiento";
 import { gananciaConductor } from "@/app/lib/comision";
 import { cupoActivoDelConductor, type SolicitudDePuesto } from "@/app/lib/consultas-cupo";
@@ -169,18 +170,20 @@ export default async function PaginaCupoConductor() {
         )}
       </section>
 
+      <EnlaceDeAyuda motivo={{ tipo: "cupo", referencia: cupo.id }} />
+
       {publicado ? (
         <>
           <p className="text-center text-[13px] text-texto-suave">
             Si no sales antes de las {horaDe(venceCupo(Date.parse(cupo.sale_en)))}, el cupo se cancela solo: a quien pagó se le devuelve todo
-            {hayPagos ? " y sumas 1 strike" : ""}.
+            {hayPagos ? " y sumas una falta" : ""}.
           </p>
           <BotonAccion accion={iniciarCupo} campos={{ cupo: cupo.id }} enviando="Saliendo…" textoSi="Sí, salir" confirmar="¿Sales ahora? Solo van quienes pagaron; los que no, pierden el puesto y las solicitudes pendientes quedan rechazadas.">
             Salir ahora · Iniciar cupo
           </BotonAccion>
           <BotonAccion accion={cancelarCupo} campos={{ cupo: cupo.id }} estilo="peligro" textoSi="Sí, cancelar" confirmar={
               hayPagos
-                ? "¿Cancelar el cupo? Los estudiantes recuperan todo su dinero y tú sumas 1 strike."
+                ? "¿Cancelar el cupo? Los estudiantes recuperan todo su dinero y tú sumas una falta."
                 : "¿Cancelar el cupo? Se cancelarán todas las solicitudes."
             }>
             Cancelar cupo

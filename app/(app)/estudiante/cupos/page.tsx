@@ -82,7 +82,7 @@ export default async function PaginaCupos({ searchParams }: { searchParams: Prom
 
       <p className="mt-auto border-t border-texto-suave/15 py-4 text-[13px] leading-relaxed text-texto-suave">
         Pides el puesto con tu punto ({sentido === "regreso" ? "donde te bajas" : "donde te recogen"}) y el conductor lo aprueba. Pagas hasta {MINUTOS_LIMITE_PAGO} min antes de salir. Si te retiras con
-        menos de {MINUTOS_CUPO_SIN_COBRO} min, se cobra el {COBRO_CUPO_TARDE} % y suma un strike.
+        menos de {MINUTOS_CUPO_SIN_COBRO} min, se cobra el {COBRO_CUPO_TARDE} % y suma una falta.
       </p>
     </main>
   );

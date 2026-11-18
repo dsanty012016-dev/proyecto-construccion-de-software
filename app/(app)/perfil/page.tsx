@@ -9,6 +9,7 @@ import { BotonSalir } from "@/app/ui/comun/boton-salir";
 import { InstalarApp } from "@/app/ui/comun/instalar-app";
 import { IconoSiguiente } from "@/app/ui/comun/iconos-app";
 import { FormularioContacto } from "@/app/ui/comun/formulario-contacto";
+import { EnlaceDeAyuda } from "@/app/ui/comun/ayuda-unigo";
 
 export const metadata: Metadata = { title: "Perfil" };
 
@@ -48,6 +49,7 @@ export default async function PaginaPerfil() {
       </details>}
 
       <EstadoCuenta personaId={usuario.id} siempre />
+      <EnlaceDeAyuda motivo={{ tipo: "general" }} />
       <InstalarApp />
       <ActivarNotificaciones key={usuario.id} enPerfil />
 

@@ -1,25 +1,27 @@
+import Link from "next/link";
 import { estadoDeCuenta } from "@/app/lib/consultas-billetera";
 import { fechaCorta } from "@/app/lib/formato";
 import { STRIKES_PARA_SUSPENDER } from "@/app/lib/pagos";
 
-// Aviso de strikes y suspensión (012). No muestra nada si la cuenta está limpia.
-export async function EstadoCuenta({ personaId, siempre }: { personaId: string; siempre?: boolean }) {
+// Resumen de faltas y suspensión. En Perfil y Billetera el historial siempre está disponible.
+export async function EstadoCuenta({ personaId, siempre, enHistorial }: { personaId: string; siempre?: boolean; enHistorial?: boolean }) {
   const { strikes, suspendidoHasta } = await estadoDeCuenta(personaId);
-
-  if (suspendidoHasta) {
-    return (
-      <div role="alert" className="rounded-2xl border border-error/40 bg-error/10 p-4 text-sm text-error">
-        <p className="font-bold">Tu cuenta está suspendida hasta el {fechaCorta(suspendidoHasta)}.</p>
-        <p>Juntaste {STRIKES_PARA_SUSPENDER} strikes por cancelaciones. Mientras tanto puedes ver la app, pero no pedir ni ofrecer viajes.</p>
-      </div>
-    );
-  }
-  if (strikes === 0 && !siempre) return null;
+  if (strikes === 0 && !suspendidoHasta && !siempre) return null;
   return (
-    <div role="status" className="rounded-2xl border border-texto-suave/25 p-4 text-sm text-texto-suave">
-      {strikes === 0
-        ? "No tienes strikes."
-        : `Llevas ${strikes} de ${STRIKES_PARA_SUSPENDER} strikes. Con ${STRIKES_PARA_SUSPENDER}, tu cuenta se suspende unos días.`}
+    <div className={suspendidoHasta ? "rounded-2xl border border-error/40 p-4 text-sm" : "text-sm"}>
+      {suspendidoHasta ? (
+        <div role="alert" className="space-y-1">
+          <p className="font-bold text-error">Cuenta suspendida hasta el {fechaCorta(suspendidoHasta)}.</p>
+          <p>Durante la suspensión se bloquea pedir viajes, hacer ofertas, publicar cupos y pedir puestos.</p>
+        </div>
+      ) : strikes > 0 && (
+        <p className="font-semibold">
+          {strikes} de {STRIKES_PARA_SUSPENDER} faltas (strikes). Al llegar a {STRIKES_PARA_SUSPENDER}, se suspende la cuenta.
+        </p>
+      )}
+      {!enHistorial && <Link href="/perfil/faltas" className="inline-flex min-h-11 items-center font-semibold text-secundario underline underline-offset-4">
+        Ver faltas y reglas de la cuenta
+      </Link>}
     </div>
   );
 }

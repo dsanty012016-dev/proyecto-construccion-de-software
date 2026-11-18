@@ -10,6 +10,7 @@ import { viajeActivoDelEstudiante } from "@/app/lib/consultas-viaje";
 import { etiquetaEstado, nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
+import { EnlaceDeAyuda } from "@/app/ui/comun/ayuda-unigo";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { CancelarViaje } from "@/app/ui/comun/cancelar-viaje";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
@@ -195,6 +196,7 @@ export default async function PaginaViajeEstudiante({ searchParams }: { searchPa
         )}
 
         <BotonCompartirViaje compartir={compartirViaje.bind(null, viaje.id)} />
+        <EnlaceDeAyuda motivo={{ tipo: "viaje", referencia: viaje.id }} />
 
         {viaje.estado === "aceptado" && <CancelarViaje viajeId={viaje.id} quien="estudiante" precio={viaje.pago_retenido} />}
       </div>

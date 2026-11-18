@@ -7,6 +7,7 @@ import { viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
 import { nombreCorto, pesos } from "@/app/lib/formato";
 import { exigirRol } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
+import { EnlaceDeAyuda } from "@/app/ui/comun/ayuda-unigo";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { CancelarViaje } from "@/app/ui/comun/cancelar-viaje";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
@@ -72,6 +73,8 @@ export default async function PaginaViajeConductor() {
           </div>
         )}
       </section>
+
+      <EnlaceDeAyuda motivo={{ tipo: "viaje", referencia: viaje.id }} />
 
       {viaje.precio !== null && (
         <section aria-label="Pago" className="flex items-center justify-between gap-3 border-y border-dashed border-texto-suave/40 py-3.5">

@@ -50,7 +50,7 @@ Validación realizada: lint, 248 pruebas de reglas, compilación y 236 comprobac
 
 ## Sprint 3
 
-**Estado:** implementado y validado; pendiente de comprobaciones de GitHub y publicación. Rama `sprint-3-registro-preparacion`.
+**Estado:** publicado mediante [PR #47](https://github.com/dsanty012016-dev/proyecto-construccion-de-software/pull/47), commit `5a8805d`. Rama `sprint-3-registro-preparacion`.
 
 - U11: documentos enviados/aprobados diferenciados, fecha límite de siete días, rechazo explicado, reemplazo plegado y consulta de estado.
 - U12: preparación con siguiente paso posible y acción principal antes del progreso.
@@ -58,13 +58,20 @@ Validación realizada: lint, 248 pruebas de reglas, compilación y 236 comprobac
 - U22: modo inicial reversible, con requisitos de conducción claros.
 - U23: reenvío con respuesta neutral, espera de 60 segundos y reinicio efectivo si se escribió mal el correo.
 
-344 pruebas, 118 comprobaciones de navegador y 17 contra Next local aprobadas. La migración 026 debe pasar las pruebas de base y aplicarse antes de publicar la app. Detalles y límites en [sprint-3-validacion.md](sprint-3-validacion.md). Próximo: sprint 4, ayuda y confianza.
+344 pruebas, 118 comprobaciones de navegador y 17 contra Next local aprobadas. La migración 026 pasó las pruebas de base y se aplicó antes de publicar la app. Detalles y límites en [sprint-3-validacion.md](sprint-3-validacion.md).
+
+## Sprint 4
+
+- U08: ayuda separada de cancelar en viajes y cupos activos. El equipo eligió WhatsApp para ayuda de viajes y revisión de faltas.
+- U21: acceso a `/perfil/faltas` desde Perfil y Billetera, historial propio con fecha y motivo, y explicación de reglas y suspensiones.
+
+WhatsApp usa la variable de servidor `UNIGO_WHATSAPP_AYUDA`, con el número internacional del equipo. Cuando falta una configuración válida, los enlaces se ocultan. Confirmar número y responsable antes de activar el canal. Los borradores llevan la referencia del viaje, cupo o falta. El usuario envía el mensaje desde WhatsApp.
 
 ## Decisiones que se concretarán en sus sprints
 
 - Sprint 2: la simulación exige activación expresa; Wompi incompleto informa indisponibilidad. La búsqueda de direcciones se conserva como mejora opcional que requiere elegir servicio.
 - Sprint 3: confirmado nombre y celular editables, correo institucional fijo en este flujo y revisión de documentos en máximo siete días desde cada envío.
-- Sprint 4: canal, responsables y alcance de ayuda; no prometer atención inmediata sin operación real.
+- Sprint 4: WhatsApp confirmado para ayuda de viajes y solicitudes de revisión de faltas. Confirmar el número del equipo, responsables y horario si existe.
 - Sprint 5: quién puede resolver una incidencia monetaria y qué comprobaciones exige la conciliación.
 - Sprint 6: fotografías propias/autorizadas; validar utilidad de favoritos y repetición antes de construirlos.
 
