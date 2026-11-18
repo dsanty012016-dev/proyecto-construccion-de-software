@@ -48,7 +48,17 @@ Las llaves se guardan en los paneles correspondientes; nunca en el repositorio, 
 | `privado.ajustes_pago` | `secreto_eventos` | Prefijo `test_events_` |
 | Wompi → eventos de pruebas | URL | `https://unigoproject.vercel.app/api/v1/pagos/wompi` |
 
-La consulta de transacciones utiliza autenticación privada según la [documentación oficial de Wompi](https://docs.wompi.co/docs/colombia/transacciones/). Publicar de nuevo la app después de cambiar sus variables. Sin las llaves de checkout continúa la recarga simulada; con llaves incompletas no debe iniciarse un piloto de pagos.
+La consulta de transacciones utiliza autenticación privada según la [documentación oficial de Wompi](https://docs.wompi.co/docs/colombia/transacciones/). Publicar de nuevo la app después de cambiar sus variables. Desde el sprint 2, si faltan las llaves de checkout, son incompletas o pertenecen a ambientes diferentes, las recargas aparecen indisponibles. No se acredita saldo ficticio como alternativa automática.
+
+### Simulación interna explícita
+
+Para una demostración sin Wompi se requiere `UNIGO_RECARGA_SIMULADA=true` en el servidor, ambas variables de checkout de Wompi ausentes y la recarga simulada habilitada en la base. La app muestra «Simulación interna · saldo ficticio». La acción de servidor también comprueba el modo antes de llamar a la base. Una configuración parcial de Wompi bloquea la simulación incluso con esa variable activada. Esta entrega no cambia variables ni ajustes del proyecto conectado.
+
+Wompi Sandbox se identifica por separado como «sin dinero real»; no es la simulación interna. Las llaves válidas de producción identifican un pago real, pero no convierten saldos anteriores ni sustituyen la conciliación y activación exigidas por la base.
+
+### Volver al cupo o viaje después de recargar
+
+La billetera conserva un destino interno validado y lo incluye en la URL de retorno del checkout. La pantalla de resultado sigue consultando la recarga propia en la base; ningún parámetro de la URL acredita saldo ni autoriza pagar. Aprobada la recarga, el enlace vuelve a consultar el cupo o viaje original. Si el puesto venció o el viaje cambió, se informa y no se paga automáticamente. Los retornos externos o alterados se descartan.
 
 Probar en el ambiente de Wompi de pruebas: aprobación, rechazo, aviso repetido, retorno antes del aviso y reintento tras una caída. Comprobar el saldo, movimiento y referencia en el historial. Las pruebas ficticias de GitHub no reemplazan esta prueba del comercio.
 

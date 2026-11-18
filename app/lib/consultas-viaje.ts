@@ -18,7 +18,7 @@ export async function perfilesPublicos(ids: string[]): Promise<Map<string, Perfi
   const mapa = new Map<string, PerfilPublico>();
   if (ids.length === 0) return mapa;
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.rpc("perfiles_publicos", { p_ids: [...new Set(ids)] });
+  const { data } = await supabase.rpc("perfiles_publicos", { p_ids: [...new Set(ids)] }).throwOnError();
   for (const perfil of data ?? []) mapa.set(perfil.id, perfil);
   return mapa;
 }
@@ -26,7 +26,7 @@ export async function perfilesPublicos(ids: string[]): Promise<Map<string, Perfi
 /** Perfil completo de la otra persona de un viaje aceptado o en curso (con teléfono). */
 async function contactoDelViaje(id: string) {
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.from("perfiles").select("id, nombre, telefono").eq("id", id).maybeSingle();
+  const { data } = await supabase.from("perfiles").select("id, nombre, telefono").eq("id", id).maybeSingle().throwOnError();
   return data;
 }
 
@@ -53,7 +53,7 @@ export async function viajeActivoDelEstudiante(estudianteId: string): Promise<Vi
     .select("*")
     .eq("estudiante_id", estudianteId)
     .in("estado", ACTIVOS)
-    .maybeSingle();
+    .maybeSingle().throwOnError();
   if (!viaje) return null;
 
   if (viaje.estado === "solicitado") {
@@ -62,13 +62,13 @@ export async function viajeActivoDelEstudiante(estudianteId: string): Promise<Vi
       .select("*")
       .eq("viaje_id", viaje.id)
       .eq("estado", "activa")
-      .order("precio", { ascending: true });
+      .order("precio", { ascending: true }).throwOnError();
     const lista = ofertas ?? [];
     // Perfiles y vehículos a la vez (antes iban uno detrás del otro).
     const [perfiles, { data: vehiculos }] = await Promise.all([
       perfilesPublicos(lista.map((o) => o.conductor_id)),
       lista.length
-        ? supabase.from("vehiculos").select("*").in("conductor_id", lista.map((o) => o.conductor_id))
+        ? supabase.from("vehiculos").select("*").in("conductor_id", lista.map((o) => o.conductor_id)).throwOnError()
         : Promise.resolve({ data: [] as FilaVehiculo[] }),
     ]);
 
@@ -91,7 +91,7 @@ export async function viajeActivoDelEstudiante(estudianteId: string): Promise<Vi
   const [perfiles, contacto, vehiculo] = await Promise.all([
     perfilesPublicos([viaje.conductor_id]),
     contactoDelViaje(viaje.conductor_id),
-    supabase.from("vehiculos").select("*").eq("conductor_id", viaje.conductor_id).maybeSingle(),
+    supabase.from("vehiculos").select("*").eq("conductor_id", viaje.conductor_id).maybeSingle().throwOnError(),
   ]);
   return {
     viaje,
@@ -116,7 +116,7 @@ export async function viajeActivoDelConductor(conductorId: string): Promise<Viaj
     .select("*")
     .eq("conductor_id", conductorId)
     .in("estado", ["aceptado", "en_curso"])
-    .maybeSingle();
+    .maybeSingle().throwOnError();
   if (!viaje) return null;
   const contacto = await contactoDelViaje(viaje.estudiante_id);
   return { viaje, estudiante: contacto ? { nombre: contacto.nombre, telefono: contacto.telefono } : null };
@@ -137,13 +137,13 @@ export async function solicitudesAbiertas(conductorId: string) {
     .select("*")
     .eq("estado", "solicitado")
     .order("creado_en", { ascending: false })
-    .limit(30);
+    .limit(30).throwOnError();
   const lista = viajes ?? [];
 
   const [perfiles, ofertas] = await Promise.all([
     perfilesPublicos(lista.map((v) => v.estudiante_id)),
     lista.length
-      ? supabase.from("ofertas").select("*").eq("conductor_id", conductorId).eq("estado", "activa").in("viaje_id", lista.map((v) => v.id))
+      ? supabase.from("ofertas").select("*").eq("conductor_id", conductorId).eq("estado", "activa").in("viaje_id", lista.map((v) => v.id)).throwOnError()
       : Promise.resolve({ data: [] as FilaOferta[] }),
   ]);
 
@@ -163,7 +163,7 @@ export async function solicitudParaOfertar(viajeId: string, conductorId: string)
 
 export async function vehiculoDe(conductorId: string): Promise<FilaVehiculo | null> {
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.from("vehiculos").select("*").eq("conductor_id", conductorId).maybeSingle();
+  const { data } = await supabase.from("vehiculos").select("*").eq("conductor_id", conductorId).maybeSingle().throwOnError();
   return data;
 }
 
@@ -182,7 +182,7 @@ export async function resumenDelConductor(conductorId: string): Promise<ResumenC
       .select("id", { count: "exact", head: true })
       .eq("conductor_id", conductorId)
       .eq("estado", "terminado")
-      .gte("terminado_en", desde),
+      .gte("terminado_en", desde).throwOnError(),
     perfilesPublicos([conductorId]),
   ]);
   const yo = perfiles.get(conductorId);
@@ -209,14 +209,14 @@ export async function historialDeViajes(usuarioId: string): Promise<ItemHistoria
     .or(`estudiante_id.eq.${usuarioId},conductor_id.eq.${usuarioId}`)
     .in("estado", ["terminado", "cancelado"])
     .order("creado_en", { ascending: false })
-    .limit(30);
+    .limit(30).throwOnError();
   const lista = viajes ?? [];
   if (lista.length === 0) return [];
 
   const otros = lista.map((v) => (v.estudiante_id === usuarioId ? v.conductor_id : v.estudiante_id)).filter((id): id is string => !!id);
   const [perfiles, calificaciones] = await Promise.all([
     perfilesPublicos(otros),
-    supabase.from("calificaciones").select("viaje_id").eq("autor_id", usuarioId).in("viaje_id", lista.map((v) => v.id)),
+    supabase.from("calificaciones").select("viaje_id").eq("autor_id", usuarioId).in("viaje_id", lista.map((v) => v.id)).throwOnError(),
   ]);
   const calificados = new Set((calificaciones.data ?? []).map((c) => c.viaje_id));
 
@@ -229,13 +229,13 @@ export async function historialDeViajes(usuarioId: string): Promise<ItemHistoria
 /** Datos para la pantalla de calificar: el viaje terminado y a quién se califica. */
 export async function viajeParaCalificar(viajeId: string, usuarioId: string) {
   const supabase = await crearClienteServidor();
-  const { data: viaje } = await supabase.from("viajes").select("*").eq("id", viajeId).eq("estado", "terminado").maybeSingle();
+  const { data: viaje } = await supabase.from("viajes").select("*").eq("id", viajeId).eq("estado", "terminado").maybeSingle().throwOnError();
   if (!viaje || (viaje.estudiante_id !== usuarioId && viaje.conductor_id !== usuarioId)) return null;
 
   const otroId = viaje.estudiante_id === usuarioId ? viaje.conductor_id : viaje.estudiante_id;
   const [perfiles, previa] = await Promise.all([
     perfilesPublicos(otroId ? [otroId] : []),
-    supabase.from("calificaciones").select("id").eq("viaje_id", viajeId).eq("autor_id", usuarioId).maybeSingle(),
+    supabase.from("calificaciones").select("id").eq("viaje_id", viajeId).eq("autor_id", usuarioId).maybeSingle().throwOnError(),
   ]);
   return { viaje, otro: otroId ? (perfiles.get(otroId) ?? null) : null, yaCalifique: !!previa.data };
 }
@@ -243,6 +243,6 @@ export async function viajeParaCalificar(viajeId: string, usuarioId: string) {
 /** Sede de la universidad de la persona: es el destino de todos los viajes (por ahora). */
 export async function sedeDeUniversidad(universidadId: number) {
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.from("universidades").select("nombre, lat, lng").eq("id", universidadId).single();
+  const { data } = await supabase.from("universidades").select("nombre, lat, lng").eq("id", universidadId).single().throwOnError();
   return data;
 }

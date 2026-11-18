@@ -178,6 +178,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   const alElegirRef = useRef(alElegir);
   const animar = useRef(true);
   const [estado, setEstado] = useState<Estado>("cargando");
+  const [intento, setIntento] = useState(0);
   const [infoRuta, setInfoRuta] = useState<{ clave: string; km: number; minutos: number } | null>(null);
   const modoElegir = !!alElegir;
   const conControles = useRef(!aRas);
@@ -187,11 +188,16 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     alElegirRef.current = alElegir;
   });
 
-  // Crear el mapa una sola vez.
+  // Reintentar recrea solo el mapa: los campos y el punto viven en el formulario.
   useEffect(() => {
     let cancelado = false;
+    let cargado = false;
     let mapa: MapaLibre | null = null;
+    const host = contenedor.current;
     let plegar: ReturnType<typeof setTimeout> | undefined;
+    const limiteCarga = setTimeout(() => {
+      if (!cancelado && !cargado) setEstado("error");
+    }, 20_000);
     animar.current = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     import("maplibre-gl")
@@ -201,7 +207,6 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
         // propio y aquí se le dice dónde está (forma que documenta MapLibre).
         lib.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString());
         const inicio = centroInicial.current;
-        let cargado = false;
         try {
           mapa = new lib.Map({
             container: contenedor.current,
@@ -211,6 +216,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
             attributionControl: { compact: true, customAttribution: CREDITO_RUTAS },
           });
         } catch {
+          clearTimeout(limiteCarga);
           // Sin WebGL2 (navegador viejo o desactivado).
           setEstado("error");
           return;
@@ -223,11 +229,14 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
           if (!instancia.hasImage(id)) instancia.addImage(id, { width: 1, height: 1, data: new Uint8Array(4) });
         });
         instancia.on("load", () => {
+          if (cancelado) return;
           cargado = true;
+          clearTimeout(limiteCarga);
           pintarEstilo(instancia);
           libRef.current = lib;
           mapaRef.current = instancia;
           setEstado("listo");
+          requestAnimationFrame(() => { if (!cancelado) instancia.resize(); });
           // Los créditos (licencia de OpenStreetMap) se ven al abrir el mapa
           // y a los pocos segundos se pliegan en el botón "i"; con tocarlo
           // vuelven a salir. MapLibre ya los pliega al arrastrar el mapa.
@@ -239,34 +248,41 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
         });
         // Si el estilo no carga (sin internet o el servicio caído), se avisa.
         instancia.on("error", () => {
-          if (!cargado) setEstado("error");
+          if (!cancelado && !cargado) { clearTimeout(limiteCarga); setEstado("error"); }
         });
-        instancia.on("moveend", () => {
+        instancia.on("moveend", (evento) => {
+          if (cancelado || !cargado) return;
           if (encuadrando.current) {
             encuadrando.current = false;
             return;
           }
+          // Cargar o redimensionar el mapa no equivale a elegir un punto.
+          if (!evento.originalEvent && !("puntoElegido" in evento && evento.puntoElegido === true)) return;
           const c = instancia.getCenter();
+          centroInicial.current = { lat: c.lat, lng: c.lng };
           alElegirRef.current?.({ lat: c.lat, lng: c.lng });
         });
         instancia.on("click", (evento) => {
-          if (alElegirRef.current) instancia.easeTo({ center: evento.lngLat, duration: animar.current ? 400 : 0 });
+          if (!cancelado && cargado && alElegirRef.current) instancia.easeTo({ center: evento.lngLat, duration: animar.current ? 400 : 0 }, { puntoElegido: true });
         });
       })
       .catch(() => {
+        clearTimeout(limiteCarga);
         if (!cancelado) setEstado("error");
       });
 
     return () => {
       cancelado = true;
       clearTimeout(plegar);
+      clearTimeout(limiteCarga);
       mapa?.remove();
+      host?.replaceChildren();
       mapaRef.current = null;
       marcadores.current = {};
       marcadoresParadas.current = [];
       marcadorVehiculo.current = null;
     };
-  }, []);
+  }, [intento]);
 
   // Marcadores y línea entre recogida y destino.
   const oLat = origen?.lat;
@@ -380,14 +396,14 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   useEffect(() => {
     const mapa = mapaRef.current;
     if (estado !== "listo" || !mapa || irLat === undefined || irLng === undefined) return;
-    mapa.easeTo({ center: [irLng, irLat], zoom: Math.max(mapa.getZoom(), 16), duration: animar.current ? 600 : 0 });
+    mapa.easeTo({ center: [irLng, irLat], zoom: Math.max(mapa.getZoom(), 16), duration: animar.current ? 600 : 0 }, { puntoElegido: true });
   }, [estado, irLat, irLng]);
 
   return (
-    <div role="region" aria-label={etiqueta} className={`relative overflow-hidden bg-superficie ${aRas ? "" : "rounded-2xl"} ${className ?? "h-64"}`}>
+    <div role="region" aria-label={etiqueta} style={estado === "error" ? { height: "auto" } : undefined} className={`relative overflow-hidden bg-superficie ${aRas ? "" : "rounded-2xl"} ${className ?? "h-64"}`}>
       {/* Alto y ancho explícitos: la hoja de MapLibre le pone position: relative
           al contenedor y le gana a "absolute inset-0", que lo dejaba en 0 px. */}
-      <div ref={contenedor} className="h-full w-full" />
+      <div ref={contenedor} inert={estado !== "listo"} aria-hidden={estado !== "listo"} className={estado === "error" ? "hidden" : "h-full w-full"} />
 
       {modoElegir && estado === "listo" && (
         // Pin fijo: la punta queda justo en el centro del mapa.
@@ -406,16 +422,23 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
         </svg>
       )}
 
-      {infoRuta && infoRuta.clave === `${oLat},${oLng},${dLat},${dLng}` && (
+      {estado === "listo" && infoRuta && infoRuta.clave === `${oLat},${oLng},${dLat},${dLng}` && (
         <p className={`absolute left-2 rounded-lg ${aRas ? "bottom-8" : "bottom-2"} bg-fondo/90 px-2.5 py-1 text-xs font-semibold text-texto`}>
           {distanciaTexto(infoRuta.km)} · {infoRuta.minutos} min por vía
         </p>
       )}
 
       {estado !== "listo" && (
-        <p role="status" className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-texto-suave">
-          {estado === "cargando" ? "Cargando mapa…" : "No pudimos cargar el mapa. Revisa tu conexión."}
-        </p>
+        <div className={`${estado === "error" ? "relative min-h-52" : "absolute inset-0"} z-10 overflow-auto bg-superficie p-4 text-center text-sm text-texto-suave`}>
+          <div className={`flex ${estado === "error" ? "min-h-44" : "min-h-full"} flex-col items-center justify-center gap-3`}>
+          <p role="status">{estado === "cargando" ? "Cargando mapa…" : "No pudimos cargar el mapa. Revisa tu conexión y reintenta; los datos que escribiste se conservan."}</p>
+          {estado === "error" && <button type="button" onClick={() => {
+            setEstado("cargando");
+            setInfoRuta(null);
+            setIntento((valor) => valor + 1);
+          }} className="min-h-11 max-w-full shrink-0 rounded-xl border border-texto-suave/40 px-4 py-2 font-semibold text-texto hover:bg-fondo">Reintentar mapa</button>}
+          </div>
+        </div>
       )}
     </div>
   );

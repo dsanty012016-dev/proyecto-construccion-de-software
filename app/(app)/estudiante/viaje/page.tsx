@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { destinoDeRecarga } from "@/app/lib/retorno-recarga";
 import { compartirViaje } from "@/app/lib/acciones-seguimiento";
 import { cancelarViaje } from "@/app/lib/acciones-viaje";
 import { miSaldo } from "@/app/lib/consultas-billetera";
@@ -29,9 +30,18 @@ export const metadata: Metadata = { title: "Tu viaje" };
 // El viaje del estudiante (rediseño): primero elige entre las ofertas; cuando
 // acepta una, ve al conductor con su placa grande hasta llegar a la U (o a
 // casa, en el regreso).
-export default async function PaginaViajeEstudiante() {
+export default async function PaginaViajeEstudiante({ searchParams }: { searchParams: Promise<{ viaje?: string | string[] }> }) {
+  const buscado = (await searchParams).viaje;
+  const retornoValido = typeof buscado === "string" && destinoDeRecarga(`/estudiante/viaje?viaje=${buscado}`);
+  const idBuscado = retornoValido ? retornoValido.split("?viaje=")[1] : null;
   const { usuario } = await exigirRol("estudiante");
   const [activo, saldo] = await Promise.all([viajeActivoDelEstudiante(usuario.id), miSaldo(usuario.id)]);
+  if (idBuscado && (!activo || activo.viaje.id !== idBuscado)) return <main className="space-y-4 px-5 pt-6">
+    <h1 className="cartel text-[2.125rem]">Revisa tu viaje</h1>
+    <p role="status">El viaje desde el que fuiste a recargar ya no está activo. Consulta tu billetera para ver el saldo y revisa tu inicio antes de pedir otro.</p>
+    <Link href="/estudiante" className="flex min-h-12 items-center justify-center rounded-xl bg-primario px-4 py-3 font-semibold text-sobre-primario">Volver a mi inicio</Link>
+    <Link href="/billetera" className="inline-flex min-h-11 items-center text-secundario">Consultar mi billetera</Link>
+  </main>;
   if (!activo) redirect("/estudiante");
   const { viaje, ofertas, conductor } = activo;
   const origen = { lat: viaje.origen_lat, lng: viaje.origen_lng };
@@ -74,7 +84,7 @@ export default async function PaginaViajeEstudiante() {
             </header>
             <ul className="px-4">
               {ofertas.map((oferta, i) => (
-                <TarjetaOferta key={oferta.ofertaId} oferta={oferta} saldo={saldo} destacada={i === 0} />
+                <TarjetaOferta key={oferta.ofertaId} oferta={oferta} saldo={saldo} viajeId={viaje.id} destacada={i === 0} />
               ))}
             </ul>
           </section>

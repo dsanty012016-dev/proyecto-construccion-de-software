@@ -15,7 +15,7 @@ const VIGENCIA_ENLACE_SEGUNDOS = 300;
 /** Documentos del conductor, uno por tipo (undefined si no lo ha enviado). */
 export async function misDocumentos(conductorId: string): Promise<Partial<Record<TipoDocumento, FilaDocumento>>> {
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.from("documentos_conductor").select("*").eq("conductor_id", conductorId);
+  const { data } = await supabase.from("documentos_conductor").select("*").eq("conductor_id", conductorId).throwOnError();
   const porTipo: Partial<Record<TipoDocumento, FilaDocumento>> = {};
   for (const doc of data ?? []) porTipo[doc.tipo] = doc;
   return porTipo;
@@ -42,16 +42,17 @@ export async function conductoresPorRevisar(): Promise<ConductorPorRevisar[]> {
     .select("*")
     .eq("estado", "pendiente")
     .order("enviado_en", { ascending: true })
-    .limit(60);
+    .limit(60).throwOnError();
   const lista = pendientes ?? [];
   if (lista.length === 0) return [];
 
   const ids = [...new Set(lista.map((d) => d.conductor_id))];
   const [perfiles, vehiculos, enlaces] = await Promise.all([
-    supabase.from("perfiles").select("id, nombre, telefono").in("id", ids),
-    supabase.from("vehiculos").select("*").in("conductor_id", ids),
+    supabase.from("perfiles").select("id, nombre, telefono").in("id", ids).throwOnError(),
+    supabase.from("vehiculos").select("*").in("conductor_id", ids).throwOnError(),
     supabase.storage.from("documentos").createSignedUrls(lista.map((d) => d.ruta), VIGENCIA_ENLACE_SEGUNDOS),
   ]);
+  if (enlaces.error) throw new Error("No pudimos abrir los documentos. Intenta de nuevo.");
   const enlacePorRuta = new Map((enlaces.data ?? []).map((e) => [e.path, e.signedUrl]));
 
   return ids.map((id) => {

@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { miSaldo } from "@/app/lib/consultas-billetera";
+import { enlaceParaRecargar } from "@/app/lib/retorno-recarga";
 import { redirect } from "next/navigation";
 import { pagarPuesto, retirarPuesto } from "@/app/lib/acciones-cupo";
 import { compartirPuesto } from "@/app/lib/acciones-seguimiento";
@@ -27,7 +30,7 @@ export const metadata: Metadata = { title: "Cupo" };
 export default async function PaginaCupo({ params }: { params: Promise<{ id: string }> }) {
   const { usuario } = await exigirRol("estudiante");
   const { id } = await params;
-  const datos = await cupoParaEstudiante(id, usuario.id);
+  const [datos, saldo] = await Promise.all([cupoParaEstudiante(id, usuario.id), miSaldo(usuario.id)]);
   if (!datos) redirect("/estudiante/cupos");
   const { cupo, conductor, vehiculo, libres, miPuesto, telefonoConductor, ahora } = datos;
   const saleMs = Date.parse(cupo.sale_en);
@@ -36,7 +39,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
   const activo = cupo.estado === "publicado" || cupo.estado === "en_curso";
   const tengoPuesto = miPuesto?.estado === "pendiente" || miPuesto?.estado === "aprobado";
   const aprobado = miPuesto?.estado === "aprobado";
-  const puedePedir = cupo.estado === "publicado" && libres > 0 && !tengoPuesto && miPuesto?.estado !== "rechazado";
+  const puedePedir = cupo.estado === "publicado" && libres > 0 && !tengoPuesto && miPuesto?.estado !== "rechazado" && miPuesto?.estado !== "sin_pago";
   const nombre = conductor ? nombreCorto(conductor.nombre) : "el conductor";
   const pagado = aprobado && (miPuesto?.pagado ?? 0) > 0;
   const regreso = cupo.sentido === "regreso";
@@ -51,17 +54,17 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
       <EncabezadoPantalla titulo={`Cupo de ${nombre}`} volverA="/estudiante/cupos" />
 
       <section aria-label="Datos del cupo" className="space-y-4 rounded-2xl bg-superficie p-4">
-        <div className="flex items-baseline justify-between gap-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
           <p className="font-titulo text-lg font-bold">Sale {fechaCorta(cupo.sale_en)}</p>
           <p className="font-titulo text-lg font-bold">{pesos(cupo.precio)}</p>
         </div>
         <RutaViaje origen={cupo.salida_texto} destino={cupo.destino_texto} etiquetaOrigen="Sale de" etiquetaDestino={regreso ? "Va hasta" : "Vas a"} />
-        <div className="flex items-center gap-3 border-t border-texto-suave/20 pt-4">
+        <div className="flex flex-wrap items-center gap-3 border-t border-texto-suave/20 pt-4">
           <Avatar nombre={conductor?.nombre ?? "Conductor"} sobreTarjeta />
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 basis-40">
             <p className="font-bold">{conductor ? nombreCorto(conductor.nombre) : "Conductor"}</p>
-            <p className="flex items-center gap-1 text-sm text-texto-suave">
-              <IconoEstrella llena className="size-4 text-secundario" />
+            <p className="flex flex-wrap items-center gap-1 text-sm text-texto-suave [overflow-wrap:anywhere]">
+              <IconoEstrella llena className="size-4 shrink-0 text-secundario" />
               {conductor && conductor.total_calificaciones > 0 ? calificacionTexto(conductor.calificacion) : "Nuevo"}
               {vehiculo && ` · ${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.color}`}
             </p>
@@ -114,9 +117,10 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
           {aprobado && miPuesto.pagado === 0 && cupo.estado === "publicado" && (
             puedePagarPuesto(saleMs, ahora) ? (
               <div className="space-y-2">
-                <BotonAccion accion={pagarPuesto} campos={{ cupo: cupo.id }} enviando="Pagando…">
+                <p className="text-sm">Tu saldo: <strong className="tabular-nums">{pesos(saldo)}</strong>.{saldo < cupo.precio && <> Te faltan <strong className="tabular-nums">{pesos(cupo.precio - saldo)}</strong>.</>}</p>
+                {saldo >= cupo.precio ? <BotonAccion accion={pagarPuesto} campos={{ cupo: cupo.id }} enviando="Pagando…">
                   Pagar mi puesto · {pesos(cupo.precio)}
-                </BotonAccion>
+                </BotonAccion> : <Link href={enlaceParaRecargar(`/estudiante/cupos/${cupo.id}`)} className="flex min-h-14 w-full items-center justify-center rounded-xl bg-primario px-4 py-3 text-center prensa font-semibold text-sobre-primario">Recargar para este puesto</Link>}
                 <p className="text-center text-sm text-texto-suave">
                   Paga a más tardar el {fechaCorta(new Date(limiteDePago(saleMs)).toISOString())} o pierdes el puesto.
                 </p>
@@ -136,7 +140,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
               href={`tel:${telefonoConductor}`}
               className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-superficie"
             >
-              <IconoTelefono className="size-5" />
+              <IconoTelefono className="size-5 shrink-0" />
               Llamar al conductor
             </a>
           )}
@@ -162,7 +166,7 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
       ) : (
         <>
           {miPuesto?.estado === "rechazado" && <Aviso tipo="info">El conductor no aprobó tu solicitud en este cupo. Puedes buscar otro.</Aviso>}
-          {miPuesto?.estado === "sin_pago" && <Aviso tipo="info">Perdiste el puesto porque no se pagó a tiempo.</Aviso>}
+          {miPuesto?.estado === "sin_pago" && <Aviso tipo="info">Perdiste el puesto porque no se pagó a tiempo. Si tu recarga fue aprobada, el saldo sigue en tu billetera. <Link href="/estudiante/cupos" className="inline-flex min-h-11 items-center font-semibold text-secundario">Buscar otro cupo</Link></Aviso>}
           {cupo.estado === "cancelado" && (
             <Aviso tipo="info">{cupo.vencio ? "Este cupo se canceló solo porque el conductor no salió a tiempo." : "El conductor canceló este cupo."}</Aviso>
           )}
