@@ -67,6 +67,8 @@ Validación realizada: lint, 248 pruebas de reglas, compilación y 236 comprobac
 
 WhatsApp usa la variable de servidor `UNIGO_WHATSAPP_AYUDA`, con el número internacional confirmado por el equipo. Cuando falta una configuración válida, los enlaces se ocultan. Los borradores llevan la referencia del viaje, cupo o falta. El usuario envía el mensaje desde WhatsApp. El responsable del canal revisa las solicitudes en un plazo de 7 días.
 
+Para activar o actualizar el canal, guarda la variable en **Production** en Vercel y vuelve a desplegar. Con una cuenta de UniGo, abre **Perfil → Ayuda de UniGo → Abrir WhatsApp**. Comprueba que el chat sea el del equipo y que se vea el plazo de revisión. Puedes verificar el destino del enlace sin enviar un mensaje. Consulta también **Ayuda con este viaje** desde un viaje activo.
+
 ## Decisiones que se concretarán en sus sprints
 
 - Sprint 2: la simulación exige activación expresa; Wompi incompleto informa indisponibilidad. La búsqueda de direcciones se conserva como mejora opcional que requiere elegir servicio.
