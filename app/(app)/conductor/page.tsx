@@ -67,7 +67,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
           ]}
         />
       )}
-      <header className="flex items-center justify-between gap-3 pb-2">
+      <header className="flex flex-wrap items-center justify-between gap-3 pb-2">
         <h1 className="sr-only">Inicio del conductor, {perfil.nombre.split(" ")[0]}</h1>
         <BotonCambiarModo modoActual="conductor" />
         <PastillaSaldo personaId={usuario.id} />

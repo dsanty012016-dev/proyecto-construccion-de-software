@@ -20,9 +20,9 @@ import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 export const metadata: Metadata = { title: "Inicio" };
 
 const BOTON_PRINCIPAL =
-  "flex h-14 w-full items-center justify-center rounded-xl bg-primario prensa font-titulo text-base font-semibold text-sobre-primario transition-colors hover:bg-primario/85";
+  "flex min-h-14 w-full items-center justify-center rounded-xl bg-primario px-4 py-3 text-center prensa font-titulo text-base font-semibold text-sobre-primario transition-colors hover:bg-primario/85";
 const BOTON_BORDE =
-  "flex h-14 w-full items-center justify-center rounded-xl border border-texto-suave/40 font-titulo text-base font-semibold text-texto transition-colors hover:bg-superficie";
+  "flex min-h-14 w-full items-center justify-center rounded-xl border border-texto-suave/40 px-4 py-3 text-center font-titulo text-base font-semibold text-texto transition-colors hover:bg-superficie";
 
 // Inicio del estudiante (rediseño): el mapa arriba y, abajo, una sola cosa:
 // pedir un viaje (a la U o de vuelta a casa) o volver al que ya tiene en marcha.
@@ -53,7 +53,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
         ) : (
           <div className="h-full bg-superficie" />
         )}
-        <div className="absolute inset-x-4 top-4 z-10 flex items-center justify-between gap-3">
+        <div className="absolute inset-x-4 top-4 z-10 flex flex-wrap items-center justify-between gap-3">
           <BotonCambiarModo modoActual="estudiante" />
           <PastillaSaldo personaId={usuario.id} />
         </div>

@@ -24,10 +24,10 @@ export function InterruptorDisponible({
     <form action={accion} className="space-y-2">
       <input type="hidden" name="disponible" value={disponible ? "no" : "si"} />
       {/* Sobre el azul se conserva la paleta oscura (texto blanco) también en modo claro. */}
-      <div data-tema={disponible ? "oscuro" : undefined} className={`space-y-2.5 rounded-2xl p-[18px] text-texto ${disponible ? "bg-primario" : "bg-superficie"}`}>
-        <div className="flex min-h-11 items-center gap-4">
-          <div className="min-w-0 flex-1">
-            <p id="etiqueta-disponible" className="cartel text-[2rem]">
+      <div data-tema={disponible ? "oscuro" : undefined} className={`space-y-2.5 rounded-2xl p-[18px] text-texto ${disponible ? "zona-azul bg-primario" : "bg-superficie"}`}>
+        <div className="flex min-h-11 flex-wrap items-center gap-4">
+          <div className="min-w-0 flex-1 basis-[10em]">
+            <p id="etiqueta-disponible" className="cartel text-[2rem] [overflow-wrap:anywhere]">
               {disponible ? "Estás disponible" : "No estás disponible"}
             </p>
             <p className={`mt-1 text-sm ${disponible ? "text-texto" : "text-texto-suave"}`}>
@@ -46,12 +46,14 @@ export function InterruptorDisponible({
             aria-checked={disponible}
             aria-labelledby="etiqueta-disponible"
             disabled={pendiente || (!disponible && (!tieneVehiculo || !verificado))}
-            className={`relative h-8 w-14 shrink-0 rounded-full transition-colors disabled:opacity-60 ${disponible ? "bg-texto" : "bg-texto-suave/40"}`}
+            className="ml-auto flex min-h-11 w-14 shrink-0 items-center justify-center rounded-full disabled:opacity-60"
           >
             <span
               aria-hidden="true"
-              className={`absolute top-1 size-6 rounded-full transition-all motion-reduce:transition-none ${disponible ? "right-1 bg-primario" : "left-1 bg-texto"}`}
-            />
+              className={`relative block h-8 w-14 rounded-full transition-colors ${disponible ? "bg-texto" : "bg-texto-suave/40"}`}
+            >
+              <span className={`absolute top-1 size-6 rounded-full transition-[left,right,background-color] motion-reduce:transition-none ${disponible ? "right-1 bg-primario" : "left-1 bg-texto"}`} />
+            </span>
           </button>
         </div>
         {resumen && (

@@ -18,6 +18,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
 ## Avance
+- Mejoras de experiencia organizadas en seis sprints: alcance, criterios de cierre y decisiones en `docs/sprints-ui-ux.md`. Sprint 1: lectura y accesibilidad (rama `sprint-1-lectura-accesibilidad`).
 - Seguridad de pagos y retiros: confirmación privada con consulta a Wompi, incidencias, tope al acreditar, historial y errores visibles. Retiros manuales por Nequi desde $20.000, reserva de saldo, siete días y revisión de documentación por otro administrador (rama `seguridad-pagos-billetera`, migraciones 024–025). La implementación y las pruebas aisladas no activan el comercio; publicación y pendientes en `docs/pagos.md`.
 - Fase 20: pasarela de pagos. Recargas con Wompi (página de pago de Wompi, aviso firmado que revisa la base, pantalla de resultado), recarga mínima de $20.000 y recarga de prueba con interruptor. Sin llaves en Vercel todo sigue como antes. No se ha probado contra Wompi; pasos y pendientes en `docs/pagos.md` (rama `fase-20-pasarela`, migración 023).
 - Fase 19: pantallas del viaje con las piezas de la portada. Las ofertas del estudiante son un tiquete; la placa se dibuja como placa (`app/ui/comun/placa.tsx`); los pasos del viaje son una ruta con paradas; los bloques azules del conductor llevan título de cartel y el botón claro `prensa-papel` (rama `fase-19-viaje`).

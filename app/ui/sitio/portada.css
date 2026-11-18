@@ -47,9 +47,10 @@
 
   /* ---------- Barra ---------- */
   .barra { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--color-fondo) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--color-linea); }
-  .barra .marco { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; min-height: 4rem; }
+  .barra .marco { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; min-height: 4rem; padding-block: 0.5rem; }
+  .barra .marco > a { flex-shrink: 0; }
   .barra img { height: 2rem; width: auto; }
-  .barra nav { display: flex; align-items: center; gap: 0.25rem; }
+  .barra nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; max-width: 100%; }
   .barra .enlace { color: var(--color-texto); display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.85rem; font-weight: 600; text-decoration: none; }
   .barra .enlace:hover { text-decoration: underline; text-underline-offset: 0.3em; }
   .barra .boton { min-height: 2.75rem; padding: 0 1rem; font-size: 1rem; }

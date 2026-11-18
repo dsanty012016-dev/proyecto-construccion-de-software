@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Tu recarga" };
 // dirección (?id=...) no se usa ni se le cree.
 
 const BOTON =
-  "flex h-14 w-full items-center justify-center rounded-xl bg-primario prensa text-[17px] font-bold text-sobre-primario hover:bg-primario/85";
+  "flex min-h-14 w-full items-center justify-center rounded-xl bg-primario px-4 py-3 text-center prensa text-[17px] font-bold text-sobre-primario hover:bg-primario/85";
 const ENLACE = "flex min-h-11 w-full items-center justify-center rounded-xl font-semibold text-texto-suave hover:text-texto";
 
 export default async function PaginaRecarga({ params }: { params: Promise<{ referencia: string }> }) {
@@ -28,7 +28,7 @@ export default async function PaginaRecarga({ params }: { params: Promise<{ refe
   const monto = pesos(recarga.monto);
 
   return (
-    <main className="flex flex-col gap-6 px-5 pt-10">
+    <main className="flex min-w-0 flex-col gap-6 px-5 pt-10 [overflow-wrap:anywhere]">
       {recarga.requiere_revision ? <header role="status" className="space-y-3">
         <h1 className="cartel text-[2.75rem]">Estamos revisando tu recarga.</h1>
         <p className="text-texto-suave">La operación de {monto} requiere revisión del equipo. Conserva esta referencia para consultar lo ocurrido; no hagas otro pago por esta misma operación.</p>
