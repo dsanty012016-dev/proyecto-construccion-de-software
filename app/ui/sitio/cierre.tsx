@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PORCENTAJE_COMISION } from "@/app/lib/comision";
+import { DIAS_REVISION_DOCUMENTOS } from "@/app/lib/preparacion-conductor";
 import { DOMINIO_INSTITUCIONAL } from "@/app/lib/validaciones-auth";
-import { Foto } from "./foto";
 
 // El final de la portada: la invitación a conducir (bloque azul), quiénes
 // hacemos UniGo y la despedida con los botones para entrar.
@@ -16,14 +16,17 @@ export function Conducir() {
             ¿Ya vas para la U en carro o moto?
           </h2>
           <p className="entradilla">
-            Lleva a un compañero y pon tu propio precio. Registras tu vehículo, subes tus documentos y, cuando el equipo los apruebe, te pones
-            disponible o publicas tu hora de salida. De cada viaje recibes el {100 - PORCENTAJE_COMISION} %.
+            Lleva a un compañero de la U y pon tu propio precio. Recibes el {100 - PORCENTAJE_COMISION} % del valor del viaje.
           </p>
           <Link href="/registro" className="boton boton-papel">
             Quiero conducir
           </Link>
         </div>
-        <Foto alt="Motos y carros en una vía de Villavicencio" falta="motos y carros en una vía de Villavicencio" />
+        <ol className="preparacion-portada" aria-label="Cómo empezar a conducir">
+          <li><strong>Registra tu vehículo</strong><span>Agrega los datos de tu carro o moto.</span></li>
+          <li><strong>Envía tus documentos</strong><span>El equipo revisa tu cédula, licencia y tarjeta de propiedad en un plazo de {DIAS_REVISION_DOCUMENTOS} días desde cada envío.</span></li>
+          <li><strong>Empieza a conducir</strong><span>Cuando aprueben tus documentos, ponte disponible o publica tu hora de salida.</span></li>
+        </ol>
       </div>
     </section>
   );
@@ -38,7 +41,6 @@ export function Equipo() {
   return (
     <section className="tramo" aria-labelledby="titulo-equipo">
       <div className="marco equipo">
-        <Foto alt="La Universidad Santo Tomás en Villavicencio" falta="la Santo Tomás de Villavicencio o sus alrededores" />
         <div className="equipo-texto">
           <h2 id="titulo-equipo" className="cartel">
             De estudiantes para estudiantes.
@@ -47,15 +49,15 @@ export function Equipo() {
             UniGo es un proyecto académico de dos estudiantes de la Universidad Santo Tomás, seccional Villavicencio, que también necesitan llegar a
             clase.
           </p>
-          <ul className="firmas">
-            {EQUIPO.map((persona) => (
-              <li key={persona.nombre}>
-                <b>{persona.nombre}</b>
-                <span>{persona.rol}</span>
-              </li>
-            ))}
-          </ul>
         </div>
+        <ul className="firmas" aria-label="Equipo de UniGo">
+          {EQUIPO.map((persona) => (
+            <li key={persona.nombre}>
+              <b>{persona.nombre}</b>
+              <span>{persona.rol}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

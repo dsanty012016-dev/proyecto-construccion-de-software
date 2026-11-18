@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Cierre, Conducir, Equipo } from "@/app/ui/sitio/cierre";
 import { Cuentas } from "@/app/ui/sitio/cuentas";
-import { FranjaCiudad, Paradas } from "@/app/ui/sitio/paradas";
+import { Paradas } from "@/app/ui/sitio/paradas";
 import { Portada } from "@/app/ui/sitio/portada";
 import { Salidas } from "@/app/ui/sitio/salidas";
 
@@ -20,7 +20,6 @@ export default function PaginaInicio() {
     <>
       <Portada />
       <Paradas />
-      <FranjaCiudad />
       <Salidas />
       <Cuentas />
       <Conducir />

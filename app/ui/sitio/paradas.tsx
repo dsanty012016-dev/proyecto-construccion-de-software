@@ -1,8 +1,4 @@
-import { Foto } from "./foto";
-
-// "Cómo funciona", contado como la mañana de Laura (la del mensaje de la
-// portada): cuatro paradas con su hora, sobre una línea de ruta. Después, la
-// franja de foto de la ciudad con el lema.
+// "Cómo funciona", contado como la mañana de Laura en cuatro paradas.
 
 const PARADAS = [
   { hora: "6:41", titulo: "Pide su viaje", texto: "Marca en el mapa dónde la recogen. No le escribe a nadie." },
@@ -24,7 +20,7 @@ export function Paradas() {
             De Barzal a clase de siete, en cuatro paradas.
           </h2>
           <p className="entradilla">
-            Así le fue a Laura, la del mensaje. Es un ejemplo, pero funciona igual desde tu barrio, y también de la U de vuelta a casa.
+            Este ejemplo sigue el viaje de Laura desde su barrio. También puedes pedir un viaje de la U a tu casa.
           </p>
         </div>
         <ol className="paradas">
@@ -38,17 +34,5 @@ export function Paradas() {
         </ol>
       </div>
     </section>
-  );
-}
-
-export function FranjaCiudad() {
-  return (
-    <Foto className="franja-foto" alt="Una calle de Villavicencio al amanecer" falta="una calle de Villavicencio al amanecer, a todo el ancho">
-      <div className="lema">
-        <div className="marco">
-          <p className="cartel">Aquí todos vamos pa’l mismo lado.</p>
-        </div>
-      </div>
-    </Foto>
   );
 }

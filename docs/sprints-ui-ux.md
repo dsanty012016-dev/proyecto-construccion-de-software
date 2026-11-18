@@ -78,6 +78,11 @@ Para activar o actualizar el canal, guarda la variable en **Production** en Verc
 
 La migración [027](../supabase/migraciones/027-historial-administracion.sql) debe aplicarse después de aprobar las pruebas de base y antes de desplegar la aplicación.
 
+## Sprint 6
+
+- U24: la portada retira los marcos pendientes. Los pasos para conducir y los créditos del equipo aprovechan ese espacio. Las ofertas, salidas y el recibo se identifican como ejemplos.
+- U25: [prototipo local](prototipos/uso-frecuente.html) que compara pedir desde cero, usar un lugar frecuente y repetir un trayecto. Las opciones llevan a revisar el recorrido y elegir una oferta nueva, con datos ficticios. La [prueba con estudiantes](prototipos/validar-uso-frecuente.md) queda pendiente antes de integrar los atajos en la app.
+
 ## Decisiones que se concretarán en sus sprints
 
 - Sprint 2: la simulación exige activación expresa; Wompi incompleto informa indisponibilidad. La búsqueda de direcciones se conserva como mejora opcional que requiere elegir servicio.

@@ -43,7 +43,7 @@ export function Cuentas() {
           </div>
           {/* El recibo va siempre en papel blanco. */}
           <div className="recibo" data-tema="claro">
-            <h3>Recibo de viaje</h3>
+            <h3>Recibo de ejemplo</h3>
             <p className="tramo-viaje">De Barzal a la U, con Andrés R.</p>
             <dl>
               <div className="renglon">
