@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { guardarNuevaClave, recuperarClave } from "@/app/lib/acciones-auth";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { LARGO_MINIMO_CLAVE } from "@/app/lib/validaciones-auth";
-import { Aviso, BotonEnviar, Campo, CampoClave } from "./campos";
+import { Aviso, BotonEnviar, Campo, CampoClave, ResumenErrores } from "./campos";
 import { IconoCorreo } from "./iconos-auth";
 
 // Formularios para recuperar la contraseña: pedir el enlace y, al volver del
@@ -19,7 +19,7 @@ export function FormularioRecuperar() {
 
   return (
     <form action={accion} noValidate className="space-y-4">
-      {estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
+      <ResumenErrores estado={estado} />
       <Campo
         etiqueta="Correo institucional"
         name="correo"
@@ -43,7 +43,7 @@ export function FormularioNuevaClave() {
 
   return (
     <form action={accion} noValidate className="space-y-4">
-      {estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
+      <ResumenErrores estado={estado} />
       <CampoClave
         etiqueta="Contraseña nueva"
         name="clave"

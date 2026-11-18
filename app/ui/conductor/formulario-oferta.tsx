@@ -37,15 +37,7 @@ export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; p
         <label id={`${idPrecio}-titulo`} htmlFor={idPrecio} className="block text-center text-sm font-semibold text-texto-suave">
           Tu precio
         </label>
-        <div className="flex items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={() => mover(-PASO)}
-            aria-label={`Bajar ${pesos(PASO)}`}
-            className="flex size-14 shrink-0 items-center justify-center rounded-full border border-texto-suave/30 text-texto hover:bg-fondo"
-          >
-            <IconoMenos className="size-[22px]" />
-          </button>
+        <div className="space-y-3">
           <input
             id={idPrecio}
             name="precio"
@@ -57,25 +49,39 @@ export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; p
             onChange={(e) => setPrecio(e.target.value.replace(/\D/g, "").slice(0, 6))}
             aria-invalid={estado.errores?.precio ? true : undefined}
             aria-describedby={`${idPrecio}-ayuda`}
-            className="h-14 min-w-0 flex-1 bg-transparent text-center cifra text-[3rem] text-texto outline-none placeholder:text-texto-suave"
+            className="min-h-14 w-full min-w-0 rounded-xl bg-transparent py-2 text-center cifra text-[clamp(1.5rem,12vw,3rem)] text-texto placeholder:text-texto-suave"
           />
-          <button
-            type="button"
-            onClick={() => mover(PASO)}
-            aria-label={`Subir ${pesos(PASO)}`}
-            className="flex size-14 shrink-0 items-center justify-center rounded-full border border-texto-suave/30 text-texto hover:bg-fondo"
-          >
-            <IconoMas className="size-[22px]" />
-          </button>
+          <div className="flex justify-center gap-6">
+            <button
+              type="button"
+              onClick={() => mover(-PASO)}
+              aria-label={`Bajar ${pesos(PASO)}`}
+              className="flex size-14 shrink-0 items-center justify-center rounded-full border border-texto-suave/30 text-texto hover:bg-fondo"
+            >
+              <IconoMenos className="size-[22px]" />
+            </button>
+            <button
+              type="button"
+              onClick={() => mover(PASO)}
+              aria-label={`Subir ${pesos(PASO)}`}
+              className="flex size-14 shrink-0 items-center justify-center rounded-full border border-texto-suave/30 text-texto hover:bg-fondo"
+            >
+              <IconoMas className="size-[22px]" />
+            </button>
+          </div>
         </div>
         <p id={`${idPrecio}-ayuda`} className={`text-center text-[13px] ${estado.errores?.precio ? "text-error" : "text-texto-suave"}`}>
           {estado.errores?.precio ?? `Entre ${pesos(PRECIO_MINIMO)} y ${pesos(PRECIO_MAXIMO)}, en pesos.`}
         </p>
-        <dl className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-y-2 border-t border-dashed border-texto-suave/40 pt-3.5 text-sm tabular-nums" aria-live="polite">
-          <dt className="text-texto-suave">Comisión UniGo ({PORCENTAJE_COMISION} %)</dt>
-          <dd className="text-right text-texto-suave">{valido ? `−${pesos(comision(numero))}` : "—"}</dd>
-          <dt className="font-bold">Recibes al terminar</dt>
-          <dd className={`text-right text-secundario ${valido ? "cifra text-2xl" : "font-bold"}`}>{valido ? pesos(gananciaConductor(numero)) : "—"}</dd>
+        <dl className="space-y-2 border-t border-dashed border-texto-suave/40 pt-3.5 text-sm tabular-nums" aria-live="polite">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <dt className="min-w-0 flex-1 basis-40 text-texto-suave">Comisión UniGo ({PORCENTAJE_COMISION} %)</dt>
+            <dd className="text-texto-suave">{valido ? `−${pesos(comision(numero))}` : "—"}</dd>
+          </div>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <dt className="min-w-0 flex-1 basis-40 font-bold">Recibes al terminar</dt>
+            <dd className={`text-secundario ${valido ? "cifra text-2xl" : "font-bold"}`}>{valido ? pesos(gananciaConductor(numero)) : "—"}</dd>
+          </div>
         </dl>
       </section>
 

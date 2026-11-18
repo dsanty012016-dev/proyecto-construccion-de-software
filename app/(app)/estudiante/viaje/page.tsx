@@ -166,7 +166,7 @@ export default async function PaginaViajeEstudiante() {
             )}
           </div>
           {vehiculo && (
-            <div className="flex items-center justify-between gap-3 border-t border-dashed border-texto-suave/40 pt-3.5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-texto-suave/40 pt-3.5">
               <span className="text-[13px] leading-snug text-texto-suave">
                 Busca
                 <br />

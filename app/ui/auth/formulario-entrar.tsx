@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { entrar } from "@/app/lib/acciones-auth";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
-import { Aviso, BotonEnviar, Campo, CampoClave } from "./campos";
+import { BotonEnviar, Campo, CampoClave, ResumenErrores } from "./campos";
 import { IconoCandado, IconoCorreo } from "./iconos-auth";
 
 // Formulario de "Iniciar sesión" (mockup Login).
@@ -15,7 +15,7 @@ export function FormularioEntrar({ siguiente }: { siguiente?: string }) {
   return (
     <form action={accion} noValidate className="space-y-4">
       {siguiente && <input type="hidden" name="siguiente" value={siguiente} />}
-      {estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
+      <ResumenErrores estado={estado} />
 
       <Campo
         etiqueta="Correo institucional"

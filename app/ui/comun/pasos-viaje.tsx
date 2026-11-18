@@ -13,18 +13,18 @@ export function PasosViaje({ estado, regreso }: { estado: (typeof PASOS)[number]
   return (
     <div>
       <p className="sr-only">Estado del viaje: {etiquetaEstado(estado)}</p>
-      <ol aria-hidden="true" className="relative grid grid-cols-3">
+      <ol aria-hidden="true" className="relative grid grid-cols-3 gap-x-2">
         <li className="absolute inset-x-1.5 top-[7px] h-0.5 bg-texto-suave/25">
           <span className={`block h-full bg-secundario ${AVANCE[actual]}`} />
         </li>
         {textos.map((texto, i) => (
-          <li key={texto} className={`relative flex flex-col gap-1.5 ${LADO[i]}`}>
+          <li key={texto} className={`relative flex min-w-0 flex-col gap-1.5 ${LADO[i]}`}>
             <span
               className={`block size-4 rounded-full ${
                 i < actual ? "bg-secundario" : i === actual ? "border-[3px] border-primario bg-fondo" : "border-2 border-texto-suave/40 bg-fondo"
               }`}
             />
-            <span className={`text-xs ${i === actual ? "font-bold text-texto" : "text-texto-suave"}`}>{texto}</span>
+            <span className={`max-w-full text-xs [overflow-wrap:anywhere] ${i === actual ? "font-bold text-texto" : "text-texto-suave"}`}>{texto}</span>
           </li>
         ))}
       </ol>

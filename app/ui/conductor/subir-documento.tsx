@@ -120,9 +120,9 @@ export function SubirDocumento({ tipo, conductorId, estado, motivo }: Props) {
           <button
             type="submit"
             disabled={ocupado}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primario prensa font-titulo font-semibold text-sobre-primario transition-colors hover:bg-primario/85 disabled:opacity-70"
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primario px-4 py-3 text-center prensa font-titulo font-semibold break-words text-sobre-primario transition-colors hover:bg-primario/85 disabled:opacity-70"
           >
-            <IconoSubir className="size-[18px]" />
+            <IconoSubir className="size-[18px] shrink-0" />
             {subiendo ? "Subiendo…" : enviando ? "Enviando…" : "Enviar documento"}
           </button>
         </form>

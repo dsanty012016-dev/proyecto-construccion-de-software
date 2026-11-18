@@ -1,7 +1,8 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
+import type { EstadoFormulario } from "@/app/lib/estado-formulario";
 import { IconoOjo, IconoOjoTachado } from "./iconos-auth";
 
 // Piezas de los formularios de acceso: campo con etiqueta y error, campo de
@@ -10,7 +11,32 @@ import { IconoOjo, IconoOjoTachado } from "./iconos-auth";
 // vea contra el fondo con el contraste que pide WCAG (3:1).
 
 const estiloEntrada =
-  "h-13 w-full rounded-xl border-2 bg-superficie text-texto placeholder:text-texto-suave outline-none transition-colors focus:border-secundario aria-[invalid=true]:border-error";
+  "h-13 w-full rounded-xl border-2 bg-superficie text-texto placeholder:text-texto-suave transition-colors focus:border-secundario aria-[invalid=true]:border-error";
+
+// Anuncia el resultado sin obligar a recorrer de nuevo todo el formulario.
+// Se espera al siguiente cuadro para enfocar después del reinicio de React.
+export function ResumenErrores({ estado }: { estado: EstadoFormulario }) {
+  const resumen = useRef<HTMLDivElement>(null);
+  const cantidad = Object.values(estado.errores ?? {}).filter(Boolean).length;
+  const hayError = estado.resultado === "error" && (!!estado.mensaje || cantidad > 0);
+
+  useEffect(() => {
+    if (!hayError) return;
+    const cuadro = requestAnimationFrame(() => {
+      const formulario = resumen.current?.closest("form");
+      const campo = formulario?.querySelector<HTMLElement>('input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"]');
+      (campo ?? resumen.current)?.focus();
+    });
+    return () => cancelAnimationFrame(cuadro);
+  }, [estado, hayError]);
+
+  if (!hayError) return null;
+  return (
+    <div ref={resumen} role="alert" aria-atomic="true" tabIndex={-1} className="rounded-xl border border-error/40 bg-error/10 px-4 py-3 text-sm leading-relaxed text-error">
+      {estado.mensaje ?? `Revisa ${cantidad === 1 ? "el campo marcado" : "los campos marcados"} para continuar.`}
+    </div>
+  );
+}
 
 interface PropsCampo extends React.InputHTMLAttributes<HTMLInputElement> {
   etiqueta: string;
@@ -108,7 +134,7 @@ export function BotonEnviar({ children, enviando, deshabilitado }: { children: R
     <button
       type="submit"
       disabled={pending || deshabilitado}
-      className="flex h-14 w-full items-center justify-center rounded-xl bg-primario prensa text-[17px] font-bold text-sobre-primario transition-colors hover:bg-primario/85 disabled:opacity-70"
+      className="flex min-h-14 w-full min-w-0 items-center justify-center rounded-xl bg-primario px-4 py-3 text-center prensa text-[17px] font-bold break-words text-sobre-primario transition-colors hover:bg-primario/85 disabled:opacity-70"
     >
       {pending ? enviando : children}
     </button>

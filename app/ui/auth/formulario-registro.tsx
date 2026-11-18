@@ -4,7 +4,7 @@ import { useActionState, useId } from "react";
 import { registrarse } from "@/app/lib/acciones-auth";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { LARGO_MINIMO_CLAVE } from "@/app/lib/validaciones-auth";
-import { Aviso, BotonEnviar, Campo, CampoClave } from "./campos";
+import { Aviso, BotonEnviar, Campo, CampoClave, ResumenErrores } from "./campos";
 
 // Formulario de "Crear cuenta" (mockup Registro). Al terminar muestra que
 // llegó un correo para activar la cuenta.
@@ -29,7 +29,7 @@ export function FormularioRegistro() {
 
   return (
     <form action={accion} noValidate className="space-y-4">
-      {estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
+      <ResumenErrores estado={estado} />
 
       <Campo
         etiqueta="Nombre completo"
@@ -74,7 +74,7 @@ export function FormularioRegistro() {
           defaultValue={v.rol ?? ""}
           aria-invalid={e.rol ? true : undefined}
           aria-describedby={e.rol ? `${idRol}-error` : undefined}
-          className={`h-13 w-full rounded-xl border-2 bg-superficie px-4 text-texto outline-none focus:border-secundario ${e.rol ? "border-error" : "border-texto-suave/60"}`}
+          className={`h-13 w-full rounded-xl border-2 bg-superficie px-4 text-texto focus:border-secundario ${e.rol ? "border-error" : "border-texto-suave/60"}`}
           required
         >
           <option value="" disabled>

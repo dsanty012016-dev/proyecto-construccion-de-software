@@ -8,7 +8,7 @@ import { IconoAtras } from "./iconos-auth";
 export function EncabezadoLogo({ titulo, subtitulo }: { titulo: string; subtitulo: string }) {
   return (
     <header className="mb-8">
-      <h1 className="cartel text-[3.25rem]">{titulo}</h1>
+      <h1 className="cartel text-[3.25rem] [overflow-wrap:anywhere]">{titulo}</h1>
       <p className="mt-3 text-lg leading-snug text-texto-suave">{subtitulo}</p>
     </header>
   );
@@ -32,7 +32,7 @@ export function EncabezadoVolver({
         <IconoAtras className="size-5" />
         Volver
       </Link>
-      <h1 className="mt-3 cartel text-[3.25rem]">{titulo}</h1>
+      <h1 className="mt-3 cartel text-[3.25rem] [overflow-wrap:anywhere]">{titulo}</h1>
       <p className="mt-3 text-lg leading-snug text-texto-suave">{subtitulo}</p>
     </header>
   );
