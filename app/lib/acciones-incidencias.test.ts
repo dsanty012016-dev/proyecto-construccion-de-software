@@ -11,6 +11,7 @@ function datos(confirmada: boolean) {
   const form = new FormData();
   form.set("incidencia", id);
   form.set("nota", "  Comparación documentada.  ");
+  form.set("resultado", "sin_ajuste");
   if (confirmada) form.set("verificada", "on");
   return form;
 }
@@ -33,8 +34,8 @@ describe("cerrar una incidencia", () => {
   it("envía únicamente lo necesario para guardar el cierre administrativo", async () => {
     await expect(cerrarIncidencia(ESTADO_INICIAL, datos(true))).resolves.toMatchObject({ resultado: "listo" });
     expect(dobles.rpc).toHaveBeenCalledOnce();
-    expect(dobles.rpc).toHaveBeenCalledWith("cerrar_incidencia_pago", {
-      p_incidencia: id, p_verificada: true, p_nota: "Comparación documentada.",
+    expect(dobles.rpc).toHaveBeenCalledWith("resolver_incidencia_pago", {
+      p_incidencia: id, p_verificada: true, p_nota: "Comparación documentada.", p_resultado: "sin_ajuste",
     });
     expect(dobles.revalidatePath).toHaveBeenCalledWith("/admin");
   });

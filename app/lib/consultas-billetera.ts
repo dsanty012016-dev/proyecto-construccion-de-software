@@ -25,6 +25,7 @@ export async function recargasEnProceso(personaId: string): Promise<FilaRecarga[
     .select("*")
     .eq("persona_id", personaId)
     .eq("estado", "pendiente")
+    .is("revision_resuelta_en", null)
     .order("creada_en", { ascending: false })
     .limit(5);
   if (error) throw new Error("No pudimos consultar tus recargas. Intenta de nuevo.");

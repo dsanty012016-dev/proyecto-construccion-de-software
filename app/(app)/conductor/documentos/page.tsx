@@ -7,7 +7,7 @@ import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { SubirDocumento } from "@/app/ui/conductor/subir-documento";
 import Link from "next/link";
 import { vehiculoDe } from "@/app/lib/consultas-viaje";
-import { preparacionConductor, revisionDocumento } from "@/app/lib/preparacion-conductor";
+import { diasParaVencerLicencia, preparacionConductor, revisionDocumento } from "@/app/lib/preparacion-conductor";
 import { ActualizarEstado } from "@/app/ui/comun/actualizar-estado";
 
 export const metadata: Metadata = { title: "Mis documentos" };
@@ -19,8 +19,7 @@ export default async function PaginaDocumentos() {
   const { usuario } = await exigirRol("conductor");
   const [documentos, vehiculo] = await Promise.all([misDocumentos(usuario.id), vehiculoDe(usuario.id)]);
   const ahora = horaDeRevisionDocumentos();
-  const { enviados } = preparacionConductor(!!vehiculo, documentos, false);
-  const aprobados = TIPOS_DOCUMENTO.filter((t) => documentos[t]?.estado === "aprobado").length;
+  const { enviados, aprobados } = preparacionConductor(!!vehiculo, documentos, false, ahora);
 
   return (
     <main className="space-y-6 px-5 pt-4">
@@ -54,6 +53,7 @@ export default async function PaginaDocumentos() {
             motivo={documentos[tipo]?.motivo}
             enviadoEn={documentos[tipo]?.enviado_en}
             revision={documentos[tipo] ? revisionDocumento(documentos[tipo]!, ahora) : undefined}
+            diasVigencia={diasParaVencerLicencia(documentos[tipo]?.vence_el, ahora)}
           />
         ))}
       </div>

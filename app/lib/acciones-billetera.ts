@@ -9,7 +9,7 @@ import { modoDeRecarga, origenDelSitio, pasarela } from "./pasarela";
 import { destinoDeRecarga } from "./retorno-recarga";
 import { crearClienteServidor } from "./supabase/server";
 import { datosDelFormulario } from "./validaciones-auth";
-import { urlDeCheckout } from "./wompi";
+import { ambienteDelEvento, urlDeCheckout } from "./wompi";
 
 /** Lee el monto del formulario; devuelve el error para mostrar si no sirve. */
 function leerMonto(datos: Record<string, string>): { monto: number } | { error: EstadoFormulario } {
@@ -60,7 +60,10 @@ export async function iniciarRecarga(_anterior: EstadoFormulario, formulario: Fo
     return { resultado: "error", mensaje: "Los pagos no están disponibles en este momento. Intenta más tarde.", valores: datos };
   }
   const supabase = await crearClienteServidor();
-  const { data: referencia, error } = await supabase.rpc("iniciar_recarga", { p_monto: leido.monto });
+  const { data: referencia, error } = await supabase.rpc("iniciar_recarga_wompi", {
+    p_monto: leido.monto,
+    p_ambiente: ambienteDelEvento(configurada.ambiente),
+  });
   if (error || !referencia) {
     return {
       resultado: "error",

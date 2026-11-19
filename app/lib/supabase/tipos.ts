@@ -65,6 +65,7 @@ export type Database = {
           solicitado_en: string; plazo_hasta: string; resuelto_en: string | null;
           revisado_por: string | null; documentos_revisados_en: string | null;
           referencia_pago: string | null; motivo: string | null;
+          asignado_a: string | null; asignado_en: string | null;
         };
         Insert: { conductor_id: string; monto: number; nequi: string; simulado: boolean };
         Update: Partial<Database["public"]["Tables"]["retiros"]["Insert"]>;
@@ -72,6 +73,7 @@ export type Database = {
       };
       recargas: {
         Row: {
+          ambiente: "test" | "prod" | null;
           creada_en: string;
           estado: Database["public"]["Enums"]["estado_recarga"];
           id: string;
@@ -80,6 +82,9 @@ export type Database = {
           persona_id: string;
           resuelta_en: string | null;
           requiere_revision: boolean;
+          revision_resultado: "sin_ajuste" | "devolucion_externa" | null;
+          revision_monto: number | null;
+          revision_resuelta_en: string | null;
           transaccion: string | null;
         };
         Insert: { persona_id: string; monto: number };
@@ -94,6 +99,7 @@ export type Database = {
           monto: number;
           persona_id: string;
           puesto_id: string | null;
+          recarga_id: string | null;
           saldo_despues: number;
           tipo: TipoMovimiento;
           viaje_id: string | null;
@@ -231,6 +237,7 @@ export type Database = {
           revisado_por: string | null;
           ruta: string;
           tipo: TipoDocumento;
+          vence_el: string | null;
         };
         Insert: {
           autorizado_en: string;
@@ -425,6 +432,7 @@ export type Database = {
       opciones_de_retiro: { Args: Record<string, never>; Returns: { disponible: number; simulado: boolean; documentacion_lista: boolean }[] };
       solicitar_retiro: { Args: { p_monto: number; p_nequi: string }; Returns: string };
       revisar_retiro: { Args: { p_retiro: string; p_pagado: boolean; p_documentacion_verificada: boolean; p_referencia?: string; p_motivo?: string }; Returns: undefined };
+      tomar_retiro: { Args: { p_retiro: string }; Returns: undefined };
       incidencias_de_pago: { Args: Record<string, never>; Returns: { id: string; recarga_id: string | null; transaccion: string; motivo: string; detectado_en: string }[] };
       historial_viajes_pagina: {
         Args: { p_tipo: string; p_estado: string; p_pendientes: boolean; p_pagina: number };
@@ -440,6 +448,19 @@ export type Database = {
         }[];
       };
       cerrar_incidencia_pago: { Args: { p_incidencia: string; p_verificada: boolean; p_nota: string }; Returns: undefined };
+      resolver_incidencia_pago: {
+        Args: { p_incidencia: string; p_verificada: boolean; p_nota: string; p_resultado: string; p_monto?: number; p_comprobante?: string };
+        Returns: undefined;
+      };
+      incidencias_conciliacion: {
+        Args: { p_resueltas: boolean; p_pagina: number };
+        Returns: {
+          id: string; recarga_id: string | null; transaccion: string; motivo: string; detectado_en: string;
+          resuelta_en: string | null; revisada_por: string | null; responsable: string | null; nota_revision: string | null;
+          monto: number | null; estado_recarga: string | null; transaccion_recarga: string | null; total: number;
+          resultado: string | null; monto_devuelto: number | null; comprobante: string | null; movimiento_id: string | null;
+        }[];
+      };
       cambiar_modo: { Args: { p_modo: Rol }; Returns: undefined };
       cancelar_cupo: { Args: { p_cupo: string }; Returns: undefined };
       cancelar_viaje: { Args: { p_viaje: string; p_justificacion?: string }; Returns: undefined };
@@ -447,6 +468,13 @@ export type Database = {
       pagar_puesto: { Args: { p_cupo: string }; Returns: undefined };
       recargar: { Args: { p_monto: number }; Returns: number };
       iniciar_recarga: { Args: { p_monto: number }; Returns: string };
+      checkout_wompi_disponible: { Args: { p_ambiente: "test" | "prod" }; Returns: boolean };
+      resumen_operativo: { Args: Record<string, never>; Returns: {
+        recargas_pendientes: number; retiros_por_vencer: number; retiros_vencidos: number;
+        avisos_atrasados: number; archivos_por_limpiar: number; licencias_sin_vigencia: number;
+        checkout_pruebas: boolean; checkout_real: boolean;
+      }[] };
+      iniciar_recarga_wompi: { Args: { p_monto: number; p_ambiente: "test" | "prod" }; Returns: string };
       pedir_puesto: {
         Args: { p_cupo: string; p_recogida_lat: number; p_recogida_lng: number; p_recogida_texto: string };
         Returns: string;
@@ -470,6 +498,7 @@ export type Database = {
       responder_puesto: { Args: { p_puesto: string; p_aprobar: boolean }; Returns: undefined };
       retirar_puesto: { Args: { p_cupo: string }; Returns: undefined };
       revisar_documento: { Args: { p_documento: string; p_aprobar: boolean; p_motivo?: string }; Returns: undefined };
+      revisar_documento_con_vigencia: { Args: { p_documento: string; p_aprobar: boolean; p_motivo?: string; p_vence_el?: string }; Returns: undefined };
       terminar_cupo: { Args: { p_cupo: string }; Returns: undefined };
       elegir_rol: { Args: { p_rol: Rol }; Returns: undefined };
       enviar_documento: { Args: { p_tipo: TipoDocumento; p_ruta: string; p_autorizo: boolean }; Returns: undefined };

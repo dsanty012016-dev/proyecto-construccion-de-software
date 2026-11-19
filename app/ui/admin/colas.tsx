@@ -6,11 +6,11 @@ import { revisionDocumento } from "@/app/lib/preparacion-conductor";
 import { cedulasParaRevisarRetiros, horaDeRevision, retirosPorRevisar } from "@/app/lib/consultas-retiros";
 import { FormularioRevisar } from "@/app/ui/admin/formulario-revisar";
 import { Aviso } from "@/app/ui/auth/campos";
-import { FormularioRevisarRetiro } from "@/app/ui/admin/formulario-retiro";
+import { FormularioRevisarRetiro, FormularioTomarRetiro } from "@/app/ui/admin/formulario-retiro";
 
 export async function RetirosPendientes({ persona, pagina }: { persona: string; pagina: number }) {
   const retiros = await retirosPorRevisar(pagina);
-  const cedulas = await cedulasParaRevisarRetiros(retiros.filter((r) => r.conductor_id !== persona).map((r) => r.conductor_id));
+  const cedulas = await cedulasParaRevisarRetiros(retiros.filter((r) => r.asignado_a === persona).map((r) => r.conductor_id));
   const ahora = horaDeRevision();
   return (
       <section aria-labelledby="titulo-retiros" className="space-y-4">
@@ -18,10 +18,15 @@ export async function RetirosPendientes({ persona, pagina }: { persona: string; 
         {!retiros.length && <p className="text-sm text-texto-suave">No hay retiros pendientes.</p>}
         {retiros.map((retiro) => <article key={retiro.id} className="space-y-3 border-b border-dashed border-texto-suave/40 pb-5">
           <h3 className="flex flex-wrap justify-between gap-2 font-bold"><span>{retiro.nombre}</span><span>{pesos(retiro.monto)}</span></h3>
-          <p className="text-sm">Nequi {retiro.nequi} · {retiro.simulado ? "Solicitud de prueba" : "Dinero real"}</p>
+          <p className="text-sm">{retiro.asignado_a === persona && `Nequi ${retiro.nequi} · `}{retiro.simulado ? "Solicitud de prueba" : "Dinero real"}</p>
           <p className="text-sm text-texto-suave">Solicitado: {fechaCorta(retiro.solicitado_en)}. Plazo máximo: {fechaCorta(retiro.plazo_hasta)}.</p>
           {Date.parse(retiro.plazo_hasta) < ahora && <p className="text-sm font-semibold text-error">El plazo de siete días ya se cumplió. Revisa esta solicitud con prioridad.</p>}
-          {retiro.conductor_id === persona ? <p className="text-sm">Otro administrador debe revisar tu solicitud.</p> : <>
+          {Date.parse(retiro.plazo_hasta) >= ahora && Date.parse(retiro.plazo_hasta) - ahora <= 24 * 60 * 60 * 1000
+            && <p className="text-sm font-semibold text-error">Vence en las próximas 24 horas.</p>}
+          {retiro.conductor_id === persona ? <p className="text-sm">Otro administrador debe revisar tu solicitud.</p>
+            : retiro.asignado_a === null ? <FormularioTomarRetiro retiroId={retiro.id} />
+            : retiro.asignado_a !== persona ? <p className="text-sm">En trámite por {retiro.responsable}.</p> : <>
+            <p className="text-sm font-semibold">En trámite por ti</p>
             {cedulas.get(retiro.conductor_id) ? <a href={cedulas.get(retiro.conductor_id)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center font-semibold">Abrir cédula del conductor (enlace de cinco minutos)</a> : <p className="text-sm text-error">La cédula no está disponible. Vuelve a cargar antes de registrar un pago.</p>}
             <FormularioRevisarRetiro retiroId={retiro.id} simulado={retiro.simulado} documentoDisponible={cedulas.has(retiro.conductor_id)} />
           </>}
@@ -76,7 +81,7 @@ export async function DocumentosPendientes({ persona, pagina }: { persona: strin
                   ) : (
                     <p className="text-sm text-error">No se encontró el archivo.</p>
                   )}
-                  <FormularioRevisar documentoId={doc.id} />
+                  <FormularioRevisar documentoId={doc.id} licencia={doc.tipo === "licencia"} />
                 </div>
                 );
               })}

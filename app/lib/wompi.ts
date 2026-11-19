@@ -15,6 +15,10 @@ const CHECKOUT = "https://checkout.wompi.co/p/";
 
 export type AmbienteWompi = "pruebas" | "real";
 
+export function ambienteDelEvento(ambiente: AmbienteWompi): "test" | "prod" {
+  return ambiente === "real" ? "prod" : "test";
+}
+
 /** Las llaves de Wompi dicen en su nombre si son de pruebas o de verdad. */
 export function ambienteWompi(llavePublica: string | undefined): AmbienteWompi | null {
   if (llavePublica?.startsWith("pub_test_")) return "pruebas";

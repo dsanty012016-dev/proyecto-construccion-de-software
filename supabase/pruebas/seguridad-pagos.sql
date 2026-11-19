@@ -72,6 +72,8 @@ select prueba.como(:'seg_a');
 select prueba.ok((select count(*)=0 from public.retiros),'otro estudiante no ve el Nequi ni los retiros del conductor');
 select prueba.falla($$insert into public.retiros(conductor_id,monto,nequi,simulado) values(auth.uid(),20000,'3001112233',true)$$,'permission denied','nadie crea un retiro saltándose la reserva');
 select prueba.como(:'seg_admin');
+select prueba.falla(format('select public.revisar_retiro(%L,true,true,%L)',:'seg_retiro_1','NEQUI-PRUEBA-1'),'Toma la solicitud','el pago requiere asignación previa');
+select public.tomar_retiro(:'seg_retiro_1');
 select prueba.falla(format('select public.revisar_retiro(%L,true,false,%L)',:'seg_retiro_1','NEQUI-PRUEBA-1'),'documentos','el admin confirma la revisión de cédula y titularidad');
 select public.revisar_retiro(:'seg_retiro_1',true,true,'NEQUI-PRUEBA-1');
 select public.revisar_retiro(:'seg_retiro_1',true,true,'NEQUI-PRUEBA-1');

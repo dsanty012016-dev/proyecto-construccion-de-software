@@ -32,7 +32,15 @@ export default async function PaginaRecarga({ params, searchParams }: { params: 
 
   return (
     <main className="flex min-w-0 flex-col gap-6 px-5 pt-10 [overflow-wrap:anywhere]">
-      {recarga.requiere_revision ? <header role="status" className="space-y-3">
+      {recarga.revision_resuelta_en ? <header role="status" className="space-y-3">
+        <h1 className="cartel text-[2.75rem]">Revisión completada.</h1>
+        <p className="text-texto-suave">
+          {recarga.revision_monto !== null
+            ? `El equipo registró una devolución de ${pesos(recarga.revision_monto)} por fuera de la billetera.`
+            : "El equipo revisó la operación y cerró el caso sin ajustar tu saldo."}
+        </p>
+        <Link href={billetera} className={ENLACE}>Volver a mi billetera</Link>
+      </header> : recarga.requiere_revision ? <header role="status" className="space-y-3">
         <h1 className="cartel text-[2.75rem]">Estamos revisando tu recarga.</h1>
         <p className="text-texto-suave">La operación de {monto} requiere revisión del equipo. Conserva esta referencia para consultar lo ocurrido; no hagas otro pago por esta misma operación.</p>
         <Link href="/billetera/recargas" className={ENLACE}>Ver mis recargas</Link>

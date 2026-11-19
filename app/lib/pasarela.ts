@@ -1,6 +1,7 @@
 import "server-only";
 import { headers } from "next/headers";
-import { ambienteWompi, secretoDelMismoAmbiente, type AmbienteWompi } from "./wompi";
+import { ambienteDelEvento, ambienteWompi, secretoDelMismoAmbiente, type AmbienteWompi } from "./wompi";
+import { crearClienteServidor } from "./supabase/server";
 
 // La pasarela de pagos (Wompi) vista desde el servidor: si está configurada y
 // con qué llaves. Las llaves se ponen como variables de entorno en Vercel
@@ -36,6 +37,16 @@ export function modoDeRecarga(): ModoDeRecarga {
   // Una configuración incompleta nunca se sustituye por dinero ficticio.
   if (process.env.WOMPI_LLAVE_PUBLICA || process.env.WOMPI_SECRETO_INTEGRIDAD) return "no-disponible";
   return process.env.UNIGO_RECARGA_SIMULADA === "true" ? "prueba" : "no-disponible";
+}
+
+export async function modoDeRecargaDisponible(): Promise<ModoDeRecarga> {
+  const modo = modoDeRecarga();
+  if (modo !== "wompi" && modo !== "wompi-pruebas") return modo;
+  const supabase = await crearClienteServidor();
+  const { data, error } = await supabase.rpc("checkout_wompi_disponible", {
+    p_ambiente: ambienteDelEvento(modo === "wompi" ? "real" : "pruebas"),
+  });
+  return !error && data === true ? modo : "no-disponible";
 }
 
 /**

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { miBilletera, recargasEnProceso, type FilaMovimiento } from "@/app/lib/consultas-billetera";
 import { cuposDeMovimientos } from "@/app/lib/consultas-comprobantes";
 import { diaRelativo, horaCorta, pesos } from "@/app/lib/formato";
-import { modoDeRecarga } from "@/app/lib/pasarela";
+import { modoDeRecargaDisponible } from "@/app/lib/pasarela";
 import { perfilActual } from "@/app/lib/sesion";
 import { EstadoCuenta } from "@/app/ui/comun/estado-cuenta";
 import { FormularioRecarga } from "@/app/ui/comun/formulario-recarga";
@@ -17,10 +17,10 @@ export const metadata: Metadata = { title: "Billetera" };
 export default async function PaginaBilletera({ searchParams }: { searchParams: Promise<{ volver?: string | string[] }> }) {
   const volverA = destinoDeRecarga((await searchParams).volver);
   const { usuario, perfil } = await perfilActual();
-  const modo = modoDeRecarga();
-  const [{ saldo, movimientos, ahora }, enProceso] = await Promise.all([
+  const [{ saldo, movimientos, ahora }, enProceso, modo] = await Promise.all([
     miBilletera(usuario.id),
     recargasEnProceso(usuario.id),
+    modoDeRecargaDisponible(),
   ]);
   const cupos = await cuposDeMovimientos(movimientos);
 
@@ -92,7 +92,8 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
               <ul>
                 {delDia.map((m) => {
                   const cupo = m.puesto_id ? cupos.get(m.puesto_id) : null;
-                  const detalle = m.viaje_id ? `/viajes/${m.viaje_id}` : cupo ? `/viajes/cupo/${cupo}` : null;
+                  const detalle = m.recarga_id ? `/billetera/recarga/${m.recarga_id}`
+                    : m.viaje_id ? `/viajes/${m.viaje_id}` : cupo ? `/viajes/cupo/${cupo}` : null;
                   return (
                   <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-texto-suave/15 py-3 last:border-b-0">
                     <div className="min-w-0 flex-1 basis-40">
@@ -100,7 +101,7 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
                       <p className="text-xs text-texto-suave">
                         {horaCorta(m.creado_en).hora} {horaCorta(m.creado_en).periodo}
                       </p>
-                      {detalle && <Link href={`${detalle}?volver=%2Fbilletera`} className="inline-flex min-h-11 items-center text-sm font-semibold text-secundario underline underline-offset-4">Ver detalle del {cupo ? "cupo" : "viaje"}</Link>}
+                      {detalle && <Link href={m.recarga_id ? detalle : `${detalle}?volver=%2Fbilletera`} className="inline-flex min-h-11 items-center text-sm font-semibold text-secundario underline underline-offset-4">{m.recarga_id ? "Ver detalle de la recarga" : `Ver detalle del ${cupo ? "cupo" : "viaje"}`}</Link>}
                     </div>
                     <p className={`max-w-full break-all font-titulo font-bold tabular-nums ${m.monto > 0 ? "text-secundario" : "text-texto"}`}>
                       {m.monto > 0 ? "+" : "−"}

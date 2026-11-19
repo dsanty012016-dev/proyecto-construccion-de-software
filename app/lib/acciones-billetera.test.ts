@@ -49,7 +49,7 @@ describe("recargas e intención de retorno", () => {
     expect(regreso.origin).toBe("https://unigo.test");
     expect(regreso.pathname).toBe(`/billetera/recarga/${id}`);
     expect(regreso.searchParams.get("volver")).toBe(destino);
-    expect(dobles.rpc.mock.calls).toEqual([["iniciar_recarga", { p_monto: 20000 }]]);
+    expect(dobles.rpc.mock.calls).toEqual([["iniciar_recarga_wompi", { p_monto: 20000, p_ambiente: "test" }]]);
   });
   it("un retorno manipulado no se incorpora a Wompi", async () => {
     await expect(iniciarRecarga(inicial, formulario("https://externo.test"))).rejects.toThrow("REDIRECCION_LOCAL");
@@ -58,6 +58,11 @@ describe("recargas e intención de retorno", () => {
   it("fallar al abrir la recarga conserva el monto y el destino", async () => {
     dobles.rpc.mockResolvedValue({ data: null, error: { code: "ERROR" } });
     expect(await iniciarRecarga(inicial, formulario())).toMatchObject({ resultado: "error", valores: { monto: "20000", volver: destino } });
+    expect(dobles.destinos).toEqual([]);
+  });
+  it("no entrega checkout cuando la base bloquea ese ambiente", async () => {
+    dobles.rpc.mockResolvedValue({ data: null, error: { code: "P0001", message: "Recargas pausadas." } });
+    expect(await iniciarRecarga(inicial, formulario())).toMatchObject({ resultado: "error", mensaje: "Recargas pausadas." });
     expect(dobles.destinos).toEqual([]);
   });
   it("un monto inválido no llega a la base", async () => {

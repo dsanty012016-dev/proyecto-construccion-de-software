@@ -1,6 +1,7 @@
 import "server-only";
 import { type FilaVehiculo } from "./consultas-viaje";
-import { TIPOS_DOCUMENTO, type TipoDocumento } from "./documentos";
+import type { TipoDocumento } from "./documentos";
+import { preparacionConductor } from "./preparacion-conductor";
 import { crearClienteServidor } from "./supabase/server";
 import type { Database } from "./supabase/tipos";
 
@@ -25,7 +26,7 @@ export async function misDocumentos(conductorId: string): Promise<Partial<Record
 
 export async function estoyVerificado(conductorId: string): Promise<boolean> {
   const docs = await misDocumentos(conductorId);
-  return TIPOS_DOCUMENTO.every((tipo) => docs[tipo]?.estado === "aprobado");
+  return preparacionConductor(true, docs, false, Date.now()).verificado;
 }
 
 export interface ConductorPorRevisar {

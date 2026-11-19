@@ -26,10 +26,12 @@ export async function retirosPorRevisar(pagina = 1) {
   if (error) throw new Error("No pudimos consultar los retiros pendientes.");
   const lista = data ?? [];
   if (!lista.length) return [];
-  const ids = [...new Set(lista.map((retiro) => retiro.conductor_id))];
+  const ids = [...new Set(lista.flatMap((retiro) => [retiro.conductor_id, ...(retiro.asignado_a ? [retiro.asignado_a] : [])]))];
   const { data: perfiles, error: falloPerfil } = await supabase.from("perfiles").select("id, nombre").in("id", ids);
   if (falloPerfil) throw new Error("No pudimos consultar los conductores de los retiros.");
-  return lista.map((retiro) => ({ ...retiro, nombre: perfiles?.find((p) => p.id === retiro.conductor_id)?.nombre ?? "Conductor" }));
+  const nombres = new Map((perfiles ?? []).map((p) => [p.id, p.nombre]));
+  return lista.map((retiro) => ({ ...retiro, nombre: nombres.get(retiro.conductor_id) ?? "Conductor",
+    responsable: retiro.asignado_a ? nombres.get(retiro.asignado_a) ?? "Administrador" : null }));
 }
 export async function historialAdminDeRetiros(pagina: number, referencia: string | null) {
   const supabase = await crearClienteServidor();
@@ -49,7 +51,7 @@ export async function historialAdminDeRetiros(pagina: number, referencia: string
 
 export async function incidenciasDePago(resueltas: boolean, pagina: number) {
   const supabase = await crearClienteServidor();
-  const { data, error } = await supabase.rpc("historial_incidencias_pago", { p_resueltas: resueltas, p_pagina: pagina });
+  const { data, error } = await supabase.rpc("incidencias_conciliacion", { p_resueltas: resueltas, p_pagina: pagina });
   if (error) throw new Error("No pudimos consultar los pagos que necesitan revisión.");
   return data ?? [];
 }

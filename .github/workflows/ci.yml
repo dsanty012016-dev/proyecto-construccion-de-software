@@ -32,6 +32,12 @@ jobs:
       - name: Build (incluye revisión de tipos)
         run: npm run build
 
+      - name: Navegador para pruebas funcionales
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: Pruebas en el navegador
+        run: npx playwright test
+
       # Dependencias de la app con fallas de seguridad conocidas (altas o críticas).
       # Cada falla sale como aviso en el resumen de GitHub (paquete, gravedad y arreglo).
       - name: Auditoría de dependencias
@@ -47,7 +53,7 @@ jobs:
         with:
           deno-version: v2.x
       - name: Revisar tipos de la función de notificaciones
-        run: deno check --node-modules-dir=none supabase/functions/enviar-avisos/index.ts supabase/functions/confirmar-pago/index.ts
+        run: deno check --node-modules-dir=none supabase/functions/enviar-avisos/index.ts supabase/functions/confirmar-pago/index.ts supabase/functions/limpiar-documentos/index.ts
 
   base-de-datos:
     # Corre las migraciones y las pruebas de seguridad (RLS y RPC) en un
@@ -76,3 +82,8 @@ jobs:
 
       - name: Migraciones y pruebas de la base
         run: ./supabase/pruebas/correr.sh
+
+      - name: Concurrencia del piloto
+        env:
+          UNIGO_BD_DESECHABLE: "1"
+        run: node supabase/pruebas/concurrencia.mjs

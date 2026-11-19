@@ -17,7 +17,7 @@ export default async function PaginaRecargas({ searchParams }: { searchParams: P
     <ul className="divide-y divide-texto-suave/20">{recargas.map((recarga) => <li key={recarga.id}>
       <Link href={`/billetera/recarga/${recarga.id}`} className="flex min-h-14 flex-wrap justify-between gap-2 py-4">
         <span className="font-semibold">{pesos(recarga.monto)}<span className="mt-1 block text-sm font-normal text-texto-suave">{fechaCorta(recarga.creada_en)}</span></span>
-        <span>{recarga.requiere_revision ? "En revisión" : recarga.estado === "pendiente" ? "Pendiente" : recarga.estado === "aprobada" ? "Aprobada" : "No aprobada"}</span>
+        <span>{recarga.revision_resuelta_en ? "Revisión completada" : recarga.requiere_revision ? "En revisión" : recarga.estado === "pendiente" ? "Pendiente" : recarga.estado === "aprobada" ? "Aprobada" : "No aprobada"}</span>
       </Link>
     </li>)}</ul>
     <nav aria-label="Páginas de recargas" className="flex flex-wrap justify-between gap-3">
