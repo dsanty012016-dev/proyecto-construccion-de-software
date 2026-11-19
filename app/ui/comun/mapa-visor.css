@@ -1,0 +1,86 @@
+/* En línea, el diálogo cerrado muestra la región del mapa. Al abrirse pasa
+   a la capa modal del navegador con el mismo lienzo, cámara y marcadores. */
+.mapa-visor {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.mapa-visor-contenido {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.mapa-visor[open] {
+  position: fixed;
+  inset: 0;
+  height: 100%;
+  height: 100dvh;
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--color-fondo);
+}
+
+html:has(.mapa-visor[open]) {
+  overflow: hidden;
+}
+
+.mapa-visor-barra {
+  display: none;
+}
+
+.mapa-visor[open] .mapa-visor-barra {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: calc(.45rem + env(safe-area-inset-top)) .75rem .45rem;
+  border-bottom: 1px solid var(--color-linea);
+  background: var(--color-superficie);
+}
+
+.mapa-visor-boton {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-linea);
+  border-radius: .7rem;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+.mapa-visor-boton:hover {
+  color: var(--color-secundario);
+}
+
+.mapa-visor-ampliar {
+  position: absolute;
+  right: .5rem;
+  bottom: 2.15rem;
+}
+
+.mapa-visor[open] .mapa-visor-ampliar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mapa-visor[open] .mapa-visor-barra {
+    animation: mapa-visor-entrada .2s ease-out both;
+  }
+
+  @keyframes mapa-visor-entrada {
+    from { opacity: .72; translate: 0 -.25rem; }
+    to { opacity: 1; translate: 0 0; }
+  }
+}
