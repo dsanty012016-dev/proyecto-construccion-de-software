@@ -106,7 +106,7 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - **Calificar:** al terminar un cupo, cada estudiante que viajó (puesto aprobado y pagado) califica al conductor, y el conductor califica a cada estudiante. Una vez cada uno. Los cupos terminados cuentan en "viajes" del perfil.
 - **Seguimiento en vivo:** desde que el conductor sale (cupo en curso) hasta que llega, lo ven en el mapa solo él y los estudiantes con el puesto pagado. Igual que en los viajes: cada 5 s, solo la última ubicación, se borra al terminar o cancelar.
 - **Compartir:** cada estudiante con el puesto pagado tiene su propio enlace: muestra al conductor, el vehículo, **su** recogida (no la de los demás) y, desde que salen, la ubicación en vivo. Se apaga al terminar o cancelar el cupo, o si pierde el puesto.
-- **Orden de recogida:** el conductor ve a sus estudiantes aprobados numerados de la salida hacia la U (según qué tan avanzada queda cada recogida en el camino); el estudiante solo ve su propia recogida.
+- **Orden de recogida:** el conductor ve numeradas las paradas de los puestos pagados. El orden inicial sigue el avance de la salida hacia el destino. Antes de salir, puede comparar los tiempos por las calles, aplicar el orden más rápido o volver al inicial. La selección se conserva en la pestaña durante el viaje si siguen los mismos puestos. El estudiante solo ve su propia recogida.
 - **Historial:** "Mis viajes" muestra viajes por pedido y cupos (terminados y cancelados) de los dos roles, con el botón para calificar lo que falte.
 
 ## Política de privacidad (fase 8, migración 016)

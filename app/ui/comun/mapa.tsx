@@ -298,6 +298,9 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   const oLng = origen?.lng;
   const dLat = destino?.lat;
   const dLng = destino?.lng;
+  const claveParadas = JSON.stringify(paradas ?? []);
+  const claveParadasDeRuta = numerarParadas ? claveParadas : "[]";
+  const claveRuta = `${oLat},${oLng},${dLat},${dLng}:${claveParadasDeRuta}`;
   // Al cambiar entre modo claro y oscuro, el mapa se vuelve a teñir con la
   // paleta del modo nuevo (los colores salen de globals.css).
   useEffect(() => {
@@ -343,30 +346,30 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
 
     if (!coordenadaValida(o) || !coordenadaValida(d)) return;
 
-    // Primero la línea recta punteada; si llega la ruta por las vías, se cambia.
+    const intermedios = (JSON.parse(claveParadasDeRuta) as Coordenada[]).filter(coordenadaValida);
+    const recorrido = [o, ...intermedios, d];
+    // La línea provisional conserva el orden de las paradas.
     ponerLinea(mapa, "ruta-vial", [], false);
-    ponerLinea(mapa, "ruta-recta", [[o.lng, o.lat], [d.lng, d.lat]], true);
-    const caja = limites([o, d]);
+    ponerLinea(mapa, "ruta-recta", recorrido.map(({ lng, lat }) => [lng, lat]), true);
+    const caja = limites(recorrido);
     if (caja) encuadrar(mapa, caja, encuadrando, animar.current);
 
     let vigente = true;
-    const clave = `${o.lat},${o.lng},${d.lat},${d.lng}`;
-    buscarRuta(o, d).then((ruta) => {
+    buscarRuta(o, d, intermedios).then((ruta) => {
       if (!vigente || !ruta || mapaRef.current !== mapa) return;
       ponerLinea(mapa, "ruta-vial", ruta.coordenadas, false);
       ponerLinea(mapa, "ruta-recta", [], true);
       const puntos = ruta.coordenadas.map(([lng, lat]) => ({ lat, lng }));
-      const cajaRuta = limites(puntos);
+      const cajaRuta = limites([...recorrido, ...puntos]);
       if (cajaRuta) encuadrar(mapa, cajaRuta, encuadrando, animar.current);
-      setInfoRuta({ clave, km: ruta.km, minutos: ruta.minutos });
+      setInfoRuta({ clave: claveRuta, km: ruta.km, minutos: ruta.minutos });
     });
     return () => {
       vigente = false;
     };
-  }, [estado, oLat, oLng, dLat, dLng, uEnElOrigen]);
+  }, [estado, oLat, oLng, dLat, dLng, uEnElOrigen, claveParadasDeRuta, claveRuta]);
 
   // Paradas de los estudiantes (se comparan por contenido).
-  const claveParadas = JSON.stringify(paradas ?? []);
   useEffect(() => {
     const mapa = mapaRef.current;
     const lib = libRef.current;
@@ -455,7 +458,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
             </svg>
           )}
 
-          {estado === "listo" && infoRuta && infoRuta.clave === `${oLat},${oLng},${dLat},${dLng}` && (
+          {estado === "listo" && infoRuta?.clave === claveRuta && (
             <p className={`absolute left-2 rounded-lg ${aRas ? "bottom-8" : "bottom-2"} bg-fondo/90 px-2.5 py-1 text-xs font-semibold text-texto`}>
               {distanciaTexto(infoRuta.km)} · {infoRuta.minutos} min por vía
             </p>

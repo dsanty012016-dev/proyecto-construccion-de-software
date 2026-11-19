@@ -113,8 +113,8 @@ export default function PaginaPrivacidad() {
             <strong>OpenFreeMap</strong> (los mapas): recibe qué zona del mapa estás viendo.
           </li>
           <li>
-            <strong>FOSSGIS / OpenStreetMap</strong> (las rutas por las calles), en Alemania: recibe el punto de recogida y el destino para trazar
-            el camino.
+            <strong>FOSSGIS / OpenStreetMap</strong> (las rutas por las calles), en Alemania. Recibe las coordenadas de salida, paradas y destino
+            para trazar el camino y estimar el tiempo del recorrido.
           </li>
         </ul>
         <p>Al aceptar esta política autorizas que tus datos se envíen a estos países para esos fines.</p>
