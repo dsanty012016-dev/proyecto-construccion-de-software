@@ -23,6 +23,7 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
     modoDeRecargaDisponible(),
   ]);
   const cupos = await cuposDeMovimientos(movimientos);
+  const etiquetaModo = modo === "prueba" ? "Simulación interna" : modo === "wompi-pruebas" ? "Wompi Sandbox" : modo === "wompi" ? "Pagos con dinero real" : "Recargas no disponibles";
 
   // Vienen del más nuevo al más viejo; se agrupan seguidos por día.
   const dias: { dia: string; movimientos: FilaMovimiento[] }[] = [];
@@ -35,19 +36,21 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
 
   return (
     <main className="space-y-6 px-5 pt-6">
-      <header>
-        <h1 className="font-texto text-sm font-semibold text-texto-suave">Tu saldo</h1>
-        <p className="mt-1 cifra whitespace-nowrap" style={{ fontSize: `clamp(1.5rem,${Math.min(16, 90 / pesos(saldo).length)}vw,4rem)` }}>{pesos(saldo)}</p>
-        <p className="mt-2 text-[13px] text-texto-suave">
-          {modo === "prueba" ? "Simulación interna" : modo === "wompi-pruebas" ? "Wompi Sandbox" : modo === "wompi" ? "Pagos con dinero real" : "Recargas no disponibles"}
-          {perfil?.rol === "conductor" && " · tus ganancias llegan ya sin el 10 % de UniGo"}
-        </p>
+      <header className="billetera-saldo space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-lg font-bold">Tu saldo</h1>
+          <span className="producto-estado" data-estado={modo === "no-disponible" ? "atencion" : undefined}>{etiquetaModo}</span>
+        </div>
+        <p className="cifra">{pesos(saldo)}</p>
+        {perfil?.rol === "conductor" && <p className="text-sm text-texto-suave">Tus ganancias incluyen el descuento del 10 % de UniGo.</p>}
       </header>
 
       <EstadoCuenta personaId={usuario.id} siempre />
 
-      <section aria-labelledby="titulo-recarga" className="space-y-3">
-        <h2 id="titulo-recarga" className="text-base">
+      <div className="billetera-distribucion">
+      <div className="min-w-0 space-y-5">
+      <section aria-labelledby="titulo-recarga" className="producto-panel space-y-3 p-4">
+        <h2 id="titulo-recarga" className="text-lg">
           Recargar
         </h2>
         {volverA && <div className="space-y-2 rounded-xl border border-texto-suave/30 p-3 text-sm">
@@ -73,14 +76,15 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
         )}
       </section>
 
-      {perfil?.rol === "conductor" && <section className="space-y-2 border-t border-dashed border-texto-suave/40 pt-4" aria-labelledby="titulo-retirar">
+      {perfil?.rol === "conductor" && <section className="producto-panel space-y-2 p-4" aria-labelledby="titulo-retirar">
         <h2 id="titulo-retirar" className="text-base">Tus ganancias</h2>
         <p className="text-sm text-texto-suave">Solicita desde $20.000 a tu Nequi. El equipo revisa tus documentos y el plazo máximo es de siete días.</p>
         <Link href="/billetera/retiros" className="inline-flex min-h-12 items-center font-semibold">Retirar ganancias y ver solicitudes</Link>
       </section>}
+      </div>
 
-      <section aria-labelledby="titulo-movimientos">
-        <h2 id="titulo-movimientos" className="text-base">
+      <section aria-labelledby="titulo-movimientos" className="producto-panel p-4">
+        <h2 id="titulo-movimientos" className="text-lg">
           Movimientos
         </h2>
         {movimientos.length === 0 ? (
@@ -115,6 +119,7 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
           ))
         )}
       </section>
+      </div>
     </main>
   );
 }

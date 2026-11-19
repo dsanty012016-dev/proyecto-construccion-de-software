@@ -70,8 +70,8 @@ function elementoMarcador(tipo: "origen" | "destino" | "parada" | "paradaNumerad
 }
 
 /** Color de un token de globals.css (los colores no se escriben sueltos). */
-function colorDeToken(nombre: string) {
-  return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim() || "currentColor";
+function colorDeToken(mapa: MapaLibre, nombre: string) {
+  return getComputedStyle(mapa.getContainer()).getPropertyValue(nombre).trim() || "currentColor";
 }
 
 /**
@@ -82,11 +82,11 @@ function colorDeToken(nombre: string) {
  */
 function pintarEstilo(mapa: MapaLibre) {
   const c = {
-    fondo: colorDeToken("--color-fondo"),
-    tierra: colorDeToken("--color-mapa-tierra"),
-    via: colorDeToken("--color-mapa-via"),
-    viaMenor: colorDeToken("--color-mapa-via-menor"),
-    textoSuave: colorDeToken("--color-texto-suave"),
+    fondo: colorDeToken(mapa, "--color-fondo"),
+    tierra: colorDeToken(mapa, "--color-mapa-tierra"),
+    via: colorDeToken(mapa, "--color-mapa-via"),
+    viaMenor: colorDeToken(mapa, "--color-mapa-via-menor"),
+    textoSuave: colorDeToken(mapa, "--color-texto-suave"),
   };
   // MapLibre 6 tipa cada propiedad de pintura; aquí se arman por nombre.
   type Propiedad = Parameters<MapaLibre["setPaintProperty"]>[1];
@@ -144,7 +144,7 @@ function ponerLinea(mapa: MapaLibre, id: string, coordenadas: [number, number][]
     source: id,
     layout: { "line-join": "round", "line-cap": punteada ? "butt" : "round" },
     paint: {
-      "line-color": colorDeToken("--color-secundario"),
+      "line-color": colorDeToken(mapa, "--color-secundario"),
       "line-width": punteada ? 3 : 5,
       ...(punteada ? { "line-dasharray": [2, 1.5] } : {}),
     },
@@ -298,7 +298,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
       if (!mapa) return;
       pintarEstilo(mapa);
       for (const id of ["ruta-vial", "ruta-recta"]) {
-        if (mapa.getLayer(id)) mapa.setPaintProperty(id, "line-color", colorDeToken("--color-secundario"));
+        if (mapa.getLayer(id)) mapa.setPaintProperty(id, "line-color", colorDeToken(mapa, "--color-secundario"));
       }
     });
   }, [estado]);

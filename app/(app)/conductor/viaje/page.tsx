@@ -40,8 +40,12 @@ export default async function PaginaViajeConductor() {
   return (
     <main className="space-y-5 px-5 pt-6">
       <EnVivo escuchas={[{ tabla: "viajes", filtro: `id=eq.${viaje.id}` }]} />
-      <EncabezadoPantalla titulo={enCurso ? `Llevando a ${nombre}` : `Ve a recoger a ${nombre}`} volverA="/conductor" />
-      <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} regreso={regreso} />
+      <div className="trayecto-panel space-y-4">
+        <div key={viaje.estado} className="trayecto-hito">
+          <EncabezadoPantalla titulo={enCurso ? `Llevando a ${nombre}` : `Ve a recoger a ${nombre}`} volverA="/conductor" />
+        </div>
+        <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} regreso={regreso} />
+      </div>
       <Mapa etiqueta="Mapa del viaje" centro={origen} origen={origen} destino={destino} uEnElOrigen={regreso} className="h-52" />
       <TransmisorUbicacion enviar={reportarUbicacion.bind(null, viaje.id)} clave={viaje.id} />
       <a
@@ -55,7 +59,7 @@ export default async function PaginaViajeConductor() {
         <span className="sr-only">(abre Google Maps)</span>
       </a>
 
-      <section aria-label="Recorrido" className="space-y-4 rounded-2xl bg-superficie p-4">
+      <section aria-label="Recorrido" className="producto-panel space-y-4 p-4">
         <RutaViaje origen={viaje.origen_texto} destino={viaje.destino_texto} etiquetaOrigen="Recoges en" etiquetaDestino="Llevas a" />
         {estudiante && (
           <div className="flex items-center gap-3 border-t border-texto-suave/20 pt-4">
@@ -77,7 +81,7 @@ export default async function PaginaViajeConductor() {
       <EnlaceDeAyuda motivo={{ tipo: "viaje", referencia: viaje.id }} />
 
       {viaje.precio !== null && (
-        <section aria-label="Pago" className="flex items-center justify-between gap-3 border-y border-dashed border-texto-suave/40 py-3.5">
+        <section aria-label="Pago" className="flex flex-wrap items-center justify-between gap-3 border-y border-linea py-3.5">
           <div>
             <p className="text-sm text-texto-suave">Recibes al terminar el viaje</p>
             <p className="text-xs text-texto-suave">

@@ -17,21 +17,21 @@ export function TarjetaOferta({ oferta, saldo, destacada, viajeId }: { oferta: C
   const nombre = nombreCorto(conductor.nombre);
   const alcanza = saldo >= oferta.precio;
   return (
-    <li className="space-y-3 border-b border-dashed border-texto-suave/40 py-4 last:border-b-0">
-      <div className="flex items-center gap-3">
+    <li className="oferta-fila">
+      <div className="oferta-datos">
         <Avatar nombre={conductor.nombre} sobreTarjeta />
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-bold">{nombre}</p>
+        <div className="min-w-0 flex-1 basis-24">
+          <p className="font-bold [overflow-wrap:anywhere]">{nombre}</p>
           <p className="text-[13px] text-texto-suave">
             <Nota promedio={conductor.calificacion} total={conductor.total_calificaciones} /> · {conductor.viajes_terminados}{" "}
             {conductor.viajes_terminados === 1 ? "viaje" : "viajes"}
           </p>
         </div>
-        <p className="cifra text-[2rem]">{pesos(oferta.precio)}</p>
+        <p className="cifra max-w-full [overflow-wrap:anywhere]">{pesos(oferta.precio)}</p>
       </div>
       {vehiculo ? (
-        <p className="flex items-center justify-between gap-3 text-[13px] text-texto-suave">
-          <span className="min-w-0 truncate">
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-texto-suave">
+          <span className="min-w-0 [overflow-wrap:anywhere]">
             {vehiculo.marca} {vehiculo.modelo}, {vehiculo.color}
           </span>
           <Placa placa={vehiculo.placa} />

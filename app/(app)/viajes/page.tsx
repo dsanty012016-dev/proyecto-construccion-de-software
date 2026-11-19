@@ -11,6 +11,7 @@ import { recorridoDelPuesto } from "@/app/lib/sentido";
 import { perfilActual } from "@/app/lib/sesion";
 import { leerFiltro, type ParametrosUrl } from "@/app/lib/validaciones-historial";
 import { FiltrosHistorial } from "@/app/ui/comun/filtros-historial";
+import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 
 export const metadata: Metadata = { title: "Mis viajes" };
 
@@ -30,14 +31,11 @@ export default async function PaginaViajes({ searchParams }: { searchParams: Pro
 
   return (
     <main className="space-y-5 px-5 pt-6">
-      <header>
-        <h1 className="cartel text-[2.75rem]">Mis viajes</h1>
-        <p className="text-sm text-texto-suave">Viajes por pedido y cupos con hora fija, como estudiante y como conductor.</p>
-      </header>
+      <EncabezadoPantalla titulo="Mis viajes" texto="Viajes por pedido y cupos con hora fija, como estudiante y como conductor." />
 
       <FiltrosHistorial filtro={filtro} />
       {items.length === 0 ? (
-        <div role="status" className="space-y-2 rounded-2xl bg-superficie p-4">
+        <div role="status" className="producto-panel space-y-2 p-4">
           <p className="font-semibold">
             {pagina > 1 ? "Esta página quedó vacía." : url === "/viajes" ? "Aún no tienes viajes en el historial." : "No hay viajes con estos filtros."}
           </p>
@@ -48,7 +46,7 @@ export default async function PaginaViajes({ searchParams }: { searchParams: Pro
           )}
         </div>
       ) : (
-        <ul>
+        <ul className="producto-panel px-4">
           {items.map((item) => item.tipo === "viaje"
             ? <FilaViaje key={`v-${item.dato.viaje.id}`} item={item.dato} detalle={`/viajes/${item.dato.viaje.id}${volver}`} />
             : <FilaCupo key={`c-${item.dato.cupo.id}`} item={item.dato} detalle={`/viajes/cupo/${item.dato.cupo.id}${volver}`} />)}
@@ -71,7 +69,7 @@ function FilaViaje({ item, detalle }: { item: ItemHistorial; detalle: string }) 
     <li className="space-y-2 border-b border-texto-suave/15 py-4 last:border-b-0">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <p className="text-[13px] text-texto-suave">{fechaCorta(viaje.terminado_en ?? viaje.cancelado_en ?? viaje.creado_en)}</p>
-        <p className={`text-[13px] font-semibold ${viaje.estado === "cancelado" ? "text-texto-suave" : "text-secundario"}`}>
+        <p className="producto-estado" data-estado={viaje.estado === "cancelado" ? "atencion" : undefined}>
           {viaje.vencio ? "Venció sin conductor" : etiquetaEstado(viaje.estado)}
         </p>
       </div>
@@ -79,7 +77,7 @@ function FilaViaje({ item, detalle }: { item: ItemHistorial; detalle: string }) 
         <span className="sr-only">Detalle del viaje a&nbsp;</span>
         {lugarCorto(viaje.destino_texto)}
       </Link>
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-texto-suave">{otraPersona ? nombreCorto(otraPersona) : "Sin conductor"}</p>
         {viaje.precio !== null && viaje.estado === "terminado" && <p className="font-titulo font-bold tabular-nums">{pesos(viaje.precio)}</p>}
       </div>
