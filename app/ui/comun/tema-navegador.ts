@@ -1,7 +1,17 @@
 // Modo claro y oscuro en el navegador: leerlo, cambiarlo y enterarse de los
 // cambios. Las reglas puras están en app/lib/tema.ts.
-import { DURACION_INVASION, etapasDeInvasion } from "@/app/lib/invasion";
-import { CLAVE_TEMA, COLOR_BARRA, EVENTO_TEMA, esTema, otroTema, temaEfectivo, type Tema } from "@/app/lib/tema";
+import {
+  circuloDeTema,
+  CLAVE_TEMA,
+  COLOR_BARRA,
+  DURACION_CIRCULO,
+  esTema,
+  EVENTO_TEMA,
+  otroTema,
+  radioParaCubrir,
+  temaEfectivo,
+  type Tema,
+} from "@/app/lib/tema";
 
 const CELULAR_EN_CLARO = "(prefers-color-scheme: light)";
 
@@ -29,16 +39,15 @@ export function cambiarTema(): Tema {
 // (View Transitions); no todos lo saben hacer, por eso se pregunta primero.
 type DocumentoConTransicion = { startViewTransition?: (cambiar: () => void) => { ready: Promise<void>; finished: Promise<void> } };
 
-/** Cuántas invasiones se han lanzado: solo la última quita la clase al terminar. */
-let invasiones = 0;
+/** Cuántos cambios se han lanzado: solo el último quita la clase al terminar. */
+let cambios = 0;
 
 /**
- * Cambia de modo con la invasión: el modo nuevo sale del botón como una
- * mancha con tentáculos y tapa la pantalla (la forma está en lib/invasion.ts).
- * Si la persona pidió menos movimiento, o el navegador no sabe hacerlo, el
- * cambio es inmediato, como antes.
+ * Cambia de modo con un círculo: el modo nuevo sale del botón y crece hasta
+ * cubrir la pantalla. Si la persona pidió menos movimiento, o el navegador no
+ * sabe hacerlo, el cambio es inmediato.
  */
-export function cambiarTemaInvadiendo(boton: Element): void {
+export function cambiarTemaConCirculo(boton: Element): void {
   const documento = document as unknown as DocumentoConTransicion;
   if (!documento.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     cambiarTema();
@@ -46,19 +55,19 @@ export function cambiarTemaInvadiendo(boton: Element): void {
   }
   const caja = boton.getBoundingClientRect();
   const centro = { x: caja.left + caja.width / 2, y: caja.top + caja.height / 2 };
-  const etapas = etapasDeInvasion(centro, window.innerWidth, window.innerHeight, Math.random);
+  const radio = radioParaCubrir(centro, window.innerWidth, window.innerHeight);
   const raiz = document.documentElement;
-  const esta = ++invasiones;
+  const este = ++cambios;
   // La clase apaga el fundido normal del navegador (globals.css).
-  raiz.classList.add("tema-invade");
+  raiz.classList.add("tema-circulo");
   const transicion = documento.startViewTransition.call(document, () => {
     cambiarTema();
   });
   transicion.ready
     .then(() => {
       raiz.animate(
-        etapas.map((etapa) => ({ clipPath: etapa.poligono, offset: etapa.momento, easing: etapa.curva })),
-        { duration: DURACION_INVASION, pseudoElement: "::view-transition-new(root)" },
+        { clipPath: [circuloDeTema(centro, 0), circuloDeTema(centro, radio)] },
+        { duration: DURACION_CIRCULO, easing: "cubic-bezier(0.23, 1, 0.32, 1)", pseudoElement: "::view-transition-new(root)" },
       );
     })
     .catch(() => {
@@ -67,7 +76,7 @@ export function cambiarTemaInvadiendo(boton: Element): void {
   transicion.finished
     .catch(() => {})
     .then(() => {
-      if (esta === invasiones) raiz.classList.remove("tema-invade");
+      if (este === cambios) raiz.classList.remove("tema-circulo");
     });
 }
 

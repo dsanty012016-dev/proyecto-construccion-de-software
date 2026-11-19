@@ -1,6 +1,6 @@
 // Pruebas de las reglas del modo claro y oscuro (tema.ts).
 import { describe, expect, it } from "vitest";
-import { CLAVE_TEMA, COLOR_BARRA, esTema, otroTema, SCRIPT_TEMA, temaEfectivo } from "./tema";
+import { circuloDeTema, CLAVE_TEMA, COLOR_BARRA, esTema, otroTema, radioParaCubrir, SCRIPT_TEMA, temaEfectivo } from "./tema";
 
 describe("tema", () => {
   it("solo hay claro y oscuro", () => {
@@ -59,5 +59,19 @@ describe("tema", () => {
     };
     const documento = { documentElement: { dataset: {} as Record<string, string> } };
     expect(() => new Function("localStorage", "document", SCRIPT_TEMA)(almacen, documento)).not.toThrow();
+  });
+
+  it("el círculo crece hasta la esquina más lejana del botón", () => {
+    expect(radioParaCubrir({ x: 0, y: 0 }, 300, 400)).toBe(500);
+    expect(radioParaCubrir({ x: 300, y: 400 }, 300, 400)).toBe(500);
+    expect(radioParaCubrir({ x: 150, y: 200 }, 300, 400)).toBe(250);
+    // Botón arriba a la derecha en un celular: la esquina lejana es abajo a la izquierda.
+    expect(radioParaCubrir({ x: 360, y: 30 }, 390, 844)).toBe(Math.ceil(Math.hypot(360, 814)));
+  });
+
+  it("escribe el círculo en CSS, sin radios negativos ni decimales", () => {
+    expect(circuloDeTema({ x: 340.4, y: 30.6 }, 0)).toBe("circle(0px at 340px 31px)");
+    expect(circuloDeTema({ x: 10, y: 20 }, 812.7)).toBe("circle(813px at 10px 20px)");
+    expect(circuloDeTema({ x: 10, y: 20 }, -5)).toBe("circle(0px at 10px 20px)");
   });
 });

@@ -39,3 +39,19 @@ export function otroTema(tema: Tema): Tema {
  * texto porque tiene que ejecutarse antes que React.
  */
 export const SCRIPT_TEMA = `try{var t=localStorage.getItem(${JSON.stringify(CLAVE_TEMA)});if(t==="claro"||t==="oscuro")document.documentElement.dataset.tema=t}catch(e){}`;
+
+/** Cuánto dura el círculo que cambia de modo, en milisegundos. */
+export const DURACION_CIRCULO = 550;
+
+/**
+ * Radio del círculo que sale del botón para que, al terminar, tape toda la
+ * pantalla: la distancia del centro a la esquina más lejana.
+ */
+export function radioParaCubrir(centro: { x: number; y: number }, ancho: number, alto: number): number {
+  return Math.ceil(Math.hypot(Math.max(centro.x, ancho - centro.x), Math.max(centro.y, alto - centro.y)));
+}
+
+/** El círculo en CSS (`clip-path`), de un radio dado y con centro en el botón. */
+export function circuloDeTema(centro: { x: number; y: number }, radio: number): string {
+  return `circle(${Math.max(0, Math.round(radio))}px at ${Math.round(centro.x)}px ${Math.round(centro.y)}px)`;
+}

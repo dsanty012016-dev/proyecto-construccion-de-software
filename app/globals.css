@@ -216,15 +216,16 @@ html:has(#barra-sitio) {
 }
 
 /* Respeta a quien pide menos movimiento. */
-/* Cambio de modo "que invade" (boton-tema.tsx): el navegador pone la foto de
-   la página nueva encima de la vieja y tema-navegador.ts la va destapando con
-   una mancha de tentáculos. Aquí solo se apaga el fundido que trae por defecto. */
-html.tema-invade::view-transition-old(root),
-html.tema-invade::view-transition-new(root) {
+/* Cambio de modo con un círculo (boton-tema.tsx): el navegador pone la foto
+   de la página nueva encima de la vieja y tema-navegador.ts la va destapando
+   con un círculo que sale del botón. Aquí solo se apaga el fundido que trae
+   por defecto. */
+html.tema-circulo::view-transition-old(root),
+html.tema-circulo::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
-html.tema-invade::view-transition-new(root) {
+html.tema-circulo::view-transition-new(root) {
   z-index: 1;
 }
 

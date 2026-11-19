@@ -1,17 +1,17 @@
 "use client";
 
-import { cambiarTemaInvadiendo } from "./tema-navegador";
+import { cambiarTemaConCirculo } from "./tema-navegador";
 
 // Botón de modo claro / modo oscuro, arriba en cada pantalla. Lleva los dos
 // iconos y globals.css muestra el del modo al que se pasa (sol en oscuro, luna
 // en claro): así el servidor y el navegador pintan lo mismo y no hay parpadeo.
 // La elección se guarda en este navegador (tema-navegador.ts). Al tocarlo, el
-// modo nuevo invade la pantalla desde el botón.
+// modo nuevo sale del botón como un círculo que crece hasta cubrir la pantalla.
 export function BotonTema({ className = "" }: { className?: string }) {
   return (
     <button
       type="button"
-      onClick={(evento) => cambiarTemaInvadiendo(evento.currentTarget)}
+      onClick={(evento) => cambiarTemaConCirculo(evento.currentTarget)}
       aria-label="Cambiar entre modo claro y modo oscuro"
       title="Modo claro u oscuro"
       className={`flex size-11 shrink-0 items-center justify-center rounded-full text-texto-suave transition-colors hover:bg-superficie hover:text-texto motion-reduce:transition-none ${className}`}
