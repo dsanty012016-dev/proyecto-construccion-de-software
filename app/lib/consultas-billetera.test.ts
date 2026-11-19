@@ -5,7 +5,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("./supabase/server", () => ({ crearClienteServidor: async () => ({ from: (tabla: string) => {
   const registro = { tabla, metodos: [] as string[] }; dobles.consultas.push(registro);
   const consulta: Record<string, unknown> = {};
-  for (const metodo of ["select", "eq", "gt", "order", "limit", "range"]) consulta[metodo] = () => { registro.metodos.push(metodo); return consulta; };
+  for (const metodo of ["select", "eq", "is", "gt", "order", "limit", "range"]) consulta[metodo] = () => { registro.metodos.push(metodo); return consulta; };
   consulta.maybeSingle = async () => dobles.resultados[tabla];
   consulta.then = (resolver: (r: Respuesta) => unknown) => Promise.resolve(dobles.resultados[tabla]).then(resolver);
   return consulta;

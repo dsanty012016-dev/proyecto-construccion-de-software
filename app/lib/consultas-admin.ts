@@ -1,6 +1,13 @@
 import "server-only";
 import { crearClienteServidor } from "./supabase/server";
 
+export async function resumenOperativo() {
+  const supabase = await crearClienteServidor();
+  const { data, error } = await supabase.rpc("resumen_operativo");
+  if (error || !data?.[0]) return null;
+  return data[0];
+}
+
 export async function contadoresAdmin() {
   const supabase = await crearClienteServidor();
   const [retiros, documentos, reportes, incidencias] = await Promise.all([

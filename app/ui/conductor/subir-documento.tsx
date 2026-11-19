@@ -21,11 +21,12 @@ interface Props {
   motivo?: string | null;
   enviadoEn?: string;
   revision?: { limite: number | null; vencido: boolean };
+  diasVigencia?: number | null;
 }
 
 const ETIQUETAS = { pendiente: "En revisión", aprobado: "Aprobado", rechazado: "Rechazado" } as const;
 
-export function SubirDocumento({ tipo, conductorId, estado, motivo, enviadoEn, revision }: Props) {
+export function SubirDocumento({ tipo, conductorId, estado, motivo, enviadoEn, revision, diasVigencia }: Props) {
   const [resultado, despachar, enviando] = useActionState(enviarDocumento, ESTADO_INICIAL);
   const [problema, setProblema] = useState<string | null>(null);
   const [subiendo, setSubiendo] = useState(false);
@@ -70,7 +71,9 @@ export function SubirDocumento({ tipo, conductorId, estado, motivo, enviadoEn, r
     startTransition(() => despachar(datos));
   }
 
-  const textoEstado = estado ? ETIQUETAS[estado] : "Sin enviar";
+  const licenciaAprobada = tipo === "licencia" && estado === "aprobado";
+  const vencido = licenciaAprobada && diasVigencia != null && diasVigencia < 0;
+  const textoEstado = vencido ? "Vencida" : estado ? ETIQUETAS[estado] : "Sin enviar";
   return (
     <section aria-labelledby={`${idArchivo}-titulo`} className="space-y-3 border-b border-texto-suave/15 py-4 last:border-b-0">
       <div className="flex items-center gap-3.5">
@@ -98,6 +101,9 @@ export function SubirDocumento({ tipo, conductorId, estado, motivo, enviadoEn, r
       </div>
       {enviadoEn && <p className="text-[13px] text-texto-suave">Enviado: {fechaCorta(enviadoEn)}{estado === "pendiente" && revision?.limite != null && ` · Revisión hasta el ${fechaCorta(new Date(revision.limite).toISOString())}`}</p>}
       {estado === "pendiente" && revision?.vencido && <Aviso tipo="info">El plazo de revisión venció. Tu documento sigue pendiente; usa “Actualizar estado” para consultar la respuesta del equipo. No necesitas enviarlo otra vez si el archivo es correcto.</Aviso>}
+      {licenciaAprobada && diasVigencia != null && diasVigencia <= 30 && <Aviso tipo={vencido ? "error" : "info"}>
+        {vencido ? "Envía tu licencia renovada para volver a conducir." : diasVigencia === 0 ? "Tu licencia vence hoy." : `Días que faltan para vencer: ${diasVigencia}.`}
+      </Aviso>}
 
       {estado === "rechazado" && motivo && <Aviso tipo="error">Motivo: {motivo}</Aviso>}
       {resultado.resultado === "listo" && <Aviso tipo="listo">{resultado.mensaje}</Aviso>}
@@ -105,10 +111,11 @@ export function SubirDocumento({ tipo, conductorId, estado, motivo, enviadoEn, r
         <Aviso tipo="error">{problema ?? resultado.mensaje}</Aviso>
       )}
 
-      {estado !== "aprobado" && (
+      {(estado !== "aprobado" || licenciaAprobada) && (
         <details open={estado !== "pendiente"} className="space-y-3">
-        <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold text-secundario">{estado === "pendiente" ? "Reemplazar el documento enviado" : estado === "rechazado" ? "Corregir y volver a enviar" : "Enviar este documento"}</summary>
+        <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold text-secundario">{licenciaAprobada ? "Enviar licencia renovada" : estado === "pendiente" ? "Reemplazar el documento enviado" : estado === "rechazado" ? "Corregir y volver a enviar" : "Enviar este documento"}</summary>
         <form onSubmit={alEnviar} className="space-y-3" noValidate>
+          {licenciaAprobada && <p className="text-sm text-texto-suave">Tu nueva licencia quedará en revisión y tu cuenta se pausará para nuevos viajes hasta que el equipo la apruebe.</p>}
           {estado === "pendiente" && <p className="text-sm text-texto-suave">Reemplázalo solo si necesitas corregir el archivo. El nuevo envío inicia otro plazo de revisión de 7 días.</p>}
           <div>
             <label htmlFor={idArchivo} className="mb-1.5 block text-sm font-medium">

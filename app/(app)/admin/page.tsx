@@ -6,6 +6,7 @@ import { exigirAdmin } from "@/app/lib/sesion";
 import type { ParametrosUrl } from "@/app/lib/validaciones-historial";
 import { DocumentosPendientes, ReportesRecibidos, RetirosPendientes } from "@/app/ui/admin/colas";
 import { IncidenciasAdmin, PaginasAdmin, RetirosResueltos } from "@/app/ui/admin/resoluciones";
+import { ResumenOperativo } from "@/app/ui/admin/resumen-operativo";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 
 export const metadata: Metadata = { title: "Administración" };
@@ -45,7 +46,7 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
           ))}
         </ul>
       </nav>
-      {!cola && <p className="text-sm text-texto-suave">Elige una cola para revisar casos o consultar su historial.</p>}
+      {!cola && <ResumenOperativo />}
       {verHistorial && (
         <nav aria-label="Estado de los casos" className="flex flex-wrap items-stretch gap-2 rounded-2xl bg-superficie p-1 text-sm">
           <Link href={`/admin?cola=${cola}`} aria-current={!resueltos ? "page" : undefined}

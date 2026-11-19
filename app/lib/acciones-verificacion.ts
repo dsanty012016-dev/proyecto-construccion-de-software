@@ -43,19 +43,21 @@ const esquemaRevisar = z.object({
   documento: z.string().uuid("Ese documento no existe."),
   decision: z.enum(["aprobar", "rechazar"]),
   motivo: z.string().trim().max(300, "El motivo puede tener hasta 300 caracteres.").optional(),
+  vence: z.union([z.iso.date(), z.literal("")]).optional(),
 });
 
 export async function revisarDocumento(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
   const validado = esquemaRevisar.safeParse(datosDelFormulario(formulario));
   if (!validado.success) return { resultado: "error", mensaje: validado.error.issues[0]?.message ?? MENSAJE_GENERICO };
-  const { documento, decision, motivo } = validado.data;
+  const { documento, decision, motivo, vence } = validado.data;
   if (decision === "rechazar" && !motivo) return { resultado: "error", mensaje: "Escribe el motivo del rechazo." };
 
   const supabase = await crearClienteServidor();
-  const { error } = await supabase.rpc("revisar_documento", {
+  const { error } = await supabase.rpc("revisar_documento_con_vigencia", {
     p_documento: documento,
     p_aprobar: decision === "aprobar",
     p_motivo: motivo || undefined,
+    p_vence_el: decision === "aprobar" && vence ? vence : undefined,
   });
   if (error) return { resultado: "error", mensaje: mensajeDeError(error) };
 

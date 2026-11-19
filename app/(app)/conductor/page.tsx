@@ -3,7 +3,7 @@ import Link from "next/link";
 import { retirarOferta } from "@/app/lib/acciones-viaje";
 import { cupoActivoDelConductor } from "@/app/lib/consultas-cupo";
 import { misDocumentos } from "@/app/lib/consultas-verificacion";
-import { TIPOS_DOCUMENTO } from "@/app/lib/documentos";
+import { preparacionConductor } from "@/app/lib/preparacion-conductor";
 import { resumenDelConductor, solicitudesAbiertas, vehiculoDe, viajeActivoDelConductor } from "@/app/lib/consultas-viaje";
 import { etiquetaEstado, hace, horaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { estadoDeCuenta, miSaldo } from "@/app/lib/consultas-billetera";
@@ -42,8 +42,8 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
     cupoActivoDelConductor(usuario.id),
     misDocumentos(usuario.id),
   ]);
-  const aprobados = TIPOS_DOCUMENTO.filter((t) => documentos[t]?.estado === "aprobado").length;
-  const verificado = aprobados === TIPOS_DOCUMENTO.length;
+  const horaConsulta = new Date().getTime();
+  const { verificado } = preparacionConductor(!!vehiculo, documentos, perfil.disponible, horaConsulta);
   // Sin disponibilidad, RLS no le muestra solicitudes: ni se piden.
   const preparado = !!vehiculo && verificado;
   const abiertas = perfil.disponible && preparado && !activo ? await solicitudesAbiertas(usuario.id) : null;
@@ -79,7 +79,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       <InstalarApp cerrable />
       <ActivarNotificaciones key={usuario.id} />
 
-      {!activo && !miCupo && <PreparacionConductor tieneVehiculo={!!vehiculo} documentos={documentos} disponible={perfil.disponible} />}
+      {!activo && !miCupo && <PreparacionConductor tieneVehiculo={!!vehiculo} documentos={documentos} disponible={perfil.disponible} ahora={horaConsulta} />}
 
       {activo ? (
         <section aria-labelledby="titulo-viaje-activo" data-tema="oscuro" className="space-y-3 rounded-2xl bg-primario p-[18px] text-texto">

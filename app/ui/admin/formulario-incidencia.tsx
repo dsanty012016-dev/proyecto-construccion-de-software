@@ -1,12 +1,13 @@
 "use client";
 
-import { startTransition, useActionState, useId } from "react";
+import { startTransition, useActionState, useId, useState } from "react";
 import { cerrarIncidencia } from "@/app/lib/acciones-incidencias";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
-import { Aviso, ResumenErrores } from "@/app/ui/auth/campos";
+import { Aviso, Campo, ResumenErrores } from "@/app/ui/auth/campos";
 
 export function FormularioIncidencia({ idIncidencia }: { idIncidencia: string }) {
   const [estado, accion, pendiente] = useActionState(cerrarIncidencia, ESTADO_INICIAL);
+  const [resultado, seleccionarResultado] = useState("");
   const id = useId();
   if (estado.resultado === "listo") return <Aviso tipo="listo">{estado.mensaje}</Aviso>;
   return (
@@ -28,7 +29,18 @@ export function FormularioIncidencia({ idIncidencia }: { idIncidencia: string })
           <span>Comparé la referencia, transacción, monto y estado en Wompi con la recarga y los movimientos de UniGo.</span>
         </label>
         {estado.errores?.verificada && <p id={`${id}-error-verificada`} className="text-error">{estado.errores.verificada}</p>}
-        <label htmlFor={`${id}-nota`} className="block font-semibold">Resultado de la revisión</label>
+        <label htmlFor={`${id}-resultado`} className="block font-semibold">Resultado de la conciliación</label>
+        <select id={`${id}-resultado`} name="resultado" value={resultado} onChange={(e) => seleccionarResultado(e.target.value)}
+          required className="min-h-12 w-full rounded-xl border border-texto-suave/60 bg-superficie px-3">
+          <option value="">Elige un resultado</option>
+          <option value="sin_ajuste">Revisión completada sin ajuste</option>
+          <option value="devolucion_externa">Se realizó una devolución por fuera de UniGo</option>
+        </select>
+        {resultado === "devolucion_externa" && <>
+          <Campo etiqueta="Monto devuelto en pesos" name="monto" inputMode="numeric" error={estado.errores?.monto} required />
+          <Campo etiqueta="Referencia del comprobante" name="comprobante" maxLength={100} error={estado.errores?.comprobante} required />
+        </>}
+        <label htmlFor={`${id}-nota`} className="block font-semibold">Nota interna</label>
         <textarea id={`${id}-nota`} name="nota" required minLength={3} maxLength={500} rows={3}
           aria-invalid={!!estado.errores?.nota || undefined}
           aria-describedby={estado.errores?.nota ? `${id}-error-nota` : undefined}

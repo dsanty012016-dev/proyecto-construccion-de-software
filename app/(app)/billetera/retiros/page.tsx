@@ -27,7 +27,7 @@ export default async function PaginaRetiros({ searchParams }: { searchParams: Pr
       <h2 id="historial-retiros" className="text-lg">Mis retiros</h2>
       {!historial.retiros.length && <p className="text-sm text-texto-suave">Todavía no tienes retiros en esta página.</p>}
       <ul className="divide-y divide-texto-suave/20">{historial.retiros.map((retiro) => <li key={retiro.id} className="space-y-2 py-4">
-        <p className="flex flex-wrap justify-between gap-2 font-semibold"><span>{pesos(retiro.monto)}</span><span>{retiro.estado === "solicitado" ? "En revisión" : retiro.estado === "pagado" ? "Pagado" : "No aprobado"}</span></p>
+        <p className="flex flex-wrap justify-between gap-2 font-semibold"><span>{pesos(retiro.monto)}</span><span>{retiro.estado === "solicitado" ? (retiro.asignado_en ? "En trámite" : "Por revisar") : retiro.estado === "pagado" ? "Pagado" : "No aprobado"}</span></p>
         <p className="text-sm text-texto-suave">{retiro.simulado && "Prueba · "}Nequi {retiro.nequi} · {fechaCorta(retiro.solicitado_en)}</p>
         {retiro.estado === "solicitado" && <p className="text-sm">Plazo máximo: {fechaCorta(retiro.plazo_hasta)}.</p>}
         {retiro.referencia_pago && <p className="text-sm break-all">Referencia del pago: {retiro.referencia_pago}</p>}

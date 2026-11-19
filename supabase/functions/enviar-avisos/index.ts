@@ -4,12 +4,13 @@
 // las funciones de 022, para poder reintentar sin repetir los éxitos parciales.
 //
 // Secretos (Edge Functions → Secrets): VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY.
-// SUPABASE_DB_URL la pone Supabase. Se despliega con verify_jwt apagado: no
-// recibe datos de nadie, solo un número que sin la base no sirve para nada.
+// SUPABASE_DB_URL la pone Supabase. El token de tareas autentica a pg_net.
 
 import webpush from "npm:web-push@3.6.7";
 import postgres from "npm:postgres@3.4.7";
 import { enviarEntregas, type Entrega } from "./entregas.ts";
+import { autenticarTarea } from "../_shared/autenticar-tarea.ts";
+import { CuerpoExcesivo, leerJsonLimitado } from "../confirmar-pago/procesar.ts";
 
 const sql = postgres(Deno.env.get("SUPABASE_DB_URL")!, { max: 2, prepare: false });
 
@@ -21,9 +22,19 @@ webpush.setVapidDetails(
 
 Deno.serve(async (peticion) => {
   if (peticion.method !== "POST") return new Response("Usa POST.", { status: 405 });
-  const datos = await peticion.json().catch(() => null);
+  const autorizada = await autenticarTarea(peticion, async () => {
+    const [fila] = await sql<{ hash: string | null }[]>`select privado.hash_token_tareas() hash`;
+    return fila.hash;
+  });
+  if (!autorizada) return new Response(null, { status: 401 });
+  let datos: { aviso?: unknown } | null;
+  try {
+    datos = await leerJsonLimitado(peticion, 1000) as { aviso?: unknown } | null;
+  } catch (error) {
+    return new Response(null, { status: error instanceof CuerpoExcesivo ? 413 : 400 });
+  }
   const aviso = datos?.aviso;
-  if (!Number.isSafeInteger(aviso) || aviso <= 0) return new Response("Aviso no válido.", { status: 400 });
+  if (typeof aviso !== "number" || !Number.isSafeInteger(aviso) || aviso <= 0) return new Response("Aviso no válido.", { status: 400 });
 
   const destinos = await sql<Entrega[]>`select * from privado.reservar_entregas(${aviso})`;
   const { enviados, vencidas, fallidos } = await enviarEntregas(

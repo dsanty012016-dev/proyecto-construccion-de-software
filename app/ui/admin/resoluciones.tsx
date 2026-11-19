@@ -69,6 +69,7 @@ const motivos: Record<string, string> = {
   pago_adicional: "Hay un pago adicional para esta recarga",
   transaccion_reutilizada: "La transacción ya aparece en otra recarga",
   estado_inconsistente: "Cambió el estado de un pago acreditado",
+  ambiente_distinto: "El pago y la recarga son de ambientes distintos",
 };
 
 export async function IncidenciasAdmin({ pagina, resueltas }: { pagina: number; resueltas: boolean }) {
@@ -90,9 +91,9 @@ export async function IncidenciasAdmin({ pagina, resueltas }: { pagina: number; 
                   {i.monto !== null && <p>Monto de la recarga: {pesos(i.monto)} · Estado en UniGo: {i.estado_recarga}</p>}
                   {i.transaccion_recarga && i.transaccion_recarga !== i.transaccion &&
                     <p className="break-all">Transacción asociada a la recarga: {i.transaccion_recarga}</p>}
-                  {i.creditos_coincidentes !== null && (
-                    <p className="text-texto-suave">Movimientos de recarga que coinciden en monto y hora: {i.creditos_coincidentes}.</p>
-                  )}
+                  {i.movimiento_id
+                    ? <p className="break-all text-texto-suave">Movimiento de crédito: {i.movimiento_id}</p>
+                    : <p className="text-texto-suave">Sin movimiento de crédito vinculado.</p>}
                 </>
               ) : <p className="text-texto-suave">UniGo no encontró una recarga vinculada.</p>}
             </div>
@@ -100,6 +101,9 @@ export async function IncidenciasAdmin({ pagina, resueltas }: { pagina: number; 
               <div className="space-y-1 border-t border-texto-suave/20 pt-2">
                 <p className="font-semibold">Revisión cerrada el {enFecha(i.resuelta_en)}</p>
                 <p>Revisó {i.responsable ?? "Administrador"}</p>
+                {i.resultado === "sin_ajuste" && <p>Conciliación sin ajuste.</p>}
+                {i.monto_devuelto !== null && <p>Devolución externa por {pesos(i.monto_devuelto)}.</p>}
+                {i.comprobante && <p className="break-all">Comprobante: {i.comprobante}</p>}
                 <p className="whitespace-pre-wrap break-words">{i.nota_revision}</p>
               </div>
             ) : <FormularioIncidencia idIncidencia={i.id} />}

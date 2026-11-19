@@ -532,7 +532,7 @@ select id as doc_licencia from public.documentos_conductor where conductor_id = 
 select id as doc_tarjeta from public.documentos_conductor where conductor_id = :'ivan' and tipo = 'tarjeta_propiedad' \gset
 select prueba.falla(format('select public.revisar_documento(%L, false)', :'doc_cedula'), 'motivo', 'rechazar exige un motivo');
 select public.revisar_documento(:'doc_cedula', true);
-select public.revisar_documento(:'doc_licencia', true);
+select public.revisar_documento_con_vigencia(:'doc_licencia',true,null,current_date+365);
 select public.revisar_documento(:'doc_tarjeta', false, 'La foto está borrosa');
 select prueba.falla(format('select public.revisar_documento(%L, true)', :'doc_cedula'), 'ya fue revisado', 'no se revisa dos veces');
 
@@ -1365,4 +1365,5 @@ select prueba.ok(
 \ir seguridad-pagos.sql
 \ir perfil-contacto.sql
 \ir historial-administracion.sql
+\ir operacion.sql
 \echo '== Todas las pruebas pasaron'

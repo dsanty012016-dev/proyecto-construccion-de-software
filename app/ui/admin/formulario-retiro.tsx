@@ -1,8 +1,18 @@
 "use client";
 import { startTransition, useActionState, useId, useState } from "react";
-import { revisarRetiro } from "@/app/lib/acciones-retiros";
+import { revisarRetiro, tomarRetiro } from "@/app/lib/acciones-retiros";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
-import { Aviso, Campo } from "@/app/ui/auth/campos";
+import { Aviso, BotonEnviar, Campo } from "@/app/ui/auth/campos";
+
+export function FormularioTomarRetiro({ retiroId }: { retiroId: string }) {
+  const [estado, accion] = useActionState(tomarRetiro, ESTADO_INICIAL);
+  if (estado.resultado === "listo") return <Aviso tipo="listo">{estado.mensaje}</Aviso>;
+  return <form action={accion} className="space-y-2">
+    <input type="hidden" name="retiro" value={retiroId} />
+    {estado.mensaje && <Aviso tipo="error">{estado.mensaje}</Aviso>}
+    <BotonEnviar enviando="Asignando…">Tomar esta solicitud</BotonEnviar>
+  </form>;
+}
 
 export function FormularioRevisarRetiro({ retiroId, simulado, documentoDisponible }: { retiroId: string; simulado: boolean; documentoDisponible: boolean }) {
   const [estado, accion, pendiente] = useActionState(revisarRetiro, ESTADO_INICIAL);
@@ -31,7 +41,7 @@ export function FormularioRevisarRetiro({ retiroId, simulado, documentoDisponibl
       </div>
       {estado.errores?.documentos && <p id={`${id}-error`} role="alert" className="text-sm text-error">{estado.errores.documentos}</p>}
       <Campo etiqueta={simulado ? "Referencia de prueba" : "Referencia del pago en Nequi"} name="referencia" autoComplete="off" error={estado.errores?.referencia} required />
-      <p className="text-sm text-texto-suave">{simulado ? "Esta operación es simulada: no hagas una transferencia real." : "Primero realiza el pago en Nequi. UniGo guarda la referencia y la revisión; este botón no transfiere dinero."}</p>
+      <p className="text-sm text-texto-suave">{simulado ? "Esta operación es simulada: no hagas una transferencia real." : "Comprueba la titularidad antes de transferir. Si Nequi no confirma el resultado, verifica el comprobante antes de intentar otra transferencia."}</p>
     </> : <Campo etiqueta="Motivo del rechazo" name="motivo" maxLength={300} error={estado.errores?.motivo} required />}
     <button type="submit" disabled={pendiente} className="prensa min-h-12 w-full rounded-xl bg-primario px-4 py-3 font-semibold text-sobre-primario disabled:opacity-60">{pendiente ? "Guardando…" : resultado === "pagado" ? "Guardar pago registrado" : "Confirmar rechazo"}</button>
   </form>;

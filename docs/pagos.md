@@ -54,7 +54,7 @@ La consulta de transacciones utiliza autenticación privada según la [documenta
 
 Para una demostración sin Wompi se requiere `UNIGO_RECARGA_SIMULADA=true` en el servidor, ambas variables de checkout de Wompi ausentes y la recarga simulada habilitada en la base. La app muestra «Simulación interna · saldo ficticio». La acción de servidor también comprueba el modo antes de llamar a la base. Una configuración parcial de Wompi bloquea la simulación incluso con esa variable activada. Esta entrega no cambia variables ni ajustes del proyecto conectado.
 
-Wompi Sandbox se identifica por separado como «sin dinero real»; no es la simulación interna. Las llaves válidas de producción identifican un pago real, pero no convierten saldos anteriores ni sustituyen la conciliación y activación exigidas por la base.
+Wompi Sandbox se identifica por separado como «sin dinero real». Las llaves deben coincidir con el ambiente permitido en la base antes de crear la referencia. Desde la migración 028, se puede pausar la apertura de checkout con `checkout_pausado` y los avisos de operaciones abiertas siguen por su flujo habitual. Para abrir checkout real se requiere además `checkout_real_habilitado=true`, que comienza apagado.
 
 ### Volver al cupo o viaje después de recargar
 
@@ -63,7 +63,7 @@ La billetera conserva un destino interno validado y lo incluye en la URL de reto
 Probar en el ambiente de Wompi de pruebas: aprobación, rechazo, aviso repetido, retorno antes del aviso y reintento tras una caída. Comprobar el saldo, movimiento y referencia en el historial. Las pruebas ficticias de GitHub no reemplazan esta prueba del comercio.
 
 ## Separar pruebas y producción
-024 añade `saldos_de_prueba_revisados=false`. Mientras sea falso o siga habilitada `recarga_simulada`, los eventos de producción se rechazan. Los retiros se marcan como simulados si la base no está completamente configurada para producción; esa marca no cambia al cambiar los ajustes.
+024 añade `saldos_de_prueba_revisados=false`. Mientras sea falso o siga habilitada `recarga_simulada`, los eventos de producción se rechazan. Los retiros siguen simulados hasta que la base esté preparada y `retiros_reales_habilitados=true`. Cada retiro conserva su ambiente cuando se modifican los ajustes.
 
 Antes de pasar a dinero real, el equipo debe conciliar saldos y ganancias ficticias, intentos pendientes y retiros simulados. **No se borran ni convierten saldos automáticamente.** Solo después de resolverlos, cerrar `recarga_simulada`, registrar la revisión de saldos y cambiar todas las llaves al mismo ambiente de producción. La bandera no limpia datos: es una constancia de la revisión del equipo.
 
@@ -76,5 +76,7 @@ Siguen pendientes la prueba del comercio, la conciliación operativa y las decis
 - `/billetera/recargas`, `/billetera/retiros`, `/admin`: historial y revisión.
 - `supabase/pruebas/pasarela.sql` y `seguridad-pagos.sql`: comprobaciones aisladas de firma, permisos, topes, reservas y revisión. El doble `prueba.confirmar_pago` existe únicamente en esa base de pruebas.
 
-Las incidencias se revisan desde Administración → Incidencias Wompi. Un administrador compara referencia, transacción, monto, estado del proveedor y movimientos de UniGo. El panel muestra las coincidencias por persona, monto y hora de resolución, ya que esos movimientos no llevan la referencia de la recarga. Si falta una referencia o un movimiento, se deja constancia en el resultado. Al cerrar se guardan responsable, fecha y nota. El cierre solo registra la revisión y conserva la marca financiera de la recarga. Un plazo de retiro vencido se destaca para revisión.
+Las incidencias se revisan desde Administración → Incidencias Wompi. Un administrador compara referencia, transacción, monto, estado del proveedor y movimientos de UniGo. Los créditos nuevos se vinculan a la referencia de recarga. El panel indica si no hay un crédito vinculado, incluyendo movimientos históricos sin esa asociación. El cierre guarda resultado, responsable, fecha y nota interna. Para documentar una devolución ya realizada fuera de UniGo, guarda monto y comprobante. El estudiante ve el resultado y su saldo se mantiene según los movimientos registrados.
+
+En retiros, el administrador toma primero la solicitud y confirma cédula y titularidad antes de transferir. Si la transferencia queda incierta, comprueba el estado con Nequi antes de volver a intentarla. UniGo conserva la referencia registrada y marca los retiros próximos a vencer. [Operación del piloto](operacion-piloto.md)
 
