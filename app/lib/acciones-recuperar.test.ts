@@ -3,11 +3,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ESTADO_INICIAL } from "./estado-formulario";
 
-const dobles = vi.hoisted(() => ({ verifyOtp: vi.fn(), updateUser: vi.fn(), redirect: vi.fn() }));
+const dobles = vi.hoisted(() => ({ verifyOtp: vi.fn(), updateUser: vi.fn(), getUser: vi.fn(), redirect: vi.fn() }));
 vi.mock("next/headers", () => ({ headers: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: dobles.redirect }));
 vi.mock("./supabase/server", () => ({
-  crearClienteServidor: async () => ({ auth: { verifyOtp: dobles.verifyOtp, updateUser: dobles.updateUser } }),
+  crearClienteServidor: async () => ({ auth: { verifyOtp: dobles.verifyOtp, updateUser: dobles.updateUser, getUser: dobles.getUser } }),
 }));
 
 import { recuperarConEnlace } from "./acciones-auth";
@@ -24,6 +24,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   dobles.verifyOtp.mockResolvedValue({ error: null });
   dobles.updateUser.mockResolvedValue({ error: null });
+  dobles.getUser.mockResolvedValue({ data: { user: null } });
   dobles.redirect.mockImplementation((ruta: string) => { throw new Error(`REDIRECT:${ruta}`); });
 });
 
@@ -46,6 +47,13 @@ describe("recuperar la contraseña con el enlace", () => {
     const estado = await recuperarConEnlace(ESTADO_INICIAL, formulario("Clave12345"));
     expect(estado).toMatchObject({ resultado: "error" });
     expect(dobles.updateUser).not.toHaveBeenCalled();
+  });
+
+  it("si el primer intento gastó el enlace (clave igual a la vieja), el segundo guarda con la sesión de ese intento", async () => {
+    dobles.verifyOtp.mockResolvedValue({ error: { message: "One-time token not found", code: "otp_expired" } });
+    dobles.getUser.mockResolvedValue({ data: { user: { id: "persona" } } });
+    await expect(recuperarConEnlace(ESTADO_INICIAL, formulario("Distinta123"))).rejects.toThrow("REDIRECT:/inicio?clave=actualizada");
+    expect(dobles.updateUser).toHaveBeenCalledWith({ password: "Distinta123" });
   });
 
   it("rechaza un enlace malformado", async () => {
