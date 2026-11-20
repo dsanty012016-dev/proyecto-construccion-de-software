@@ -44,7 +44,7 @@ export default async function PaginaPerfil() {
           </div>
         )}
       </dl>
-      {perfil && <details className="border-t border-linea px-4">
+      {perfil && <details className="movimiento-contacto border-t border-linea px-4">
         <summary className="min-h-11 cursor-pointer py-3 font-semibold text-secundario">Editar mi nombre y celular</summary>
         <div className="pb-4"><FormularioContacto nombre={perfil.nombre} telefono={perfil.telefono} /></div>
       </details>}

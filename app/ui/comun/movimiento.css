@@ -1,0 +1,227 @@
+/* Un recorrido corto presenta la marca. La capa no recibe acciones. */
+.apertura-unigo {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .apertura-unigo[data-activa] {
+    position: fixed;
+    z-index: 60;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at center, var(--producto-enfasis), transparent 64%),
+      var(--color-fondo);
+    animation: unigo-abrir 860ms ease-out both;
+  }
+
+  .apertura-unigo-marca {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: .45rem;
+    padding: 1.4rem .75rem;
+  }
+
+  .apertura-unigo-recorrido {
+    position: relative;
+    width: 224px;
+    height: 68px;
+    color: var(--color-secundario);
+  }
+
+  .apertura-unigo-tramo {
+    position: absolute;
+    height: 2px;
+    background: var(--color-linea);
+    transform-origin: left center;
+  }
+
+  .apertura-unigo-tramo::before {
+    content: "";
+    display: block;
+    height: 100%;
+    background: currentColor;
+    transform-origin: left center;
+    animation: unigo-trazar 140ms linear var(--demora, 0ms) backwards;
+  }
+
+  .apertura-unigo-tramo:nth-child(1) { inset: 54px auto auto 8px; width: 60px; }
+  .apertura-unigo-tramo:nth-child(2) {
+    inset: 54px auto auto 68px;
+    width: 95px;
+    rotate: -23.6deg;
+    --demora: 130ms;
+  }
+  .apertura-unigo-tramo:nth-child(3) {
+    inset: 16px auto auto 155px;
+    width: 60px;
+    --demora: 260ms;
+  }
+
+  .apertura-unigo-parada {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    translate: -50% -50%;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background: var(--color-fondo);
+    animation: unigo-parada 220ms var(--ritmo-movimiento) var(--demora, 0ms) backwards;
+  }
+  .apertura-unigo-parada:nth-child(4) { inset: 55px auto auto 8px; }
+  .apertura-unigo-parada:nth-child(5) {
+    inset: 36px auto auto 112px;
+    --demora: 195ms;
+  }
+  .apertura-unigo-parada:nth-child(6) {
+    inset: 17px auto auto 215px;
+    border-radius: 2px;
+    background: currentColor;
+    --demora: 390ms;
+  }
+
+  .apertura-unigo-logo {
+    display: grid;
+    justify-items: center;
+    animation: unigo-marca 310ms var(--ritmo-movimiento) 335ms backwards;
+  }
+
+  /* Solo el punto de atención se mueve. El contenido, los mapas y el foco
+     mantienen su posición y se pueden usar mientras cambia la pantalla. */
+  [data-movimiento] h1 {
+    animation: var(--entrada-unigo, unigo-acceso) var(--duracion-unigo, 240ms) var(--ritmo-movimiento) backwards;
+  }
+  [data-movimiento="inicio"] { --entrada-unigo: unigo-salida; --duracion-unigo: 470ms; }
+  [data-movimiento="trayecto"] { --entrada-unigo: unigo-direccion; --duracion-unigo: 340ms; }
+  [data-movimiento="cupos"] { --entrada-unigo: unigo-asentar; --duracion-unigo: 390ms; }
+  [data-movimiento="saldo"] { --entrada-unigo: unigo-legible; }
+  [data-movimiento="historial"] { --entrada-unigo: unigo-historial; --duracion-unigo: 330ms; }
+  [data-movimiento="identidad"] { --entrada-unigo: unigo-identidad; --duracion-unigo: 360ms; }
+  [data-movimiento="control"] { --entrada-unigo: unigo-control; --duracion-unigo: 320ms; }
+  [data-movimiento="sistema"] { --entrada-unigo: unigo-legible; }
+
+  .producto-nav a {
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+
+  .producto-nav a[aria-current="page"]::before {
+    animation: unigo-trazar 280ms var(--ritmo-movimiento) backwards;
+  }
+
+  .producto-nav a[aria-current="page"] > :first-child {
+    animation: unigo-parada 310ms var(--ritmo-movimiento) backwards;
+  }
+
+  .trayecto-avance {
+    transition: transform 550ms var(--ritmo-movimiento);
+  }
+
+  .trayecto-punto-actual {
+    animation: unigo-parada 540ms var(--ritmo-movimiento) backwards;
+  }
+
+  .trayecto-hito h1 {
+    animation-name: unigo-direccion;
+  }
+
+  .movimiento-comparacion {
+    animation: unigo-asentar 290ms var(--ritmo-movimiento) backwards;
+  }
+
+  .movimiento-lista-paradas[data-orden="sugerido"] {
+    animation: unigo-orden 450ms ease-out backwards;
+  }
+
+  .billetera-saldo .cifra {
+    transform-origin: left center;
+    animation: unigo-cifra 390ms var(--ritmo-movimiento) backwards;
+  }
+
+  .movimiento-historial > :nth-child(-n+3) {
+    animation: unigo-historial 250ms var(--ritmo-movimiento) var(--demora, 0ms) backwards;
+  }
+  .movimiento-historial > :nth-child(2) { --demora: 45ms; }
+  .movimiento-historial > :nth-child(3) { --demora: 90ms; }
+
+  .producto-perfil > :first-child {
+    animation: unigo-identidad 410ms var(--ritmo-movimiento) backwards;
+  }
+  .movimiento-contacto[open] > div {
+    animation: unigo-acceso 220ms var(--ritmo-movimiento) backwards;
+  }
+
+  .admin-cola[aria-current="page"] > :first-child {
+    animation: unigo-control 300ms var(--ritmo-movimiento) backwards;
+  }
+
+  .movimiento-cargando > :first-child {
+    position: relative;
+    overflow: hidden;
+  }
+  .movimiento-cargando > :first-child::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background: var(--color-secundario);
+    opacity: 0;
+    transform-origin: left center;
+    animation: unigo-espera 620ms var(--ritmo-movimiento) 2 backwards;
+  }
+
+  @keyframes unigo-abrir {
+    0% { opacity: 0; }
+    8%, 76% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  @keyframes unigo-trazar {
+    from { scale: 0 1; }
+  }
+  @keyframes unigo-espera {
+    0% { scale: 0 1; opacity: 0; }
+    25% { opacity: .75; }
+    100% { scale: 1 1; opacity: 0; }
+  }
+  @keyframes unigo-marca {
+    from { opacity: 0; translate: 0 .35rem; }
+  }
+  @keyframes unigo-parada {
+    0% { scale: .7; opacity: .55; }
+    60% { scale: 1.16; opacity: 1; }
+  }
+  @keyframes unigo-salida {
+    from { opacity: .45; transform: translateX(-.55rem) skewX(-5deg); }
+  }
+  @keyframes unigo-acceso {
+    from { opacity: .62; translate: 0 -.25rem; }
+  }
+  @keyframes unigo-direccion {
+    from { opacity: .6; translate: -.65rem 0; }
+  }
+  @keyframes unigo-asentar {
+    0% { opacity: .56; translate: 0 .48rem; }
+    75% { opacity: 1; translate: 0 -.05rem; }
+  }
+  @keyframes unigo-legible {
+    from { opacity: .62; }
+  }
+  @keyframes unigo-cifra {
+    from { opacity: .45; scale: .96 1; translate: 0 .25rem; }
+  }
+  @keyframes unigo-orden {
+    from { background-color: var(--producto-enfasis); }
+  }
+  @keyframes unigo-historial {
+    from { opacity: .56; translate: .45rem 0; }
+  }
+  @keyframes unigo-identidad {
+    from { opacity: .62; scale: .96; }
+  }
+  @keyframes unigo-control {
+    from { opacity: .7; translate: .25rem 0; }
+  }
+}

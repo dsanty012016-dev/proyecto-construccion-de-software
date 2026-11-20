@@ -205,20 +205,27 @@
   .pie a { color: inherit; display: inline-flex; align-items: center; min-height: 2.75rem; text-decoration: none; }
   .pie a:hover { color: var(--color-texto); text-decoration: underline; text-underline-offset: 0.3em; }
 
-  /* ---------- La entrada de la portada: una sola vez ---------- */
+  /* ---------- La portada conserva el ritmo breve de la apertura ---------- */
   @media (prefers-reduced-motion: no-preference) {
-    .portada h1 span { animation: portada-subir 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-    .portada h1 span:nth-child(2) { animation-delay: 90ms; }
-    .enviado svg { animation: portada-leido 300ms ease-out 1500ms both; }
-    .enviado, .portada-texto { animation: portada-aparecer 500ms ease-out 500ms both; }
-    .tiquete { animation: portada-imprimir 650ms cubic-bezier(0.2, 0.8, 0.2, 1) 1900ms both; }
+    .portada h1 span { animation: portada-subir 490ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+    .portada h1 span:nth-child(2) { animation-delay: 75ms; }
+    .enviado svg { animation: portada-leido 260ms ease-out 340ms both; }
+    .enviado, .portada-texto { animation: portada-aparecer 320ms ease-out 110ms backwards; }
+    .tiquete { animation: portada-imprimir 510ms cubic-bezier(0.2, 0.8, 0.2, 1) 240ms backwards; }
+    #como-funciona:target .parada::before {
+      animation: portada-parada 420ms ease-out var(--demora, 0ms) backwards;
+    }
+    #como-funciona:target .parada:nth-child(2) { --demora: 55ms; }
+    #como-funciona:target .parada:nth-child(3) { --demora: 110ms; }
+    #como-funciona:target .parada:nth-child(4) { --demora: 165ms; }
   }
   @media (prefers-reduced-motion: reduce) { .enviado svg { color: var(--color-secundario); } }
 
   .frase-suelta { max-width: 26rem; margin-bottom: 1.5rem; }
 }
 
-@keyframes portada-subir { from { opacity: 0; translate: 0 0.18em; } }
-@keyframes portada-aparecer { from { opacity: 0; } }
+@keyframes portada-subir { from { opacity: .5; translate: 0 0.12em; } }
+@keyframes portada-aparecer { from { opacity: .65; } }
 @keyframes portada-leido { to { color: var(--color-secundario); } }
-@keyframes portada-imprimir { from { opacity: 0; translate: 0 2.5rem; rotate: 1deg; } }
+@keyframes portada-imprimir { from { opacity: .65; translate: 0 1.25rem; rotate: 1deg; } }
+@keyframes portada-parada { 45% { scale: 1.25; } }

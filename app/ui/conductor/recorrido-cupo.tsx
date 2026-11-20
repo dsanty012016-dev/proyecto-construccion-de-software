@@ -123,7 +123,7 @@ export function RecorridoCupo({
           </p>
           {comparacion && (
             <>
-              <div className="flex flex-wrap gap-x-5 gap-y-1 border-y border-linea py-2 text-sm tabular-nums">
+              <div className="movimiento-comparacion flex flex-wrap gap-x-5 gap-y-1 border-y border-linea py-2 text-sm tabular-nums">
                 <p>Orden inicial <strong>{duracionTexto(comparacion.segundosActuales)}</strong></p>
                 {ahorro > 0 && (
                   <>
@@ -177,7 +177,7 @@ export function RecorridoCupo({
           {recorrido.length > 1 ? (regreso ? "Orden de bajada" : "Orden de recogida") : "Van contigo"}
         </h2>
         {hayConfirmadas ? (
-          <ol className="space-y-3">
+          <ol data-orden={aplicado ? "sugerido" : "inicial"} className="movimiento-lista-paradas space-y-3 rounded-2xl">
             {recorrido.map(({ id, detalle }, i) => (
               <li key={id} className="flex gap-3 rounded-2xl bg-superficie p-4">
                 <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full bg-texto font-titulo text-sm font-bold text-fondo">

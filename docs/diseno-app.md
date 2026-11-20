@@ -11,7 +11,9 @@ La acción y el estado actual ocupan el primer plano. El estudiante ve cómo ped
 
 ## Movimiento
 
-La entrada de pantalla dura 360 ms. Al aceptar o avanzar en el viaje se resalta la parada actual y la línea refleja su avance en 550 ms. Los controles conservan su respuesta visual en movimiento reducido, con el estado del viaje expuesto por texto y atributos accesibles.
+En la primera apertura de la pestaña, un recorrido de tres paradas presenta el logo en 860 ms. Un toque o una tecla lo cierra. Los títulos tienen una entrada propia por sección. La navegación resalta la pestaña elegida y los cambios del viaje destacan la parada actual. Billetera destaca la cifra real del saldo, el historial revela solo las primeras filas, perfil acompaña la apertura del editor y administración identifica la cola elegida.
+
+El ajuste del dispositivo para reducir movimiento omite la apertura y las transiciones decorativas. Los estados y resultados se siguen leyendo por texto y por sus atributos accesibles.
 
 ## Alcance y revisión
 

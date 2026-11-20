@@ -75,12 +75,23 @@ html:has(.mapa-visor[open]) {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .mapa-visor[open] .mapa-visor-barra {
-    animation: mapa-visor-entrada .2s ease-out both;
+  .mapa-visor-barra {
+    position: relative;
+  }
+
+  .mapa-visor[open] .mapa-visor-barra::after {
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    content: "";
+    pointer-events: none;
+    background: var(--color-secundario);
+    transform-origin: left center;
+    animation: mapa-visor-entrada 380ms var(--ritmo-movimiento, ease-out) both;
   }
 
   @keyframes mapa-visor-entrada {
-    from { opacity: .72; translate: 0 -.25rem; }
-    to { opacity: 1; translate: 0 0; }
+    from { opacity: .7; scale: 0 1; }
+    to { opacity: 0; scale: 1 1; }
   }
 }

@@ -46,7 +46,7 @@ export default async function PaginaViajes({ searchParams }: { searchParams: Pro
           )}
         </div>
       ) : (
-        <ul className="producto-panel px-4">
+        <ul key={url} className="movimiento-historial producto-panel px-4">
           {items.map((item) => item.tipo === "viaje"
             ? <FilaViaje key={`v-${item.dato.viaje.id}`} item={item.dato} detalle={`/viajes/${item.dato.viaje.id}${volver}`} />
             : <FilaCupo key={`c-${item.dato.cupo.id}`} item={item.dato} detalle={`/viajes/cupo/${item.dato.cupo.id}${volver}`} />)}

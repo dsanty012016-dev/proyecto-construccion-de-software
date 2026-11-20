@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./ui/comun/experiencia.css";
+@import "./ui/comun/movimiento.css";
 
 /* Identidad visual de UniGo (ver docs/identidad.md; modo oscuro primero).
    Los colores se definen UNA sola vez aquí; en los componentes se usan como

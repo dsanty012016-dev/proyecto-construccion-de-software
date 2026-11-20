@@ -41,7 +41,7 @@ export default async function PaginaBilletera({ searchParams }: { searchParams: 
           <h1 className="text-lg font-bold">Tu saldo</h1>
           <span className="producto-estado" data-estado={modo === "no-disponible" ? "atencion" : undefined}>{etiquetaModo}</span>
         </div>
-        <p className="cifra">{pesos(saldo)}</p>
+        <p key={saldo} className="cifra">{pesos(saldo)}</p>
         {perfil?.rol === "conductor" && <p className="text-sm text-texto-suave">Tus ganancias incluyen el descuento del 10 % de UniGo.</p>}
       </header>
 
