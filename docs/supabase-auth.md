@@ -37,7 +37,7 @@ El servidor de correo de prueba de Supabase solo entrega a los miembros del equi
 - "Confirm signup" → `confirmar-cuenta.html`
 - "Reset Password" → `recuperar-clave.html`
 
-El enlace de las plantillas usa `token_hash`, así que funciona aunque el correo se abra en otro dispositivo, navegador o en la app de Outlook o Gmail. `/auth/confirmar` lo pasa a `/continuar`, donde se usa al tocar un botón: Outlook y otros correos abren los enlaces solos para revisarlos y, si se usara al abrirlo, llegaría gastado ("Ese enlace ya se usó o venció").
+El enlace de las plantillas usa `token_hash`, así que funciona aunque el correo se abra en otro dispositivo, navegador o en la app de Outlook o Gmail. `/auth/confirmar` lo pasa a `/continuar`. Outlook y otros correos abren los enlaces solos para revisarlos (el de la U llega a tocar botones), así que el enlace no se usa al abrirlo: para confirmar la cuenta, al tocar el botón; para recuperar la contraseña, recién al guardar la contraseña nueva en esa misma página. Antes se usaba con un botón y el revisor lo gastaba primero: la persona veía un falso "Ese enlace ya se usó o venció" (registros de Auth: un `/verify` exitoso y segundos después el de la persona con `otp_expired`).
 
 **Sin estas plantillas** Supabase manda su enlace por defecto, que solo funciona si se abre en el mismo navegador donde se pidió; desde la app del correo en el celular falla.
 
