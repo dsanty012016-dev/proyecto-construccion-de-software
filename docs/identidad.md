@@ -4,17 +4,7 @@ Fuente: documento "IDENTIDAD APP" del equipo. **Modo oscuro primero.**
 
 ## App, acceso y seguimiento compartido
 
-La interfaz de operación usa azul petróleo y turquesa, con índices de contraste en ambos temas y la tipografía Archivo con mayor ancho de lectura. La portada pública usa la paleta azul descrita abajo.
-
-| Uso | Oscuro | Claro |
-| --- | --- | --- |
-| Fondo | `#0E2024` | `#EDF4F2` |
-| Superficie | `#172C30` | `#FFFFFF` |
-| Acción principal | `#0D7568` | `#0D7568` |
-| Ruta y enlaces | `#78D9C3` | `#075D53` |
-| Texto principal | `#F1F8F6` | `#122E30` |
-
-El blanco verdoso sobre el botón principal alcanza 5,47:1. Los colores y la interacción viven en `app/ui/comun/experiencia.css`. Consulta [diseño de la app](diseno-app.md).
+La portada, la app, el acceso y el seguimiento compartido usan la paleta original descrita abajo. El mapa y la apertura animada toman sus colores de la misma paleta. Los paneles destacados mezclan el azul secundario con la superficie del tema. Los estados de atención usan ámbar. Consulta [diseño de la app](diseno-app.md).
 
 ## Colores
 Definidos una sola vez en `app/globals.css`. Contrastes calculados (WCAG): el texto pasa 4,5:1 en todos los casos; el azul principal solo sirve como relleno, no como texto.
