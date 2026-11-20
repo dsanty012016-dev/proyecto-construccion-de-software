@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { devices, expect, test } from "@playwright/test";
 
 test("la apertura aparece una vez y se cierra al usar el teclado", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -84,4 +84,46 @@ test("el selector de tema cambia al instante con movimiento reducido", async ({ 
   await page.getByRole("button", { name: "Cambiar entre modo claro y modo oscuro" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-tema", "oscuro");
   await expect(page.locator("html")).not.toHaveClass(/tema-reflejo/);
+});
+
+test.describe("reflejo en Android", () => {
+  test.use({ ...devices["Pixel 7"], defaultBrowserType: "chromium" });
+
+  test("barre la pantalla y conserva el tema sin tomar capturas", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
+    await page.addInitScript(() => {
+      document.startViewTransition = () => {
+        document.documentElement.dataset.capturaInvocada = "sí";
+        throw Error("Android debe usar el reflejo ligero.");
+      };
+      document.addEventListener("animationstart", (evento) => {
+        if (evento.animationName === "reflejo-ligero") document.documentElement.dataset.barridoObservado = "sí";
+      });
+    });
+    await page.goto("/entrar");
+    await page.getByRole("button", { name: "Cambiar entre modo claro y modo oscuro" }).tap();
+    const html = page.locator("html");
+    await expect(html).toHaveAttribute("data-barrido-observado", "sí");
+    await expect(html).toHaveAttribute("data-tema", "oscuro");
+    await expect(html).not.toHaveClass(/tema-reflejo/);
+    expect(await html.getAttribute("data-captura-invocada")).toBeNull();
+    await page.reload();
+    await expect(html).toHaveAttribute("data-tema", "oscuro");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(page.getByText("Tu dispositivo tiene activado Reducir movimiento.")).toBeVisible();
+    await page.getByRole("button", { name: "Cambiar entre modo claro y modo oscuro" }).tap();
+    await expect(html).toHaveAttribute("data-tema", "claro");
+    expect(await html.getAttribute("data-barrido-observado")).toBeNull();
+  });
+});
+
+test("un navegador sin transiciones de pantalla usa el reflejo ligero", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
+  await page.addInitScript(() => Object.defineProperty(document, "startViewTransition", { value: undefined }));
+  await page.goto("/entrar");
+  await page.getByRole("button", { name: "Cambiar entre modo claro y modo oscuro" }).click();
+  const html = page.locator("html");
+  await expect(html).toHaveClass(/tema-reflejo-ligero/);
+  await expect(html).toHaveAttribute("data-tema", "oscuro");
+  await expect(html).not.toHaveClass(/tema-reflejo/);
 });

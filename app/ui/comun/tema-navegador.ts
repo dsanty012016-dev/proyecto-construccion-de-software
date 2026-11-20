@@ -3,6 +3,8 @@
 import { CLAVE_TEMA, COLOR_BARRA, EVENTO_TEMA, esTema, otroTema, temaEfectivo, type Tema } from "@/app/lib/tema";
 
 const CELULAR_EN_CLARO = "(prefers-color-scheme: light)";
+const MOVIMIENTO_REDUCIDO = "(prefers-reduced-motion: reduce)";
+const REFLEJO_LIGERO = "tema-reflejo-ligero";
 
 /** El modo que se está viendo ahora. */
 export function temaActual(): Tema {
@@ -24,23 +26,38 @@ export function cambiarTema(): Tema {
   return tema;
 }
 
-/** Revela el nuevo tema con una franja de luz entre las dos capturas. */
+/** Barre una sola franja sin capturar la pantalla. */
+function mostrarReflejoLigero(cambiar?: () => void): void {
+  const raiz = document.documentElement;
+  raiz.classList.add(REFLEJO_LIGERO);
+  if (cambiar) window.setTimeout(cambiar, 190);
+  window.setTimeout(() => raiz.classList.remove(REFLEJO_LIGERO), 540);
+}
+
+/** En Android muestra el reflejo con una sola capa para mantenerlo ligero. */
 export function cambiarTemaConReflejo(): void {
   const raiz = document.documentElement;
-  if (raiz.classList.contains("tema-reflejo")) return;
-  if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const reducido = window.matchMedia(MOVIMIENTO_REDUCIDO);
+  if (raiz.classList.contains("tema-reflejo") || raiz.classList.contains(REFLEJO_LIGERO)) return;
+  if (reducido.matches) {
     cambiarTema();
+    return;
+  }
+  if (!document.startViewTransition || /\bAndroid\b/i.test(navigator.userAgent)) {
+    mostrarReflejoLigero(cambiarTema);
     return;
   }
   raiz.classList.add("tema-reflejo");
   try {
     const transicion = document.startViewTransition(() => { cambiarTema(); });
-    // El navegador puede saltarse la animación al ocultar la pestaña.
-    void transicion.ready.catch(() => {});
+    void transicion.ready.catch(() => {
+      // El navegador ya ejecuta el cambio aunque omita la transición.
+      if (!reducido.matches && document.visibilityState === "visible") mostrarReflejoLigero();
+    });
     void transicion.finished.catch(() => {}).then(() => raiz.classList.remove("tema-reflejo"));
   } catch {
     raiz.classList.remove("tema-reflejo");
-    cambiarTema();
+    mostrarReflejoLigero(cambiarTema);
   }
 }
 

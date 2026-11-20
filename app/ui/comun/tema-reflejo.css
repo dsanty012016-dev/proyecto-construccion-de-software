@@ -17,6 +17,28 @@
   }
   html.tema-reflejo::view-transition-old(root) { --reflejo-corte: reflejo-salida; }
   html.tema-reflejo::view-transition-new(root) { --reflejo-corte: reflejo-entrada; }
+
+  html.tema-reflejo-ligero::after {
+    content: "";
+    position: fixed;
+    z-index: 61;
+    inset: -10vh auto -10vh 0;
+    width: clamp(28px, 10vw, 72px);
+    pointer-events: none;
+    background: linear-gradient(90deg,
+      transparent,
+      color-mix(in srgb, var(--color-secundario) 38%, transparent) 35%,
+      var(--color-sobre-primario) 50%,
+      color-mix(in srgb, var(--color-secundario) 52%, transparent) 61%,
+      transparent
+    );
+    animation: reflejo-ligero 490ms cubic-bezier(.36, .03, .23, 1) both;
+  }
+}
+
+@keyframes reflejo-ligero {
+  from { transform: translate3d(calc(100vw + 18vh), 0, 0) skewX(10deg); }
+  to { transform: translate3d(calc(-100% - 18vh), 0, 0) skewX(10deg); }
 }
 
 @keyframes reflejo-salida {
