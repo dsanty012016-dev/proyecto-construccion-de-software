@@ -35,6 +35,7 @@ export function Conducir() {
 const EQUIPO = [
   { nombre: "Dilan Santiago Chavarro Parra", rol: "Desarrollo, diseño de la experiencia y gestión del proyecto" },
   { nombre: "David Eduardo Durán Acevedo", rol: "Desarrollo, gestión del proyecto y pruebas" },
+  { nombre: "Andrés Santiago Perdomo Suárez", rol: "Desarrollo" },
 ];
 
 export function Equipo() {
@@ -46,7 +47,7 @@ export function Equipo() {
             De estudiantes para estudiantes.
           </h2>
           <p className="entradilla">
-            UniGo es un proyecto académico de dos estudiantes de la Universidad Santo Tomás, seccional Villavicencio, que también necesitan llegar a
+            UniGo es un proyecto académico de tres estudiantes de la Universidad Santo Tomás, seccional Villavicencio, que también necesitan llegar a
             clase.
           </p>
         </div>

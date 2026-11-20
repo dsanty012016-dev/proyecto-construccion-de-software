@@ -1,6 +1,6 @@
 # UniGo · Tu viaje, tu universidad
 
-App web instalable (PWA) de movilidad para estudiantes de la Universidad Santo Tomás, seccional Villavicencio. Estudiantes y conductores de la misma universidad comparten el viaje a la U y de regreso: por pedido (los conductores ofertan su precio) o en cupos con hora fija. Proyecto académico de Dilan Santiago Chavarro Parra y David Eduardo Durán Acevedo.
+App web instalable (PWA) de movilidad para estudiantes de la Universidad Santo Tomás, seccional Villavicencio. Estudiantes y conductores de la misma universidad comparten el viaje a la U y de regreso: por pedido (los conductores ofertan su precio) o en cupos con hora fija. Proyecto académico de Dilan Santiago Chavarro Parra, David Eduardo Durán Acevedo y Andrés Santiago Perdomo Suárez.
 
 **En línea:** https://unigoproject.vercel.app (se publica solo con cada merge a `main`).
 

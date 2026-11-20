@@ -1,7 +1,7 @@
 # UniGo · Documento de entrega
 
 **Tu viaje, tu universidad.** Proyecto académico de Construcción de Software, Universidad Santo Tomás, seccional Villavicencio.
-Equipo: Dilan Santiago Chavarro Parra y David Eduardo Durán Acevedo.
+Equipo: Dilan Santiago Chavarro Parra, David Eduardo Durán Acevedo y Andrés Santiago Perdomo Suárez.
 En línea: **https://unigoproject.vercel.app** · Código: este repositorio.
 
 ## 1. El problema y la idea
