@@ -48,8 +48,8 @@ export function FormularioPuesto({ cupoId, salida, destino, sentido }: Props) {
           </h2>
           <p className="text-sm text-texto-suave">
             {regreso
-              ? "Todos se suben en la U. Mueve el mapa hasta dejar el pin donde te bajas, en el camino del conductor."
-              : "Mueve el mapa hasta dejar el pin en un punto del camino del conductor."}
+              ? "Todos se suben en la U. Mueve el mapa hasta dejar el pin donde te bajas, en el camino del conductor, y toca “Guardar esta ubicación”."
+              : "Mueve el mapa hasta dejar el pin en un punto del camino del conductor y toca “Guardar esta ubicación”."}
           </p>
         </div>
         <Mapa

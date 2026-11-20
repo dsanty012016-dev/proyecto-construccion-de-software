@@ -174,10 +174,10 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   const botonReducir = useRef<HTMLButtonElement>(null);
   const tituloVisor = useId();
   const [ampliado, setAmpliado] = useState(false);
-  // Aviso sobre el mapa al elegir punto: "suelta para guardar" mientras se
-  // arrastra y "Ubicación guardada" al soltar, para que se sepa que quedó.
-  const [avisoPunto, setAvisoPunto] = useState<"moviendo" | "guardado" | null>(null);
-  const [vecesGuardado, setVecesGuardado] = useState(0);
+  // Elegir punto: mover el mapa solo deja el pin; el punto se guarda con el
+  // botón "Guardar esta ubicación" (o con "usar mi ubicación"), y el botón
+  // cambia a "Ubicación guardada" para que se sepa que quedó.
+  const [puntoGuardado, setPuntoGuardado] = useState(false);
   const mapaRef = useRef<MapaLibre | null>(null);
   const libRef = useRef<Libreria | null>(null);
   const marcadores = useRef<{ origen?: { marcador: Marker; estilo: "origen" | "destino" }; destino?: { marcador: Marker; estilo: "origen" | "destino" } }>({});
@@ -263,9 +263,6 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
         instancia.on("error", () => {
           if (!cancelado && !cargado) { clearTimeout(limiteCarga); setEstado("error"); }
         });
-        instancia.on("movestart", (evento) => {
-          if (!cancelado && cargado && alElegirRef.current && evento.originalEvent) setAvisoPunto("moviendo");
-        });
         instancia.on("moveend", (evento) => {
           if (cancelado || !cargado) return;
           if (encuadrando.current) {
@@ -273,17 +270,22 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
             return;
           }
           // Cargar o redimensionar el mapa no equivale a elegir un punto.
-          if (!evento.originalEvent && !("puntoElegido" in evento && evento.puntoElegido === true)) return;
+          const datos = evento as { puntoElegido?: boolean; puntoTocado?: boolean };
+          if (!evento.originalEvent && !datos.puntoElegido && !datos.puntoTocado) return;
           const c = instancia.getCenter();
           centroInicial.current = { lat: c.lat, lng: c.lng };
-          if (alElegirRef.current) {
+          if (!alElegirRef.current) return;
+          if (datos.puntoElegido) {
+            // "Usar mi ubicación": la persona ya pidió ese punto, se guarda solo.
             alElegirRef.current({ lat: c.lat, lng: c.lng });
-            setAvisoPunto("guardado");
-            setVecesGuardado((n) => n + 1);
+            setPuntoGuardado(true);
+          } else {
+            // Arrastrar o tocar el mapa: el pin se mueve y falta tocar "Guardar".
+            setPuntoGuardado(false);
           }
         });
         instancia.on("click", (evento) => {
-          if (!cancelado && cargado && alElegirRef.current) instancia.easeTo({ center: evento.lngLat, duration: animar.current ? 400 : 0 }, { puntoElegido: true });
+          if (!cancelado && cargado && alElegirRef.current) instancia.easeTo({ center: evento.lngLat, duration: animar.current ? 400 : 0 }, { puntoTocado: true });
         });
       })
       .catch(() => {
@@ -429,12 +431,13 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     botonReducir.current?.focus({ preventScroll: true });
   }
 
-  // "Ubicación guardada" se queda unos segundos y se va solo.
-  useEffect(() => {
-    if (vecesGuardado === 0) return;
-    const quitar = setTimeout(() => setAvisoPunto((actual) => (actual === "guardado" ? null : actual)), 2500);
-    return () => clearTimeout(quitar);
-  }, [vecesGuardado]);
+  function guardarPunto() {
+    const mapa = mapaRef.current;
+    if (!mapa || !alElegirRef.current) return;
+    const c = mapa.getCenter();
+    alElegirRef.current({ lat: c.lat, lng: c.lng });
+    setPuntoGuardado(true);
+  }
 
   function alCerrarVisor() {
     // Al volver, el navegador mantiene el mismo lienzo y MapLibre ajusta su tamaño.
@@ -477,13 +480,15 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
           )}
 
           {modoElegir && estado === "listo" && (
-            <p role="status" aria-live="polite"
-              className={`pointer-events-none absolute top-2 left-1/2 z-[5] flex -translate-x-1/2 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold whitespace-nowrap shadow-lg transition-opacity duration-200 motion-reduce:transition-none ${
-                avisoPunto === null ? "opacity-0" : "opacity-100"
-              } ${avisoPunto === "guardado" ? "bg-primario text-sobre-primario" : "bg-fondo/90 text-texto"}`}>
-              {avisoPunto === "guardado" && <IconoCheck className="size-4 shrink-0" />}
-              {avisoPunto === "guardado" ? "Ubicación guardada" : avisoPunto === "moviendo" ? "Suelta el mapa para guardar el punto" : ""}
-            </p>
+            <button type="button" onClick={guardarPunto} aria-pressed={puntoGuardado}
+              className={`absolute top-2 left-1/2 z-[5] flex min-h-11 -translate-x-1/2 items-center gap-2 rounded-full border-2 px-4 text-sm font-bold whitespace-nowrap shadow-lg transition-colors duration-150 motion-reduce:transition-none ${
+                puntoGuardado
+                  ? "border-secundario bg-fondo text-texto"
+                  : "border-transparent bg-primario text-sobre-primario hover:brightness-110"
+              }`}>
+              {puntoGuardado && <IconoCheck className="size-5 shrink-0 text-secundario" />}
+              <span aria-live="polite">{puntoGuardado ? "Ubicación guardada" : "Guardar esta ubicación"}</span>
+            </button>
           )}
 
           {estado === "listo" && infoRuta?.clave === claveRuta && (

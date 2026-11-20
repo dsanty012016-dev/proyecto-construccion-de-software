@@ -62,8 +62,8 @@ export function FormularioPedir({ sede, sentidoInicial = "ida" }: { sede: Sede; 
           </h2>
           <p id="ayuda-mapa" className="text-sm text-texto-suave">
             {regreso
-              ? "Mueve el mapa hasta que el pin quede donde te bajas, o toca el sitio."
-              : "Mueve el mapa hasta que el pin quede en tu punto de recogida, o toca el sitio."}
+              ? "Mueve el mapa hasta que el pin quede donde te bajas y toca “Guardar esta ubicación”."
+              : "Mueve el mapa hasta que el pin quede en tu punto de recogida y toca “Guardar esta ubicación”."}
           </p>
         </div>
 
