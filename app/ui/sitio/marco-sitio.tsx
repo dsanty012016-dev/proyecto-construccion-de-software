@@ -12,7 +12,7 @@ export function BarraSitio() {
     <header id="barra-sitio" className="barra">
       <div className="marco">
         <Link href="/" aria-label="UniGo, inicio" className="flex min-h-11 items-center">
-          <Logo ancho={97} alto={34} prioridad />
+          <Logo ancho={125} alto={44} prioridad />
         </Link>
         <nav aria-label="Cuenta">
           <BotonTema />

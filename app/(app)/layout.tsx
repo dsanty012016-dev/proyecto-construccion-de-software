@@ -19,7 +19,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
       <header className="producto-encabezado">
         <div className="producto-barra">
           <Link href="/inicio" aria-label="Inicio de UniGo" className="inline-flex min-h-11 items-center">
-            <Logo ancho={97} alto={34} className="h-7 w-auto" alt="" />
+            <Logo ancho={114} alto={40} className="h-7 w-auto lg:h-10" alt="" />
           </Link>
           <BotonTema />
         </div>
