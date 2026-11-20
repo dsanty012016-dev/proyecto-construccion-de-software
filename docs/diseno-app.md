@@ -15,7 +15,7 @@ En la primera apertura de la pestaña, un punto recorre tres paradas y presenta 
 
 El ajuste del dispositivo para reducir movimiento omite la apertura y las transiciones decorativas. Los estados y resultados se siguen leyendo por texto y por sus atributos accesibles.
 
-Al cambiar entre modo claro y oscuro, un reflejo diagonal revela el otro tema. En Android, o cuando el navegador no puede capturar la pantalla para la transición, una franja de luz hace el barrido con una sola capa. Con movimiento reducido el tema cambia de inmediato.
+Al cambiar entre modo claro y oscuro, el mismo reflejo diagonal revela el otro tema en los navegadores compatibles. Con movimiento reducido o si el navegador no puede ejecutar la transición, el tema cambia de inmediato.
 
 ## Alcance y revisión
 
