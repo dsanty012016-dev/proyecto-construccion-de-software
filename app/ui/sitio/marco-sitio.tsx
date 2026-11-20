@@ -12,7 +12,7 @@ export function BarraSitio() {
     <header id="barra-sitio" className="barra">
       <div className="marco">
         <Link href="/" aria-label="UniGo, inicio" className="flex min-h-11 items-center">
-          <Logo ancho={227} alto={80} prioridad />
+          <Logo ancho={159} alto={56} prioridad />
         </Link>
         <nav aria-label="Cuenta">
           <BotonTema />
@@ -32,7 +32,7 @@ export function PieSitio() {
   return (
     <footer className="pie">
       <div className="marco">
-        <Logo ancho={80} alto={28} />
+        <Logo ancho={159} alto={56} />
         <p>Proyecto académico de la Universidad Santo Tomás, seccional Villavicencio</p>
         <nav aria-label="Pie de página">
           <Link href="/#como-funciona">Cómo funciona</Link>
