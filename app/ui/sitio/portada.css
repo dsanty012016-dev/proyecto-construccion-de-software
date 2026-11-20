@@ -51,7 +51,7 @@
   .barra .marco > a { flex-shrink: 0; }
   .barra img { height: 2rem; width: auto; }
   /* En computador el logo crece hasta que se lee el lema de abajo ("Tu viaje, tu universidad"). */
-  @media (min-width: 48rem) { .barra img { height: 4.25rem; } }
+  @media (min-width: 48rem) { .barra img { height: 5rem; } }
   .barra nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; max-width: 100%; }
   .barra .enlace { color: var(--color-texto); display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.85rem; font-weight: 600; text-decoration: none; }
   .barra .enlace:hover { text-decoration: underline; text-underline-offset: 0.3em; }
