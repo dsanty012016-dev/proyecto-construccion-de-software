@@ -82,7 +82,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
       {!activo && !miCupo && <PreparacionConductor tieneVehiculo={!!vehiculo} documentos={documentos} disponible={perfil.disponible} ahora={horaConsulta} />}
 
       {activo ? (
-        <section aria-labelledby="titulo-viaje-activo" className="trayecto-panel space-y-3">
+        <section aria-labelledby="titulo-viaje-activo" className="movimiento-panel trayecto-panel space-y-3">
           <h2 id="titulo-viaje-activo" className="cartel text-[2rem]">
             {etiquetaEstado(activo.viaje.estado)}
           </h2>
@@ -123,7 +123,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
         )
       )}
 
-      <section aria-labelledby="titulo-solicitudes" className="producto-panel p-4">
+      <section aria-labelledby="titulo-solicitudes" className="movimiento-panel producto-panel p-4">
         <h2 id="titulo-solicitudes" className="flex flex-wrap items-baseline gap-2 text-lg">
           Solicitudes
           {perfil.disponible && !activo && <span className="producto-estado">En vivo</span>}

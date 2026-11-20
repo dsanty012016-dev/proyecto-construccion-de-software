@@ -11,7 +11,7 @@ La acción y el estado actual ocupan el primer plano. El estudiante ve cómo ped
 
 ## Movimiento
 
-En la primera apertura de la pestaña, un recorrido de tres paradas presenta el logo en 860 ms. Un toque o una tecla lo cierra. Los títulos tienen una entrada propia por sección. La navegación resalta la pestaña elegida y los cambios del viaje destacan la parada actual. Billetera destaca la cifra real del saldo, el historial revela solo las primeras filas, perfil acompaña la apertura del editor y administración identifica la cola elegida.
+En la primera apertura de la pestaña, un punto recorre tres paradas y presenta el logo en 1,25 segundos. Un toque o una tecla cierra la apertura. El acceso y Perfil permiten volver a verla. Los títulos y paneles principales acompañan la navegación y una señal breve destaca la pestaña elegida. Los cambios del viaje resaltan la parada actual. Billetera destaca la cifra real del saldo, el historial revela solo las primeras filas, Perfil acompaña la apertura del editor y administración identifica la cola elegida.
 
 El ajuste del dispositivo para reducir movimiento omite la apertura y las transiciones decorativas. Los estados y resultados se siguen leyendo por texto y por sus atributos accesibles.
 

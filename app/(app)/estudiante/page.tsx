@@ -58,7 +58,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
         <div className="space-y-5">
           <h1 className="cartel inicio-titulo">Hola, {perfil.nombre.split(" ")[0]}. ¿Para dónde vamos?</h1>
         {activo ? (
-          <section aria-labelledby="titulo-activo" className="producto-panel space-y-4 p-4">
+          <section aria-labelledby="titulo-activo" className="movimiento-panel producto-panel space-y-4 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 id="titulo-activo" className="text-lg">
                 {etiquetaEstado(activo.viaje.estado)}
@@ -75,7 +75,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
             </Link>
           </section>
         ) : miPuesto ? (
-          <section aria-labelledby="titulo-mi-cupo" className="producto-panel space-y-4 p-4">
+          <section aria-labelledby="titulo-mi-cupo" className="movimiento-panel producto-panel space-y-4 p-4">
             <div>
               <h2 id="titulo-mi-cupo" className="text-lg">
                 {miPuesto.cupo.estado === "en_curso" ? "Tu cupo ya salió" : etiquetaPuesto(miPuesto.puesto.estado)}
@@ -88,7 +88,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
             </Link>
           </section>
         ) : (
-          <section aria-labelledby="titulo-pedir" className="space-y-5">
+          <section aria-labelledby="titulo-pedir" className="movimiento-panel space-y-5">
             <h2 id="titulo-pedir" className="sr-only">
               Pedir un viaje
             </h2>
