@@ -40,6 +40,7 @@ export function Conducir() {
 const EQUIPO = [
   { nombre: "Dilan Santiago Chavarro Parra", rol: "Desarrollo, diseño de la experiencia y gestión del proyecto" },
   { nombre: "David Eduardo Durán Acevedo", rol: "Desarrollo, gestión del proyecto y pruebas" },
+  { nombre: "Andrés Santiago Perdomo Suárez", rol: "Desarrollo" },
 ];
 
 export function Cierre() {

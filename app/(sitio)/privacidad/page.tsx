@@ -38,8 +38,8 @@ export default function PaginaPrivacidad() {
 
       <Bloque id="quienes" titulo="Quiénes somos">
         <p>
-          UniGo es un <strong>proyecto académico</strong> de Dilan Santiago Chavarro Parra y David Eduardo Durán Acevedo, estudiantes de la Universidad
-          Santo Tomás, seccional Villavicencio. Nosotros dos somos los responsables de tus datos; la universidad no administra UniGo.
+          UniGo es un <strong>proyecto académico</strong> de Dilan Santiago Chavarro Parra, David Eduardo Durán Acevedo y Andrés Santiago Perdomo Suárez, estudiantes de la Universidad
+          Santo Tomás, seccional Villavicencio. Nosotros tres somos los responsables de tus datos; la universidad no administra UniGo.
         </p>
         <p>
           Para cualquier tema de tus datos escríbenos a{" "}
