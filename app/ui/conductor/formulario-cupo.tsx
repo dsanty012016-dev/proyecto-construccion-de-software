@@ -68,8 +68,8 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
           </h2>
           <p className="text-sm text-texto-suave">
             {regreso
-              ? `Sales de ${sede.nombre}. Mueve el mapa hasta que el pin quede en el final de tu recorrido; los estudiantes se bajan en el camino.`
-              : `Mueve el mapa hasta que el pin quede en tu punto de salida. Vas hacia ${sede.nombre}.`}
+              ? `Sales de ${sede.nombre}. Mueve el mapa hasta que el pin quede en el final de tu recorrido y toca “Guardar esta ubicación”; los estudiantes se bajan en el camino.`
+              : `Mueve el mapa hasta que el pin quede en tu punto de salida y toca “Guardar esta ubicación”. Vas hacia ${sede.nombre}.`}
           </p>
         </div>
         <Mapa
