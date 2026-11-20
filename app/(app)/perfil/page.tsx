@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ControlAperturaUniGo } from "@/app/ui/comun/apertura-unigo";
 import Link from "next/link";
 import { perfilActual } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
@@ -54,6 +55,7 @@ export default async function PaginaPerfil() {
       <EnlaceDeAyuda motivo={{ tipo: "general" }} />
       <InstalarApp />
       <ActivarNotificaciones key={usuario.id} enPerfil />
+      <div className="producto-panel px-4 py-1"><ControlAperturaUniGo /></div>
 
       {perfil?.rol && (
         <section aria-labelledby="titulo-modo" className="producto-panel space-y-3 p-4">
