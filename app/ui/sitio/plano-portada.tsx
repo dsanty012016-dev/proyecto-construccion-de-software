@@ -62,6 +62,8 @@ export function PlanoPortada() {
   useEffect(() => {
     const host = contenedor.current;
     if (!host) return;
+    // Las funciones de abajo se declaran antes del chequeo; esta constante ya no es null.
+    const raiz: HTMLDivElement = host;
     let cancelado = false;
     let mapa: MapaLibre | null = null;
     let listo = false;
@@ -116,7 +118,7 @@ export function PlanoPortada() {
 
     function activar(seccion: HTMLElement) {
       activa = seccion;
-      host.dataset.capa = seccion.dataset.capa ?? "";
+      raiz.dataset.capa = seccion.dataset.capa ?? "";
       if (mapa && listo) {
         mapa.setPaintProperty("cupos", "line-opacity", seccion.dataset.capa === "cupos" ? 0.9 : 0);
         if (rutaVisible() !== mostrada) dibujarRuta(rutaVisible(), true);
