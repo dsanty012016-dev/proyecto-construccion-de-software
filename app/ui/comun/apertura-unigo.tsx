@@ -14,7 +14,10 @@ export function ControlAperturaUniGo() {
         onClick={() => window.dispatchEvent(new Event(MOSTRAR_APERTURA))}>
         Ver animación de apertura
       </button>
-      <p className="control-apertura-reducida text-sm text-texto-suave">Tu dispositivo tiene activado Reducir movimiento.</p>
+      <div className="control-apertura-reducida space-y-1 text-sm text-texto-suave">
+        <p>Tu dispositivo tiene activado Reducir movimiento.</p>
+        <p>Si quieres ver las animaciones, busca «Eliminar animaciones» o «Reducir movimiento» en los ajustes de Accesibilidad.</p>
+      </div>
     </div>
   );
 }
