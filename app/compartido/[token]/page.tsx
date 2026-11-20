@@ -113,7 +113,7 @@ export default async function PaginaViajeCompartido({ params }: { params: Promis
 
   const encabezado = (
     <header className="flex items-center justify-between gap-3 px-5 pt-4">
-      <Logo ancho={91} alto={32} className="h-8 w-auto" prioridad />
+      <Logo ancho={159} alto={56} className="h-8 w-auto md:h-14" prioridad />
       <div className="flex items-center gap-1">
         <span className="text-[13px] font-semibold text-texto-suave">Viaje compartido</span>
         <BotonTema />
