@@ -12,7 +12,7 @@ export default function LayoutAuth({ children }: { children: React.ReactNode }) 
       <div className="producto-acceso">
         <header className="flex items-center justify-between gap-3 border-b border-linea pb-3">
           <Link href="/" aria-label="UniGo, ir a la portada" className="flex min-h-11 items-center">
-            <Logo ancho={114} alto={40} prioridad className="h-[30px] w-auto lg:h-10" />
+            <Logo ancho={125} alto={44} prioridad className="h-[30px] w-auto md:h-11" />
           </Link>
           <BotonTema className="-mr-2.5" />
         </header>

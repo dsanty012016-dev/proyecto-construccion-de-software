@@ -51,7 +51,7 @@
   .barra .marco > a { flex-shrink: 0; }
   .barra img { height: 2rem; width: auto; }
   /* En computador el logo crece: hay espacio de sobra en la barra. */
-  @media (min-width: 64rem) { .barra img { height: 2.75rem; } }
+  @media (min-width: 48rem) { .barra img { height: 2.75rem; } }
   .barra nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; max-width: 100%; }
   .barra .enlace { color: var(--color-texto); display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.85rem; font-weight: 600; text-decoration: none; }
   .barra .enlace:hover { text-decoration: underline; text-underline-offset: 0.3em; }
