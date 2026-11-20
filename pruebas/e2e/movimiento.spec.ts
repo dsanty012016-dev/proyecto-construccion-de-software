@@ -56,3 +56,32 @@ test("al navegar entre pantallas de acceso se presenta el formulario", async ({ 
   await expect(page.locator("main form")).toHaveAttribute("data-entrada-observada", "sí");
   await expect(page.locator("main form")).toHaveCSS("animation-duration", "0.52s");
 });
+
+test("el reflejo cambia el tema en ambos sentidos y conserva la elección", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
+  await page.addInitScript(() => {
+    document.addEventListener("animationstart", (evento) => {
+      if (evento.animationName === "reflejo-entrada") {
+        document.documentElement.dataset.reflejoObservado = document.documentElement.dataset.tema;
+      }
+    });
+  });
+  await page.goto("/entrar");
+  const cambiar = page.getByRole("button", { name: "Cambiar entre modo claro y modo oscuro" });
+  const html = page.locator("html");
+  for (const modo of ["oscuro", "claro"]) {
+    await cambiar.click();
+    await expect(html).toHaveAttribute("data-reflejo-observado", modo);
+    await expect(html).not.toHaveClass(/tema-reflejo/);
+  }
+  await page.reload();
+  await expect(html).toHaveAttribute("data-tema", "claro");
+});
+
+test("el selector de tema cambia al instante con movimiento reducido", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
+  await page.goto("/entrar");
+  await page.getByRole("button", { name: "Cambiar entre modo claro y modo oscuro" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-tema", "oscuro");
+  await expect(page.locator("html")).not.toHaveClass(/tema-reflejo/);
+});
