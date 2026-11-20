@@ -1,5 +1,5 @@
-// "Cómo funciona", contado como la mañana de Laura en cuatro paradas.
-
+// "Cómo funciona", contado como la mañana de Laura en cuatro paradas. El
+// plano de atrás muestra su ruta real desde Barzal y tres ofertas de ejemplo.
 const PARADAS = [
   { hora: "6:41", titulo: "Pide su viaje", texto: "Marca en el mapa dónde la recogen. No le escribe a nadie." },
   {
@@ -13,22 +13,18 @@ const PARADAS = [
 
 export function Paradas() {
   return (
-    <section className="tramo" id="como-funciona" aria-labelledby="titulo-paradas">
-      <div className="marco">
-        <div className="paradas-cabeza">
-          <h2 id="titulo-paradas" className="cartel">
-            De Barzal a clase de siete, en cuatro paradas.
-          </h2>
-          <p className="entradilla">
-            Este ejemplo sigue el viaje de Laura desde su barrio. También puedes pedir un viaje de la U a tu casa.
-          </p>
-        </div>
+    <section className="tramo-plano a-la-derecha" id="como-funciona" data-foco="ruta" data-lado="derecha" data-ruta="Barzal" data-capa="ofertas" aria-labelledby="titulo-paradas">
+      <div className="rotulo">
+        <h2 id="titulo-paradas" className="cartel">
+          De Barzal a clase de siete, en cuatro paradas.
+        </h2>
+        <p className="entradilla">Este ejemplo sigue el viaje de Laura desde su barrio. También puedes pedir un viaje de la U a tu casa.</p>
         <ol className="paradas">
           {PARADAS.map((parada) => (
-            <li key={parada.hora} className="parada">
-              <p className="hora">{parada.hora}</p>
-              <h3>{parada.titulo}</h3>
-              <p>{parada.texto}</p>
+            <li key={parada.hora}>
+              <span className="cifra">{parada.hora}</span>
+              <b>{parada.titulo}</b>
+              <span>{parada.texto}</span>
             </li>
           ))}
         </ol>

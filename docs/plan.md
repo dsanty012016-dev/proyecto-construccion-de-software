@@ -18,6 +18,7 @@ Una fase a la vez, cada una en su rama y con Pull Request. Modelo y esfuerzo son
 | 7 | Revisión final de seguridad y datos | Opus 5.5 | Alto |
 
 ## Avance
+- Rediseño de la portada, "el mapa es la página": el mapa real de Villavicencio (OpenStreetMap por OpenFreeMap, teñido con los tokens) queda detrás de toda la portada y cada sección es un rótulo que lo recorre: ruta real por las vías desde el barrio elegido (FOSSGIS OSRM, guardada en `app/ui/sitio/plano-datos.ts`), la mañana de Laura, la leyenda de seguridad, la escala de precios, los cupos y el cajetín con el equipo. El pin de la U cambia de versión con el modo (rama `rediseno/portada-mapa`).
 - Sprint 3 de UI/UX: preparación del conductor, estados/plazo documental de siete días, edición de nombre/celular y recuperación del correo de confirmación. Alcance y pruebas en `docs/sprint-3-validacion.md`; nueva RPC en migración 026 (rama `sprint-3-registro-preparacion`).
 - Sprint 2 de UI/UX: recuperación de consultas, mapa y compartir; modos de recarga explícitos, saldo/faltante y retorno a la tarea. Alcance y validación en `docs/sprints-ui-ux.md` y `docs/sprint-2-validacion.md` (rama `sprint-2-pagos-recuperacion`).
 - Mejoras de experiencia organizadas en seis sprints: alcance, criterios de cierre y decisiones en `docs/sprints-ui-ux.md`. Sprint 1: lectura y accesibilidad (rama `sprint-1-lectura-accesibilidad`).

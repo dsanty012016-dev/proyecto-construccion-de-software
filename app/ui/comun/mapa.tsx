@@ -70,7 +70,7 @@ function elementoMarcador(tipo: "origen" | "destino" | "parada" | "paradaNumerad
 }
 
 /** Color de un token de globals.css (los colores no se escriben sueltos). */
-function colorDeToken(nombre: string) {
+export function colorDeToken(nombre: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim() || "currentColor";
 }
 
@@ -80,7 +80,7 @@ function colorDeToken(nombre: string) {
  * etiquetas en gris suave y sin puntos de interés que distraigan. Si una capa
  * no acepta un cambio, se deja como venía.
  */
-function pintarEstilo(mapa: MapaLibre) {
+export function pintarEstilo(mapa: MapaLibre) {
   const c = {
     fondo: colorDeToken("--color-fondo"),
     tierra: colorDeToken("--color-mapa-tierra"),

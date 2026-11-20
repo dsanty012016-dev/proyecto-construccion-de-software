@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
-import { Cierre, Conducir, Equipo } from "@/app/ui/sitio/cierre";
-import { Cuentas } from "@/app/ui/sitio/cuentas";
+import { Cierre, Conducir } from "@/app/ui/sitio/cierre";
+import { Cuentas, Leyenda } from "@/app/ui/sitio/cuentas";
 import { Paradas } from "@/app/ui/sitio/paradas";
+import { PlanoPortada } from "@/app/ui/sitio/plano-portada";
 import { Portada } from "@/app/ui/sitio/portada";
 import { Salidas } from "@/app/ui/sitio/salidas";
 
-// Página pública de UniGo: el "cartel de ruta" (fase 17). Cuenta una sola
-// historia: del "¿alguien va pa' la U?" del grupo de chat a la mañana de
-// Laura, de Barzal a clase de siete. Todo es Server Component; lo único con
-// JavaScript es el botón de modo claro u oscuro de la barra.
+// Página pública de UniGo: "el mapa es la página". El plano real de
+// Villavicencio queda detrás y cada sección es un rótulo que lo recorre: la
+// ruta desde tu barrio, la mañana de Laura, la leyenda de seguridad, la escala
+// de precios, los cupos y el cajetín con el equipo. Las secciones son Server
+// Components; el plano y el selector de barrio son lo único con JavaScript
+// (además del botón de modo claro u oscuro de la barra).
 export const metadata: Metadata = {
   title: { absolute: "UniGo: tu viaje, tu universidad" },
   description:
@@ -18,12 +21,13 @@ export const metadata: Metadata = {
 export default function PaginaInicio() {
   return (
     <>
+      <PlanoPortada />
       <Portada />
       <Paradas />
-      <Salidas />
+      <Leyenda />
       <Cuentas />
+      <Salidas />
       <Conducir />
-      <Equipo />
       <Cierre />
     </>
   );

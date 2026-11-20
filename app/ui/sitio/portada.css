@@ -1,7 +1,7 @@
-/* Portada pública de UniGo: el "cartel de ruta" (fase 17).
-   Va en CSS propio y no en clases de Tailwind porque casi todo son piezas
-   únicas (el tiquete, el recibo con dientes, la tabla de ruta, los titulares
-   de cartel). Los colores salen SOLO de los tokens de globals.css.
+/* Portada pública de UniGo: "el mapa es la página". El plano real de
+   Villavicencio (plano-portada.tsx) queda quieto detrás y cada sección es un
+   rótulo, como los recuadros de un plano impreso. Va en CSS propio porque son
+   piezas únicas. Los colores salen SOLO de los tokens de globals.css.
    Todo cuelga de .sitio para que nada de aquí toque la zona privada. */
 .sitio {
   font-family: var(--font-archivo), system-ui, sans-serif;
@@ -56,169 +56,172 @@
   .barra .boton { min-height: 2.75rem; padding: 0 1rem; font-size: 1rem; }
   @media (max-width: 26rem) { .barra .enlace { color: var(--color-texto); display: none; } }
 
-  /* ---------- Portada ---------- */
-  .portada { position: relative; overflow: clip; --fondo-de-atras: var(--color-fondo); }
-  .portada .marco { position: relative; padding-top: clamp(1.5rem, 3vw, 2.25rem); padding-bottom: clamp(2.25rem, 4vw, 3rem); }
-  .portada h1 { font-size: clamp(3.6rem, min(19.4vw, 24svh), 13.4rem); line-height: 0.92; }
-  .portada h1 span { display: block; }
-  /* El titular es el mensaje que alguien mandó al grupo: lleva su hora y sus dos chulos. */
-  .enviado { display: flex; align-items: center; gap: 0.5rem; margin-top: clamp(1.1rem, 2.6vw, 2.2rem); font-size: 0.9375rem; font-weight: 500; color: var(--color-texto-suave); }
-  .enviado svg { width: 1.5rem; height: 1rem; color: var(--color-texto-suave); }
-  .portada-texto { margin-top: clamp(1.25rem, 2.4vw, 1.75rem); display: grid; gap: 1.15rem; max-width: 33rem; }
-  .frase { font-size: clamp(1.35rem, 2.3vw, 1.7rem); line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
-  .acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-  @media (max-width: 30rem) { .acciones { display: grid; } }
-  .correo { font-size: 0.9375rem; color: var(--color-texto-suave); }
-  .correo strong { color: var(--color-texto); font-weight: 600; }
 
-  /* El tiquete: las ofertas que llegan con UniGo. Siempre en papel blanco. */
-  .tiquete {
-    --muesca: 0.7rem;
-    position: relative; width: min(100%, 23.5rem); margin-top: 2.5rem;
-    background: var(--color-superficie); color: var(--color-texto);
-    border-radius: 0.9rem; padding: 1.25rem 1.25rem 1.1rem;
-    box-shadow: 0 1px 0 var(--color-linea), 0 24px 40px -22px color-mix(in srgb, var(--color-noche) 55%, transparent);
-    rotate: -2.2deg;
+  /* ---------- El plano de fondo ---------- */
+  .plano { position: fixed; inset: 0; z-index: 0; background: var(--color-mapa-tierra); }
+  .plano .maplibregl-ctrl-bottom-right { bottom: 0.25rem; }
+  .plano .maplibregl-ctrl-attrib { font-size: 0.75rem; }
+  .plano .maplibregl-ctrl-attrib a { color: var(--color-texto); }
+
+  /* Marcas del plano (viven dentro del mapa, fuera de React) */
+  .marca-u { display: flex; align-items: flex-end; gap: 0.4rem; pointer-events: none; }
+  .marca-u img { width: 34px; height: 45px; }
+  .marca-u span, .marca-origen span, .marca-oferta, .marca-salida {
+    font-weight: 750; font-size: 0.875rem; line-height: 1.2; color: var(--color-texto);
+    text-shadow: 0 0 3px var(--color-fondo), 0 0 3px var(--color-fondo), 0 0 6px var(--color-fondo);
+    white-space: nowrap;
   }
-  .tiquete::before, .tiquete::after {
-    content: ""; position: absolute; top: var(--corte, 4.6rem); width: calc(var(--muesca) * 2); height: calc(var(--muesca) * 2);
-    border-radius: 50%; background: var(--fondo-de-atras); translate: 0 -50%;
+  .marca-u span { margin-bottom: 0.9rem; }
+  .marca-origen { position: relative; width: 18px; height: 18px; pointer-events: none; }
+  .marca-origen i { position: absolute; inset: 0; border-radius: 50%; background: var(--color-primario); border: 3px solid var(--color-texto); box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-primario) 25%, transparent); }
+  .marca-origen span { position: absolute; left: 26px; top: 50%; translate: 0 -50%; }
+  .marca-oferta, .marca-salida { display: flex; align-items: center; gap: 0.35rem; pointer-events: none; font-variant-numeric: tabular-nums; }
+  .marca-oferta i, .marca-salida i { width: 12px; height: 12px; border-radius: 50%; background: var(--color-texto); box-shadow: 0 0 0 3px var(--color-fondo); }
+  .capa-ofertas, .capa-cupos { opacity: 0; transition: opacity 300ms ease; }
+  .plano[data-capa="ofertas"] .capa-ofertas, .plano[data-capa="cupos"] .capa-cupos { opacity: 1; }
+  @media (max-width: 47.99rem) { .marca-u span { display: none; } }
+
+  /* ---------- Los tramos que pasan por encima ---------- */
+  #contenido { position: relative; }
+  .tramo-plano {
+    position: relative; z-index: 1;
+    min-height: 100svh;
+    display: flex; align-items: center;
+    padding: 5.5rem clamp(1rem, 4vw, 4rem) 4.5rem;
+    pointer-events: none;
   }
-  .tiquete::before { left: calc(var(--muesca) * -1); }
-  .tiquete::after { right: calc(var(--muesca) * -1); }
-  .tiquete-cabeza { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding-bottom: 1rem; border-bottom: 2px dashed var(--color-linea); }
-  .tiquete-cabeza b { font-stretch: 62%; font-weight: 900; font-size: 1.9rem; line-height: 1; letter-spacing: -0.01em; }
-  .tiquete-cabeza span { font-size: 0.875rem; color: var(--color-texto-suave); text-align: right; line-height: 1.3; }
-  .oferta { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--color-linea); }
-  .oferta b { display: block; font-weight: 700; }
-  .oferta small { display: block; font-size: 0.875rem; color: var(--color-texto-suave); }
-  .oferta .precio { font-stretch: 62%; font-weight: 900; font-size: 1.75rem; line-height: 1; font-variant-numeric: tabular-nums; }
-  .oferta.elegida .precio { color: var(--color-secundario); }
-  .tiquete-pie { margin-top: 0.9rem; display: flex; align-items: center; justify-content: center; min-height: 2.9rem; border-radius: 0.55rem; background: var(--color-primario); color: var(--color-sobre-primario); font-weight: 700; }
-  .tiquete-nota { margin-top: 0.6rem; text-align: center; font-size: 0.8125rem; color: var(--color-texto-suave); }
+  .tramo-plano.a-la-derecha { justify-content: flex-end; }
+  .tramo-plano > * { pointer-events: auto; }
 
-  @media (min-width: 64rem) {
-    .portada .marco { min-height: calc(100svh - 4rem - 3.6rem); display: flex; flex-direction: column; justify-content: center; }
-    .tiquete { position: absolute; right: 0.5rem; bottom: clamp(2.25rem, 4vw, 3rem); margin: 0; }
+  /* El rótulo: la caja de un plano, con doble filete */
+  .rotulo {
+    position: relative;
+    width: min(100%, 32rem);
+    background: var(--color-superficie);
+    border: 1.5px solid var(--color-texto);
+    border-radius: 0.4rem;
+    padding: 1.6rem 1.6rem 1.5rem;
+    box-shadow: 0 1.25rem 2.5rem -1.5rem color-mix(in srgb, var(--color-noche) 70%, transparent);
+  }
+  .rotulo::before { content: ""; position: absolute; inset: 5px; border: 1px solid var(--color-linea); border-radius: 0.2rem; pointer-events: none; }
+  .rotulo > * { position: relative; }
+  .a-lo-ancho .rotulo { width: min(100%, 46rem); }
+  .rotulo .cartel { font-size: clamp(2.6rem, 4.6vw, 3.9rem); line-height: 0.92; }
+  .rotulo-portada .cartel { font-size: clamp(3.4rem, 7vw, 5.6rem); }
+  .rotulo .entradilla { margin-top: 0.9rem; font-size: 1.0625rem; }
+  .nota-chica { margin-top: 0.9rem; font-size: 0.875rem; color: var(--color-texto-suave); }
+
+  /* Pedir desde la portada */
+  .pedir { display: grid; gap: 0.75rem; margin-top: 1.4rem; }
+  .pedir label { font-weight: 650; font-size: 0.95rem; }
+  .pedir-campo { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0.7rem; }
+  .pedir-campo .punto { width: 14px; height: 14px; margin-left: 4px; border-radius: 50%; background: var(--color-primario); box-shadow: 0 0 0 3px var(--color-superficie), 0 0 0 4.5px var(--color-primario); }
+  .pedir select {
+    appearance: none; width: 100%; min-height: 3rem; padding: 0 2.5rem 0 0.8rem;
+    font: inherit; font-weight: 650; color: var(--color-texto);
+    background-color: var(--color-fondo);
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: right 1.15rem center, right 0.8rem center;
+    background-size: 0.35rem 0.35rem; background-repeat: no-repeat;
+    border: 1.5px solid var(--color-linea); border-radius: 0.5rem; cursor: pointer;
+  }
+  .pedir select:hover { border-color: var(--color-texto-suave); }
+  .pedir-destino { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0.7rem; font-weight: 650; }
+  .pedir-destino img { width: 18px; height: auto; margin-left: 2px; }
+  .pedir-destino small { display: block; font-weight: 500; font-size: 0.875rem; color: var(--color-texto-suave); }
+  .pedir .boton { width: 100%; }
+  .correo { font-size: 0.9rem; color: var(--color-texto-suave); }
+  .correo strong { color: var(--color-texto); font-weight: 650; }
+
+  /* Paradas de la mañana de Laura */
+  .paradas { margin-top: 1.3rem; }
+  .paradas li { display: grid; grid-template-columns: 4.4rem 1fr; gap: 0.15rem 0.9rem; padding-block: 0.8rem; border-top: 1px solid var(--color-linea); }
+  .paradas li:first-child { border-top: 0; padding-top: 0.2rem; }
+  .paradas .cifra { grid-row: span 2; font-size: 1.75rem; }
+  .paradas b { font-weight: 700; }
+  .paradas span:last-child { color: var(--color-texto-suave); font-size: 0.97rem; }
+
+  /* Leyenda: las reglas de seguridad como símbolos del plano */
+  .leyenda-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1rem; padding-bottom: 0.8rem; border-bottom: 1.5px solid var(--color-texto); }
+  .leyenda-cabeza p { color: var(--color-texto-suave); font-size: 0.95rem; }
+  .leyenda { display: grid; gap: 1rem 1.6rem; margin-top: 1.2rem; }
+  @media (min-width: 40rem) { .leyenda { grid-template-columns: 1fr 1fr; } }
+  .leyenda li { position: relative; padding-left: 2.6rem; }
+  .leyenda svg { position: absolute; left: 0; top: 0; width: 1.9rem; height: 1.9rem; }
+  .leyenda b { display: block; font-weight: 700; line-height: 1.3; }
+  .leyenda span { display: block; margin-top: 0.15rem; font-size: 0.92rem; line-height: 1.45; color: var(--color-texto-suave); }
+
+  /* Escala: el reparto de un viaje como barra de escala */
+  .escala { margin-top: 1.5rem; }
+  .escala-barra { display: grid; grid-template-columns: repeat(10, 1fr); height: 1.1rem; border: 1.5px solid var(--color-texto); border-radius: 2px; overflow: hidden; }
+  .escala-barra i { background: var(--color-primario); border-right: 1.5px solid var(--color-superficie); }
+  .escala-barra i:nth-child(even) { background: color-mix(in srgb, var(--color-primario) 70%, var(--color-superficie)); }
+  .escala-barra i.comision { background: var(--color-texto); border-right: 0; }
+  .escala-marcas { display: grid; grid-template-columns: 1fr auto; margin-top: 0.55rem; }
+  .escala-marcas div { display: flex; flex-direction: column-reverse; }
+  .escala-marcas div:last-child { text-align: right; padding-left: 0.6rem; border-left: 1.5px solid var(--color-texto); }
+  .escala-marcas dt { font-size: 0.9rem; color: var(--color-texto-suave); }
+  .escala-marcas dd { font-size: 1.6rem; }
+  .escala-total { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-top: 1rem; padding-top: 0.8rem; border-top: 1.5px solid var(--color-texto); }
+  .escala-total small { display: block; font-size: 0.85rem; color: var(--color-texto-suave); }
+  .escala-total .cifra { font-size: 2.4rem; }
+
+  /* Salidas de los cupos */
+  .salidas { margin-top: 1.1rem; }
+  .salidas li { display: grid; grid-template-columns: 3.6rem 1fr auto; align-items: center; gap: 0.8rem; padding-block: 0.6rem; border-top: 1px solid var(--color-linea); }
+  .salidas .cifra { font-size: 1.45rem; }
+  .salidas small { display: block; font-size: 0.85rem; font-weight: 400; color: var(--color-texto-suave); }
+  .salidas b { text-align: right; font-variant-numeric: tabular-nums; }
+  .salidas .llena { color: var(--color-texto-suave); }
+
+  /* Pasos para conducir */
+  .pasos-conductor { counter-reset: paso; display: grid; gap: 0.75rem; margin-block: 1.3rem 1.4rem; }
+  .pasos-conductor li { counter-increment: paso; display: grid; grid-template-columns: 2rem 1fr; gap: 0 0.75rem; }
+  .pasos-conductor li::before { content: counter(paso); grid-row: span 2; display: grid; place-items: center; width: 2rem; height: 2rem; border: 1.5px solid var(--color-texto); border-radius: 50%; font-weight: 900; font-stretch: 62%; }
+  .pasos-conductor b { font-weight: 700; }
+  .pasos-conductor span { font-size: 0.95rem; color: var(--color-texto-suave); }
+
+  /* Cajetín: el recuadro de datos del plano, con el equipo y el cierre */
+  .tramo-plano.abajo { align-items: flex-end; justify-content: center; }
+  .cajetin {
+    width: min(100%, 56rem);
+    display: grid; grid-template-columns: 1fr;
+    background: var(--color-superficie);
+    border: 1.5px solid var(--color-texto); border-radius: 0.4rem;
+    box-shadow: 0 1.25rem 2.5rem -1.5rem color-mix(in srgb, var(--color-noche) 70%, transparent);
+  }
+  .cajetin > * { padding: 1.2rem 1.4rem; }
+  .cajetin > * + * { border-top: 1px solid var(--color-texto); }
+  @media (min-width: 48rem) {
+    .cajetin { grid-template-columns: 1fr 1.2fr; }
+    .cajetin > :nth-child(2) { border-top: 0; border-left: 1px solid var(--color-texto); }
+    .cajetin-cierre { grid-column: 1 / -1; }
+  }
+  .cajetin-datos { display: grid; gap: 0.9rem; }
+  .cajetin dt { font-size: 0.8rem; font-weight: 650; color: var(--color-texto-suave); }
+  .cajetin dd { margin-top: 0.25rem; font-weight: 650; overflow-wrap: anywhere; }
+  .cajetin dd small { display: block; font-weight: 400; font-size: 0.9rem; color: var(--color-texto-suave); }
+  .cajetin-cierre { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; }
+  .cajetin-cierre .cartel { font-size: clamp(2.8rem, 6vw, 4.4rem); line-height: 0.9; }
+  .cajetin-cierre p { margin-top: 0.4rem; color: var(--color-texto-suave); }
+  .cajetin-cierre strong { color: var(--color-texto); font-weight: 650; }
+  .acciones { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+  /* Celular: el plano arriba y el rótulo abajo, como una hoja */
+  @media (max-width: 47.99rem) {
+    .tramo-plano, .tramo-plano.a-la-derecha { align-items: flex-end; justify-content: stretch; padding: 0 0.6rem 1.5rem; }
+      #contenido > .tramo-plano:first-of-type { padding-top: 38svh; }
+    .rotulo, .a-lo-ancho .rotulo { width: 100%; padding: 1.2rem 1.1rem 1.15rem; }
+    .rotulo .cartel { font-size: 2.6rem; }
+    .rotulo-portada .cartel { font-size: 3.2rem; }
   }
 
-  /* La tabla de ruta, como la del parabrisas de la buseta. */
-  .tabla-ruta { background: var(--color-primario); color: var(--color-sobre-primario); overflow: clip; }
-  .tabla-ruta ul { display: flex; align-items: center; gap: 1.1rem; width: max-content; min-height: 3.6rem; padding-inline: 1.25rem; font-stretch: 62%; font-weight: 800; font-size: 1.55rem; letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; }
-  .tabla-ruta li { display: flex; align-items: center; gap: 1.1rem; }
-  .tabla-ruta li + li::before { content: ""; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: currentColor; opacity: 0.55; }
-  .tabla-ruta .destino { background: var(--color-sobre-primario); color: var(--color-primario); padding: 0.05rem 0.6rem 0; border-radius: 0.3rem; }
-
-  /* ---------- La mañana de Laura: cuatro paradas ---------- */
-  .paradas-cabeza { display: grid; gap: 1.25rem; margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
-  .paradas { position: relative; display: grid; gap: 2.25rem; }
-  .parada { position: relative; padding-left: 2.25rem; }
-  .parada::before { content: ""; position: absolute; left: 0.3rem; top: 0.55rem; width: 0.95rem; height: 0.95rem; border-radius: 50%; background: var(--color-fondo); border: 4px solid var(--color-primario); z-index: 1; }
-  .parada:last-child::before { background: var(--color-primario); }
-  .paradas::before { content: ""; position: absolute; left: 0.68rem; top: 0.9rem; bottom: 0.9rem; width: 4px; background: var(--color-primario); border-radius: 2px; }
-  .parada .hora { color: var(--color-texto); margin: 0; max-width: none; font-stretch: 62%; font-weight: 900; font-size: clamp(3rem, 6vw, 4.5rem); line-height: 0.9; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
-  .parada h3 { margin-top: 0.6rem; font-size: 1.25rem; font-weight: 700; line-height: 1.25; }
-  .parada p { margin-top: 0.35rem; color: var(--color-texto-suave); max-width: 26rem; }
-  @media (min-width: 60rem) {
-    .paradas-cabeza { grid-template-columns: 1.3fr 1fr; align-items: end; gap: 3rem; }
-    .paradas { grid-template-columns: repeat(4, 1fr); gap: 2rem; }
-    .parada { padding-left: 0; padding-top: 2.6rem; }
-    .parada::before { left: 0; top: 0; }
-    .paradas::before { left: 0.4rem; right: calc((100% - 6rem) / 4 - 0.5rem); top: 0.36rem; bottom: auto; width: auto; height: 4px; }
-  }
-
-  /* ---------- Salidas con hora fija: el tablero ---------- */
-  .salidas { display: grid; gap: clamp(2rem, 5vw, 4rem); }
-  .salidas-texto { display: grid; gap: 1.25rem; align-content: start; }
-  .tablero { background: var(--color-fondo); color: var(--color-texto); border-radius: 1rem; padding: 0.4rem 1.1rem 1rem; border: 1px solid var(--color-linea); }
-  .tablero-titulo { display: flex; justify-content: space-between; gap: 1rem; padding: 0.85rem 0 0.8rem; font-size: 0.875rem; color: var(--color-texto-suave); border-bottom: 1px solid var(--color-linea); }
-  .salida { display: grid; grid-template-columns: 4.6rem 1fr auto; align-items: center; column-gap: 0.9rem; padding: 0.8rem 0; border-bottom: 1px solid var(--color-linea); }
-  .salida:last-of-type { border-bottom: 0; }
-  .salida .hora { font-stretch: 62%; font-weight: 900; font-size: 2.5rem; line-height: 1; color: var(--color-secundario); font-variant-numeric: tabular-nums; }
-  .salida b { display: block; font-weight: 700; line-height: 1.3; }
-  .salida small { display: block; font-size: 0.875rem; color: var(--color-texto-suave); }
-  .salida .precio { text-align: right; font-stretch: 62%; font-weight: 800; font-size: 1.5rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
-  .salida .precio small { font-stretch: 100%; font-weight: 500; }
-  .salida.llena { opacity: 0.55; }
-  .tablero-nota { padding-top: 0.5rem; font-size: 0.8125rem; color: var(--color-texto-suave); }
-  @media (min-width: 60rem) { .salidas { grid-template-columns: 1fr 1.05fr; align-items: center; } }
-
-  /* ---------- Cuentas claras ---------- */
-  .cuentas { display: grid; gap: clamp(2.5rem, 6vw, 5rem); }
-  .recibo { position: relative; background: var(--color-superficie); color: var(--color-texto); padding: 1.6rem 1.4rem 2rem; width: min(100% - 0.75rem, 25rem); rotate: 1.4deg; box-shadow: 0 24px 40px -24px color-mix(in srgb, var(--color-noche) 50%, transparent);
-    --diente: 0.55rem;
-    -webkit-mask: conic-gradient(from -45deg at bottom, transparent, black 1deg 89deg, transparent 90deg) bottom / calc(var(--diente) * 2) 51% repeat-x, linear-gradient(black 0 0) top / 100% 51% no-repeat;
-            mask: conic-gradient(from -45deg at bottom, transparent, black 1deg 89deg, transparent 90deg) bottom / calc(var(--diente) * 2) 51% repeat-x, linear-gradient(black 0 0) top / 100% 51% no-repeat;
-  }
-  .recibo h3 { font-stretch: 62%; font-weight: 900; font-size: 2rem; line-height: 1; }
-  .recibo .tramo-viaje { margin-top: 0.3rem; font-size: 0.9375rem; color: var(--color-texto-suave); }
-  .recibo dl { margin-top: 1.1rem; border-top: 2px dashed var(--color-linea); }
-  .recibo .renglon { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.7rem 0; border-bottom: 1px solid var(--color-linea); }
-  .recibo dd { font-weight: 700; font-variant-numeric: tabular-nums; }
-  .recibo .total { border-bottom: 0; padding-top: 0.9rem; }
-  .recibo .total dt { font-weight: 700; }
-  .recibo .total dd { font-stretch: 62%; font-weight: 900; font-size: 2.4rem; line-height: 1; }
-  .recibo p { margin-top: 0.6rem; font-size: 0.875rem; color: var(--color-texto-suave); }
-  .reglas { display: grid; gap: 0; }
-  .reglas li { padding: 1rem 0; border-top: 1px solid var(--color-linea); display: grid; gap: 0.2rem; }
-  .reglas li:last-child { border-bottom: 1px solid var(--color-linea); }
-  .reglas b { font-weight: 700; font-size: 1.125rem; }
-  .reglas span { color: var(--color-texto-suave); }
-  .cuentas-cabeza { display: grid; gap: 1.25rem; }
-  @media (min-width: 60rem) {
-    .cuentas { grid-template-columns: 1fr 1fr; align-items: start; }
-    .cuentas-izq { position: sticky; top: 6rem; display: grid; gap: 2.5rem; }
-  }
-  .cuentas-izq { display: grid; gap: 2rem; }
-
-  /* ---------- Conducir (bloque azul) ---------- */
-  .conducir { background: var(--color-primario); color: var(--color-sobre-primario); }
-  .conducir .marco { display: grid; gap: clamp(2rem, 5vw, 4rem); }
-  .conducir .entradilla { color: inherit; }
-  .conducir-texto { display: grid; gap: 1.4rem; align-content: center; justify-items: start; }
-  .preparacion-portada { list-style: decimal; padding-left: 1.5em; border-block: 1px solid currentColor; }
-  .preparacion-portada li { padding: 0.9rem 0.25rem; }
-  .preparacion-portada li + li { border-top: 1px solid color-mix(in srgb, currentColor 55%, transparent); }
-  .preparacion-portada li::marker { font-weight: 800; }
-  .preparacion-portada strong, .preparacion-portada span { display: block; overflow-wrap: anywhere; }
-  .conducir :focus-visible { outline-color: var(--color-sobre-primario); }
-  @media (min-width: 60rem) { .conducir .marco { grid-template-columns: 1.1fr 1fr; align-items: center; } }
-
-  /* ---------- Equipo ---------- */
-  .equipo { display: grid; gap: clamp(2rem, 5vw, 4rem); }
-  .equipo-texto { display: grid; gap: 1.4rem; align-content: center; }
-  .firmas { border-block: 1px solid var(--color-linea); }
-  .firmas li { padding-block: 1rem; overflow-wrap: anywhere; }
-  .firmas li + li { border-top: 1px solid var(--color-linea); }
-  .firmas b { display: block; font-weight: 700; font-size: 1.125rem; }
-  .firmas span { color: var(--color-texto-suave); }
-  @media (min-width: 60rem) { .equipo { grid-template-columns: 1fr 1.1fr; align-items: center; } }
-
-  /* ---------- Cierre ---------- */
-  .cierre { border-top: 1px solid var(--color-linea); }
-  .cierre .marco { display: grid; gap: 2rem; justify-items: start; }
-  .cierre .cartel { font-size: clamp(4.5rem, 22vw, 14rem); line-height: 0.86; }
+  /* ---------- Pie ---------- */
   .pie { border-top: 1px solid var(--color-linea); padding-block: 1.75rem 2.25rem; font-size: 0.9375rem; color: var(--color-texto-suave); }
   .pie .marco { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 2rem; }
   .pie img { height: 1.6rem; width: auto; }
   .pie nav { display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
   .pie a { color: inherit; display: inline-flex; align-items: center; min-height: 2.75rem; text-decoration: none; }
   .pie a:hover { color: var(--color-texto); text-decoration: underline; text-underline-offset: 0.3em; }
-
-  /* ---------- La entrada de la portada: una sola vez ---------- */
-  @media (prefers-reduced-motion: no-preference) {
-    .portada h1 span { animation: portada-subir 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-    .portada h1 span:nth-child(2) { animation-delay: 90ms; }
-    .enviado svg { animation: portada-leido 300ms ease-out 1500ms both; }
-    .enviado, .portada-texto { animation: portada-aparecer 500ms ease-out 500ms both; }
-    .tiquete { animation: portada-imprimir 650ms cubic-bezier(0.2, 0.8, 0.2, 1) 1900ms both; }
-  }
-  @media (prefers-reduced-motion: reduce) { .enviado svg { color: var(--color-secundario); } }
-
-  .frase-suelta { max-width: 26rem; margin-bottom: 1.5rem; }
+  .pie { position: relative; z-index: 1; background: var(--color-fondo); }
 }
-
-@keyframes portada-subir { from { opacity: 0; translate: 0 0.18em; } }
-@keyframes portada-aparecer { from { opacity: 0; } }
-@keyframes portada-leido { to { color: var(--color-secundario); } }
-@keyframes portada-imprimir { from { opacity: 0; translate: 0 2.5rem; rotate: 1deg; } }
