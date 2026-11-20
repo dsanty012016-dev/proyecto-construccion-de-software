@@ -225,13 +225,22 @@ export async function recuperarConEnlace(
   const supabase = await crearClienteServidor();
   const { error: errorEnlace } = await supabase.auth.verifyOtp({ type: "recovery", token_hash: tokenHash });
   if (errorEnlace) {
-    // Ahora sí es real: el enlace se usó antes o venció (o llegó uno más nuevo).
+    // Si el enlace ya se usó en un intento anterior de este mismo formulario
+    // (por ejemplo, la clave nueva era igual a la vieja), la sesión de ese
+    // intento sigue abierta y se puede guardar la clave sin el enlace.
+    const { data } = await supabase.auth.getUser();
+    if (data.user) return guardarClave(supabase, validado.data.clave);
+    // Si no, es real: el enlace se usó antes o venció (o llegó uno más nuevo).
     return {
       resultado: "error",
       mensaje: "Este enlace ya se usó, venció o pediste uno más nuevo. Usa el último correo que te llegó o pide otro enlace.",
     };
   }
-  const { error } = await supabase.auth.updateUser({ password: validado.data.clave });
+  return guardarClave(supabase, validado.data.clave);
+}
+
+async function guardarClave(supabase: Awaited<ReturnType<typeof crearClienteServidor>>, clave: string): Promise<EstadoFormulario> {
+  const { error } = await supabase.auth.updateUser({ password: clave });
   if (error) {
     return { resultado: "error", mensaje: traducirError(error.message, error.code) };
   }
