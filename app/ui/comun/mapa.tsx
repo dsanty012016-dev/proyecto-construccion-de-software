@@ -6,7 +6,7 @@ import type { GeoJSONSource, Map as MapaLibre, Marker } from "maplibre-gl";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { type Coordenada, coordenadaValida, distanciaTexto, ESTILO_MAPA, limites } from "@/app/lib/mapa";
 import { buscarRuta, CREDITO_RUTAS } from "@/app/lib/ruta-vial";
-import { IconoAmpliarMapa, IconoReducirMapa } from "./iconos-app";
+import { IconoAmpliarMapa, IconoCheck, IconoReducirMapa } from "./iconos-app";
 import { escucharTema } from "./tema-navegador";
 
 // Mapa de la app (MapLibre con el estilo oscuro de OpenFreeMap, teñido con la
@@ -174,6 +174,10 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   const botonReducir = useRef<HTMLButtonElement>(null);
   const tituloVisor = useId();
   const [ampliado, setAmpliado] = useState(false);
+  // Aviso sobre el mapa al elegir punto: "suelta para guardar" mientras se
+  // arrastra y "Ubicación guardada" al soltar, para que se sepa que quedó.
+  const [avisoPunto, setAvisoPunto] = useState<"moviendo" | "guardado" | null>(null);
+  const [vecesGuardado, setVecesGuardado] = useState(0);
   const mapaRef = useRef<MapaLibre | null>(null);
   const libRef = useRef<Libreria | null>(null);
   const marcadores = useRef<{ origen?: { marcador: Marker; estilo: "origen" | "destino" }; destino?: { marcador: Marker; estilo: "origen" | "destino" } }>({});
@@ -259,6 +263,9 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
         instancia.on("error", () => {
           if (!cancelado && !cargado) { clearTimeout(limiteCarga); setEstado("error"); }
         });
+        instancia.on("movestart", (evento) => {
+          if (!cancelado && cargado && alElegirRef.current && evento.originalEvent) setAvisoPunto("moviendo");
+        });
         instancia.on("moveend", (evento) => {
           if (cancelado || !cargado) return;
           if (encuadrando.current) {
@@ -269,7 +276,11 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
           if (!evento.originalEvent && !("puntoElegido" in evento && evento.puntoElegido === true)) return;
           const c = instancia.getCenter();
           centroInicial.current = { lat: c.lat, lng: c.lng };
-          alElegirRef.current?.({ lat: c.lat, lng: c.lng });
+          if (alElegirRef.current) {
+            alElegirRef.current({ lat: c.lat, lng: c.lng });
+            setAvisoPunto("guardado");
+            setVecesGuardado((n) => n + 1);
+          }
         });
         instancia.on("click", (evento) => {
           if (!cancelado && cargado && alElegirRef.current) instancia.easeTo({ center: evento.lngLat, duration: animar.current ? 400 : 0 }, { puntoElegido: true });
@@ -418,6 +429,13 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     botonReducir.current?.focus({ preventScroll: true });
   }
 
+  // "Ubicación guardada" se queda unos segundos y se va solo.
+  useEffect(() => {
+    if (vecesGuardado === 0) return;
+    const quitar = setTimeout(() => setAvisoPunto((actual) => (actual === "guardado" ? null : actual)), 2500);
+    return () => clearTimeout(quitar);
+  }, [vecesGuardado]);
+
   function alCerrarVisor() {
     // Al volver, el navegador mantiene el mismo lienzo y MapLibre ajusta su tamaño.
     if (visor.current?.open) return;
@@ -456,6 +474,16 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
               />
               <circle cx="12" cy="10.5" r="3" className="fill-texto" />
             </svg>
+          )}
+
+          {modoElegir && estado === "listo" && (
+            <p role="status" aria-live="polite"
+              className={`pointer-events-none absolute top-2 left-1/2 z-[5] flex -translate-x-1/2 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold whitespace-nowrap shadow-lg transition-opacity duration-200 motion-reduce:transition-none ${
+                avisoPunto === null ? "opacity-0" : "opacity-100"
+              } ${avisoPunto === "guardado" ? "bg-primario text-sobre-primario" : "bg-fondo/90 text-texto"}`}>
+              {avisoPunto === "guardado" && <IconoCheck className="size-4 shrink-0" />}
+              {avisoPunto === "guardado" ? "Ubicación guardada" : avisoPunto === "moviendo" ? "Suelta el mapa para guardar el punto" : ""}
+            </p>
           )}
 
           {estado === "listo" && infoRuta?.clave === claveRuta && (
