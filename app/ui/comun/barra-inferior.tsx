@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useTransition } from "react";
+import { escucharDeslizamiento } from "./deslizar-pestana";
 import { IconoBilletera, IconoInicio, IconoPerfil, IconoVehiculo, IconoViajes } from "./iconos-app";
 
 // Barra de navegación inferior de la zona privada. Cambia según el rol y marca
@@ -42,10 +44,28 @@ function pestanasDe(rol: "estudiante" | "conductor"): Pestana[] {
 
 export function BarraInferior({ rol }: { rol: "estudiante" | "conductor" }) {
   const ruta = usePathname();
+  const router = useRouter();
+  const [navegando, iniciar] = useTransition();
+  const pestanas = pestanasDe(rol);
+  // El gesto recorre las pestañas principales. Las pantallas de detalle tienen sus propios controles.
+  const indice = pestanas.findIndex(({ href }) => href === ruta);
+  const anterior = indice > 0 ? pestanas[indice - 1].href : undefined;
+  const siguiente = indice >= 0 ? pestanas[indice + 1]?.href : undefined;
+
+  useEffect(() => {
+    if (navegando || (!anterior && !siguiente)) return;
+    const contenido = document.getElementById("contenido-app");
+    if (!contenido) return;
+    return escucharDeslizamiento(contenido, (hacia) => {
+      const enlace = hacia === "anterior" ? anterior : siguiente;
+      if (enlace) iniciar(() => router.push(enlace));
+    });
+  }, [anterior, siguiente, navegando, iniciar, router]);
+
   return (
     <nav aria-label="Principal" className="producto-nav">
       <ul>
-        {pestanasDe(rol).map((pestana) => {
+        {pestanas.map((pestana) => {
           const activa = pestana.activa(ruta);
           return (
             <li key={pestana.href}>

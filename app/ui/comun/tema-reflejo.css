@@ -1,0 +1,30 @@
+/* El brillo queda visible en la separación entre las dos capturas. */
+@media (prefers-reduced-motion: no-preference) {
+  html.tema-reflejo::view-transition {
+    background: linear-gradient(166deg,
+      color-mix(in srgb, var(--color-sobre-primario), var(--color-primario) 27%),
+      var(--color-sobre-primario) 46%,
+      color-mix(in srgb, var(--color-sobre-primario), var(--color-primario) 45%)
+    );
+  }
+
+  html.tema-reflejo::view-transition-group(root) { animation: none; }
+
+  html.tema-reflejo::view-transition-old(root),
+  html.tema-reflejo::view-transition-new(root) {
+    animation: var(--reflejo-corte) 540ms cubic-bezier(.35, .04, .25, 1) both;
+    mix-blend-mode: normal;
+  }
+  html.tema-reflejo::view-transition-old(root) { --reflejo-corte: reflejo-salida; }
+  html.tema-reflejo::view-transition-new(root) { --reflejo-corte: reflejo-entrada; }
+}
+
+@keyframes reflejo-salida {
+  from { clip-path: polygon(-100% 0, 110% 0, 140% 100%, -100% 100%); }
+  to { clip-path: polygon(-100% 0, -40% 0, -10% 100%, -100% 100%); }
+}
+
+@keyframes reflejo-entrada {
+  from { clip-path: polygon(calc(110% + clamp(6px, 2vw, 14px)) 0, 200% 0, 200% 100%, calc(140% + clamp(6px, 2vw, 14px)) 100%); }
+  to { clip-path: polygon(calc(-40% + clamp(6px, 2vw, 14px)) 0, 200% 0, 200% 100%, calc(-10% + clamp(6px, 2vw, 14px)) 100%); }
+}
