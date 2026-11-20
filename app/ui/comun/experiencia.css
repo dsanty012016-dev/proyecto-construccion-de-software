@@ -1,64 +1,24 @@
-/* Paleta del producto. Las pantallas comparten los tokens de UniGo y los
-   resuelven aquí según el tema. La portada usa su paleta de publicación. */
-.producto-tema,
-.producto-tema [data-tema="oscuro"] {
-  --color-fondo: #0e2024;
-  --color-superficie: #172c30;
-  --color-primario: #0d7568;
-  --color-secundario: #78d9c3;
-  --color-texto: #f1f8f6;
-  --color-texto-suave: #a7c0bf;
-  --color-error: #ffb4ad;
-  --color-sobre-primario: #f5fffc;
-  --color-linea: #365357;
-  --color-mapa-tierra: #1a3236;
-  --color-mapa-via: #385458;
-  --color-mapa-via-menor: #274347;
-  --producto-enfasis: #213f40;
+/* Las pantallas heredan la paleta de la portada desde globals.css. */
+.producto-tema {
+  --producto-enfasis: color-mix(in srgb, var(--color-secundario) 9%, var(--color-superficie));
   --producto-estado-alerta: #f2ce89;
+  --radio-panel: 1.125rem;
+  --ritmo-movimiento: cubic-bezier(.18, .78, .24, 1);
+  background-color: var(--color-fondo);
+  caret-color: var(--color-secundario);
   color: var(--color-texto);
+  min-height: 100dvh;
 }
 
 html[data-tema="claro"] .producto-tema,
 .producto-tema[data-tema="claro"] {
-  --color-fondo: #edf4f2;
-  --color-superficie: #fff;
-  --color-primario: #0d7568;
-  --color-secundario: #075d53;
-  --color-texto: #122e30;
-  --color-texto-suave: #486463;
-  --color-error: #a62c2b;
-  --color-linea: #bacfca;
-  --color-mapa-tierra: #e1ede8;
-  --color-mapa-via: #adc9c2;
-  --color-mapa-via-menor: #c7dcd6;
-  --producto-enfasis: #dcece7;
   --producto-estado-alerta: #755006;
 }
 
 @media (prefers-color-scheme: light) {
   html:not([data-tema="claro"], [data-tema="oscuro"]) .producto-tema:not([data-tema="oscuro"]) {
-    --color-fondo: #edf4f2;
-    --color-superficie: #fff;
-    --color-secundario: #075d53;
-    --color-texto: #122e30;
-    --color-texto-suave: #486463;
-    --color-error: #a62c2b;
-    --color-linea: #bacfca;
-    --color-mapa-tierra: #e1ede8;
-    --color-mapa-via: #adc9c2;
-    --color-mapa-via-menor: #c7dcd6;
-    --producto-enfasis: #dcece7;
     --producto-estado-alerta: #755006;
   }
-}
-
-.producto-tema {
-  --radio-panel: 1.125rem;
-  --ritmo-movimiento: cubic-bezier(.18, .78, .24, 1);
-  background-color: var(--color-fondo);
-  caret-color: var(--color-secundario);
-  min-height: 100dvh;
 }
 
 .producto-tema .cartel {
