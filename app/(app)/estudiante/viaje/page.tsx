@@ -52,7 +52,7 @@ export default async function PaginaViajeEstudiante({ searchParams }: { searchPa
 
   if (viaje.estado === "solicitado") {
     return (
-      <main className="flex min-h-[calc(100dvh-6rem)] flex-col px-5 pt-4">
+      <main className="space-y-5 px-5 pt-4">
         {enVivo}
         <EncabezadoPantalla
           titulo={ofertas.length > 0 ? "Elige tu conductor" : "Buscando conductores"}
@@ -69,18 +69,16 @@ export default async function PaginaViajeEstudiante({ searchParams }: { searchPa
             </p>
           </>
         ) : (
-          // El tiquete de ofertas: el mismo de la portada, ahora con ofertas de verdad.
-          <section aria-labelledby="titulo-ofertas" className="mt-4 mb-5 rounded-2xl bg-superficie">
-            <header className="relative flex items-end justify-between gap-4 border-b-2 border-dashed border-texto-suave/40 px-4 pt-4 pb-3 before:absolute before:-bottom-2.5 before:-left-2.5 before:size-5 before:rounded-full before:bg-fondo after:absolute after:-right-2.5 after:-bottom-2.5 after:size-5 after:rounded-full after:bg-fondo">
-              <h2 id="titulo-ofertas" className="cifra text-[2rem]">
+          <section aria-labelledby="titulo-ofertas" className="producto-panel">
+            <header className="oferta-cabecera">
+              <h2 id="titulo-ofertas" className="cifra text-xl">
                 {ofertas.length} {ofertas.length === 1 ? "oferta" : "ofertas"}
                 <span className="sr-only">, de menor a mayor precio</span>
               </h2>
-              <p className="min-w-0 text-right text-[13px] leading-snug text-texto-suave">
-                <span className="block truncate">
+              <p className="min-w-0 text-sm leading-snug text-texto-suave">
+                <span className="block [overflow-wrap:anywhere]">
                   {viaje.sentido === "regreso" ? `De la U a ${viaje.destino_texto}` : `De ${viaje.origen_texto} a la U`}
                 </span>
-                Siguen llegando
               </p>
             </header>
             <ul className="px-4">
@@ -91,12 +89,12 @@ export default async function PaginaViajeEstudiante({ searchParams }: { searchPa
           </section>
         )}
 
-        <div className="mt-auto space-y-2 border-t border-texto-suave/15 pt-4">
+        <div className="space-y-2 border-t border-linea pt-4">
           <p className="flex gap-2.5 text-[13px] leading-relaxed text-texto-suave">
             <IconoCandado className="mt-0.5 size-[18px] shrink-0 text-secundario" />
             Pagas al aceptar con tu saldo ({pesos(saldo)}). El conductor recibe el dinero cuando llegues.
           </p>
-          <p className="text-center text-[13px] text-texto-suave">
+          <p className="text-[13px] text-texto-suave">
             Si no aceptas una oferta antes de las {horaDe(venceSolicitud(Date.parse(viaje.creado_en)))}, la solicitud se cancela sola.
           </p>
           <BotonAccion accion={cancelarViaje} campos={{ viaje: viaje.id }} estilo="discreto" textoSi="Sí, cancelar" confirmar="¿Cancelar la solicitud?">
@@ -135,16 +133,20 @@ export default async function PaginaViajeEstudiante({ searchParams }: { searchPa
       </div>
 
       <div className="relative -mt-5 space-y-5 rounded-t-3xl bg-fondo px-5 pt-5">
-        <div role="status">
-          <h1 className="cartel text-[2.25rem]">{titulo}</h1>
-          <p className="mt-1 text-sm text-texto-suave">
-            <span className="sr-only">{etiquetaEstado(viaje.estado)}. </span>
-            {viaje.estado === "aceptado" ? `Te recoge en ${viaje.origen_texto}` : `Vas a ${viaje.destino_texto}`}
-          </p>
+        <div className="trayecto-panel space-y-4">
+          <div role="status">
+            <div key={viaje.estado} className="trayecto-hito">
+              <h1 className="cartel text-[2.25rem]">{titulo}</h1>
+              <p className="mt-1 text-sm text-texto-suave">
+                <span className="sr-only">{etiquetaEstado(viaje.estado)}. </span>
+                {viaje.estado === "aceptado" ? `Te recoge en ${viaje.origen_texto}` : `Vas a ${viaje.destino_texto}`}
+              </p>
+            </div>
+          </div>
+          <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} regreso={viaje.sentido === "regreso"} />
         </div>
-        <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} regreso={viaje.sentido === "regreso"} />
 
-        <section aria-labelledby="titulo-conductor" className="space-y-3.5 rounded-2xl bg-superficie p-4">
+        <section aria-labelledby="titulo-conductor" className="producto-panel space-y-3.5 p-4">
           <h2 id="titulo-conductor" className="sr-only">
             Tu conductor
           </h2>

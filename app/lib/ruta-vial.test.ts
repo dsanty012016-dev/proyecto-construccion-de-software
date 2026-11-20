@@ -1,6 +1,19 @@
 // Pruebas de la consulta y la lectura de rutas por las vías.
 import { describe, expect, it } from "vitest";
-import { leerRuta, urlRuta } from "./ruta-vial";
+import { leerRuta, leerTiempos, urlRuta } from "./ruta-vial";
+
+it("solicita la geometría en el orden de las paradas", () => {
+  const url = urlRuta({ lat: 4.1, lng: -73.6 }, { lat: 4.2, lng: -73.7 }, [{ lat: 4.15, lng: -73.65 }]);
+  expect(url).toContain("-73.600000,4.100000;-73.650000,4.150000;-73.700000,4.200000");
+  expect(url).toContain("continue_straight=false");
+});
+
+it("acepta tramos sin conexión y rechaza matrices incompletas o inválidas", () => {
+  expect(leerTiempos({ code: "Ok", durations: [[0, 12], [null, 0]] }, 2)).toEqual([[0, 12], [null, 0]]);
+  expect(leerTiempos({ code: "Ok", durations: [[0], [0, 0]] }, 2)).toBeNull();
+  expect(leerTiempos({ code: "Ok", durations: [[0, -1], ["50", 0]] }, 2)).toBeNull();
+  expect(leerTiempos({ code: "NoTable" }, 2)).toBeNull();
+});
 
 const origen = { lat: 4.1420001, lng: -73.6266 };
 const sede = { lat: 4.121686325903587, lng: -73.61549558142269 };

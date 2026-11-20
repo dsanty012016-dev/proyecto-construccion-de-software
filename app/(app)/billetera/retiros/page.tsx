@@ -17,7 +17,7 @@ export default async function PaginaRetiros({ searchParams }: { searchParams: Pr
   return <main className="space-y-6 px-5 pt-6">
     <EncabezadoPantalla titulo="Retirar ganancias" texto="A tu Nequi, con revisión del equipo." volverA="/billetera" />
     {parametros.solicitado === "1" && <Aviso tipo="listo">Solicitud recibida. El importe ya está apartado y puedes consultar aquí su estado.</Aviso>}
-    <section className="space-y-3" aria-labelledby="disponible-retiro">
+    <section className="producto-panel space-y-3 p-4" aria-labelledby="disponible-retiro">
       <h2 id="disponible-retiro" className="text-base">Ganancias disponibles</h2>
       <p className="cifra text-4xl">{pesos(opciones.disponible)}</p>
       <p className="text-sm text-texto-suave">Las recargas para viajar no se cuentan como ganancias. Los retiros pendientes ya están descontados de esta cifra.</p>
@@ -26,8 +26,13 @@ export default async function PaginaRetiros({ searchParams }: { searchParams: Pr
     <section aria-labelledby="historial-retiros" className="space-y-3">
       <h2 id="historial-retiros" className="text-lg">Mis retiros</h2>
       {!historial.retiros.length && <p className="text-sm text-texto-suave">Todavía no tienes retiros en esta página.</p>}
-      <ul className="divide-y divide-texto-suave/20">{historial.retiros.map((retiro) => <li key={retiro.id} className="space-y-2 py-4">
-        <p className="flex flex-wrap justify-between gap-2 font-semibold"><span>{pesos(retiro.monto)}</span><span>{retiro.estado === "solicitado" ? (retiro.asignado_en ? "En trámite" : "Por revisar") : retiro.estado === "pagado" ? "Pagado" : "No aprobado"}</span></p>
+      <ul className={historial.retiros.length ? "producto-panel divide-y divide-linea px-4" : undefined}>{historial.retiros.map((retiro) => <li key={retiro.id} className="space-y-2 py-4">
+        <p className="flex flex-wrap items-baseline justify-between gap-2 font-semibold">
+          <span className="cifra text-lg">{pesos(retiro.monto)}</span>
+          <span className="producto-estado" data-estado={retiro.estado === "solicitado" ? "atencion" : retiro.estado === "rechazado" ? "error" : undefined}>
+            {retiro.estado === "solicitado" ? (retiro.asignado_en ? "En trámite" : "Por revisar") : retiro.estado === "pagado" ? "Pagado" : "No aprobado"}
+          </span>
+        </p>
         <p className="text-sm text-texto-suave">{retiro.simulado && "Prueba · "}Nequi {retiro.nequi} · {fechaCorta(retiro.solicitado_en)}</p>
         {retiro.estado === "solicitado" && <p className="text-sm">Plazo máximo: {fechaCorta(retiro.plazo_hasta)}.</p>}
         {retiro.referencia_pago && <p className="text-sm break-all">Referencia del pago: {retiro.referencia_pago}</p>}

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { COLOR_BARRA, SCRIPT_TEMA } from "@/app/lib/tema";
 import { RegistrarServiceWorker } from "@/app/ui/comun/registrar-sw";
+import { AperturaUniGo } from "@/app/ui/comun/apertura-unigo";
 import "./globals.css";
 
 // Archivo: la única letra de UniGo. Es una sola fuente variable; en su ancho
@@ -66,6 +67,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh">
         {children}
+        <AperturaUniGo />
         <RegistrarServiceWorker />
       </body>
     </html>

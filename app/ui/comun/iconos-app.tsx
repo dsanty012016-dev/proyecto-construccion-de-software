@@ -31,6 +31,14 @@ export function IconoInicio(props: Props) {
   );
 }
 
+export function IconoAmpliarMapa(props: Props) {
+  return <Base {...props}><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5" /></Base>;
+}
+
+export function IconoReducirMapa(props: Props) {
+  return <Base {...props}><path d="M4 9h5V4m11 5h-5V4M4 15h5v5m11-5h-5v5" /></Base>;
+}
+
 export function IconoViajes(props: Props) {
   return (
     <Base {...props}>

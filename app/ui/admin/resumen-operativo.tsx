@@ -11,7 +11,7 @@ export async function ResumenOperativo() {
     { nombre: "Archivos que cumplieron su plazo de conservación", total: datos.archivos_por_limpiar },
     { nombre: "Licencias aprobadas sin fecha de vencimiento", total: datos.licencias_sin_vigencia },
   ];
-  return <section className="space-y-3 rounded-2xl bg-superficie p-4" aria-labelledby="titulo-operacion">
+  return <section className="producto-panel space-y-3 p-4" aria-labelledby="titulo-operacion">
     <h2 id="titulo-operacion" className="text-lg">Estado operativo</h2>
     <p className="text-sm text-texto-suave">Checkout habilitado en la base: {datos.checkout_real ? "dinero real" : datos.checkout_pruebas ? "Wompi Sandbox" : "ninguno"}.</p>
     <dl className="divide-y divide-texto-suave/20 text-sm">

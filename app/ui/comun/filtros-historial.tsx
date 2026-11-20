@@ -8,7 +8,7 @@ import { enlaceDeFiltro, ESTADOS, TIPOS, type Filtro } from "@/app/lib/historial
 const NOMBRE_TIPO: Record<Filtro["tipo"], string> = { todos: "Todos", pedido: "Por pedido", cupo: "Cupos" };
 const NOMBRE_ESTADO: Record<Filtro["estado"], string> = { todos: "Todos", terminado: "Terminados", cancelado: "Cancelados" };
 
-// Mismo aspecto que el selector de ida y regreso: el activo en azul lleno.
+// El selector de ida y regreso y el historial comparten estados.
 const OPCION =
   "flex min-h-11 items-center justify-center rounded-xl px-2 text-center text-sm font-semibold transition-colors motion-reduce:transition-none";
 const ACTIVA = "bg-primario text-sobre-primario";
@@ -63,13 +63,13 @@ function Grupo({ titulo, opciones }: { titulo: string; opciones: Opcion[] }) {
       <p id={id} className="mb-1.5 text-[13px] font-semibold text-texto-suave">
         {titulo}
       </p>
-      <ul aria-labelledby={id} className="grid grid-cols-3 gap-1 rounded-2xl bg-superficie p-1">
+      <ul aria-labelledby={id} className="producto-selector grid grid-cols-[repeat(auto-fit,minmax(min(100%,5rem),1fr))] gap-1 p-1">
         {opciones.map((opcion) => (
           <li key={opcion.clave}>
             <Link
               href={opcion.href}
               aria-current={opcion.activa ? "page" : undefined}
-              className={`${OPCION} ${opcion.activa ? ACTIVA : INACTIVA}`}
+              className={`${OPCION} ${INACTIVA}`}
             >
               {opcion.texto}
             </Link>

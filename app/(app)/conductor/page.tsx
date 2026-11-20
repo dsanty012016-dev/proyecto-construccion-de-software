@@ -57,7 +57,7 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
   );
 
   return (
-    <main className="space-y-3 px-5 pt-4">
+    <main className="space-y-5 px-5 pt-5">
       {/* Solicitudes nuevas, ofertas aceptadas o rechazadas llegan en tiempo real. */}
       {(perfil.disponible || activo || miCupo) && (
         <EnVivo
@@ -68,28 +68,28 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
           ]}
         />
       )}
-      <header className="flex flex-wrap items-center justify-between gap-3 pb-2">
-        <h1 className="sr-only">Inicio del conductor, {perfil.nombre.split(" ")[0]}</h1>
-        <BotonCambiarModo modoActual="conductor" />
-        <PastillaSaldo personaId={usuario.id} />
+      <header className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <BotonCambiarModo modoActual="conductor" />
+          <PastillaSaldo personaId={usuario.id} />
+        </div>
+        <h1 className="cartel inicio-titulo">Hola, {perfil.nombre.split(" ")[0]}.</h1>
       </header>
 
       {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
       <EstadoCuenta personaId={usuario.id} />
-      <InstalarApp cerrable />
-      <ActivarNotificaciones key={usuario.id} />
 
       {!activo && !miCupo && <PreparacionConductor tieneVehiculo={!!vehiculo} documentos={documentos} disponible={perfil.disponible} ahora={horaConsulta} />}
 
       {activo ? (
-        <section aria-labelledby="titulo-viaje-activo" data-tema="oscuro" className="space-y-3 rounded-2xl bg-primario p-[18px] text-texto">
+        <section aria-labelledby="titulo-viaje-activo" className="trayecto-panel space-y-3">
           <h2 id="titulo-viaje-activo" className="cartel text-[2rem]">
             {etiquetaEstado(activo.viaje.estado)}
           </h2>
           <p className="text-sm">{activo.estudiante ? `Llevas a ${nombreCorto(activo.estudiante.nombre)} · ${puntoDeLaCasa(activo.viaje)}` : "Tienes un viaje asignado."}</p>
           <Link
             href="/conductor/viaje"
-            className="flex h-12 w-full items-center justify-center rounded-xl bg-texto prensa-papel font-semibold text-fondo hover:bg-texto/90"
+            className="flex min-h-12 w-full items-center justify-center rounded-xl bg-primario px-3 py-2 text-center font-semibold text-sobre-primario hover:bg-primario/90"
           >
             Ver mi viaje
           </Link>
@@ -123,10 +123,10 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
         )
       )}
 
-      <section aria-labelledby="titulo-solicitudes" className="pt-4">
-        <h2 id="titulo-solicitudes" className="flex items-baseline gap-2 text-lg">
+      <section aria-labelledby="titulo-solicitudes" className="producto-panel p-4">
+        <h2 id="titulo-solicitudes" className="flex flex-wrap items-baseline gap-2 text-lg">
           Solicitudes
-          {perfil.disponible && !activo && <span className="font-texto text-[13px] font-semibold text-texto-suave">llegan en vivo</span>}
+          {perfil.disponible && !activo && <span className="producto-estado">En vivo</span>}
         </h2>
         {activo ? (
           <p className="mt-2 text-sm text-texto-suave">Termina tu viaje actual para ver nuevas solicitudes.</p>
@@ -141,8 +141,8 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
         ) : (
           <ul className="mt-1">
             {solicitudes.map(({ viaje, estudiante, miOferta }) => (
-              <li key={viaje.id} className="flex items-center gap-3 border-b border-texto-suave/15 py-3.5 last:border-b-0">
-                <div className="min-w-0 flex-1">
+              <li key={viaje.id} className="flex flex-wrap items-center gap-3 border-b border-linea py-3.5 last:border-b-0">
+                <div className="min-w-0 flex-1 basis-40">
                   <p className="font-bold">
                     {estudiante ? nombreCorto(estudiante.nombre) : "Estudiante"}{" "}
                     <span className="text-[13px] font-medium text-texto-suave">· hace {hace(Date.parse(viaje.creado_en), ahora)}</span>
@@ -150,11 +150,11 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
                   {miOferta ? (
                     <p className="text-[13px] text-secundario tabular-nums">Ofertaste {pesos(miOferta.precio)} · esperando</p>
                   ) : (
-                    <p className="truncate text-[13px] text-texto-suave">{viaje.sentido === "regreso" ? `U → ${viaje.destino_texto}` : `${viaje.origen_texto} → U`}</p>
+                    <p className="text-[13px] text-texto-suave [overflow-wrap:anywhere]">{viaje.sentido === "regreso" ? `U → ${viaje.destino_texto}` : `${viaje.origen_texto} → U`}</p>
                   )}
                 </div>
                 {miOferta ? (
-                  <div className="flex shrink-0 gap-2">
+                  <div className="flex max-w-full flex-wrap gap-2">
                     <Link
                       href={`/conductor/ofertar/${viaje.id}`}
                       className="flex min-h-11 items-center rounded-xl border border-texto-suave/30 px-3.5 text-sm font-semibold text-texto hover:bg-superficie"
@@ -184,6 +184,8 @@ export default async function PaginaConductor({ searchParams }: { searchParams: 
           </ul>
         )}
       </section>
+      <InstalarApp cerrable />
+      <ActivarNotificaciones key={usuario.id} />
     </main>
   );
 }

@@ -43,23 +43,18 @@ function pestanasDe(rol: "estudiante" | "conductor"): Pestana[] {
 export function BarraInferior({ rol }: { rol: "estudiante" | "conductor" }) {
   const ruta = usePathname();
   return (
-    <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-linea bg-fondo pb-[env(safe-area-inset-bottom)]">
-      <ul className={`mx-auto grid max-w-md px-2 pb-2 ${rol === "conductor" ? "grid-cols-5" : "grid-cols-4"}`}>
+    <nav aria-label="Principal" className="producto-nav">
+      <ul>
         {pestanasDe(rol).map((pestana) => {
           const activa = pestana.activa(ruta);
           return (
-            <li key={pestana.href} className="min-w-0">
+            <li key={pestana.href}>
               <Link
                 href={pestana.href}
                 aria-current={activa ? "page" : undefined}
-                className={`relative flex min-h-14 min-w-0 w-full flex-col items-center justify-center gap-1 px-1 pt-2.5 text-xs ${
-                  activa
-                    ? "font-bold text-texto before:absolute before:-top-px before:left-1/2 before:size-3.5 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border-[3px] before:border-primario before:bg-fondo"
-                    : "font-semibold text-texto-suave hover:text-texto"
-                }`}
               >
-                <span className={activa ? "text-secundario" : undefined}>{pestana.icono}</span>
-                <span className="max-w-full text-center break-all">{pestana.texto}</span>
+                <span aria-hidden="true">{pestana.icono}</span>
+                <span>{pestana.texto}</span>
               </Link>
             </li>
           );

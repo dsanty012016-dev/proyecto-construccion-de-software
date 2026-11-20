@@ -1,6 +1,6 @@
 import type { Coordenada } from "./mapa";
 
-// Ruta por las vías entre dos puntos, con el servicio público de rutas de
+// Rutas por las vías con el servicio público de
 // FOSSGIS (OSRM sobre datos de OpenStreetMap). Política de uso: máximo una
 // consulta por segundo, sin uso masivo y mostrando los créditos
 // (https://routing.openstreetmap.de/about.html). La app pide una ruta por
@@ -17,9 +17,14 @@ export interface RutaVial {
 }
 
 /** URL de la consulta (carro, geometría completa en GeoJSON). Pura, con prueba. */
-export function urlRuta(origen: Coordenada, destino: Coordenada): string {
-  const punto = (c: Coordenada) => `${c.lng.toFixed(6)},${c.lat.toFixed(6)}`;
-  return `https://routing.openstreetmap.de/routed-car/route/v1/driving/${punto(origen)};${punto(destino)}?overview=full&geometries=geojson&alternatives=false&steps=false`;
+export function urlRuta(origen: Coordenada, destino: Coordenada, paradas: readonly Coordenada[] = []): string {
+  const opciones = "overview=full&geometries=geojson&alternatives=false&steps=false";
+  return `${urlOsrm("route", [origen, ...paradas, destino])}?${opciones}${paradas.length ? "&continue_straight=false" : ""}`;
+}
+
+function urlOsrm(servicio: "route" | "table", puntos: readonly Coordenada[]) {
+  const coordenadas = puntos.map((c) => `${c.lng.toFixed(6)},${c.lat.toFixed(6)}`).join(";");
+  return `https://routing.openstreetmap.de/routed-car/${servicio}/v1/driving/${coordenadas}`;
 }
 
 /** Lee la respuesta de OSRM. Devuelve null si no trae una ruta usable. Pura, con prueba. */
@@ -45,21 +50,46 @@ export function leerRuta(respuesta: unknown): RutaVial | null {
   };
 }
 
-const enMemoria = new Map<string, Promise<RutaVial | null>>();
+export type MatrizDeTiempos = readonly (readonly (number | null)[])[];
 
-/** Pide la ruta (una sola vez por par de puntos mientras la pestaña esté abierta). */
-export function buscarRuta(origen: Coordenada, destino: Coordenada): Promise<RutaVial | null> {
-  const url = urlRuta(origen, destino);
-  const guardada = enMemoria.get(url);
+export function leerTiempos(respuesta: unknown, cantidad: number): MatrizDeTiempos | null {
+  if (typeof respuesta !== "object" || respuesta === null) return null;
+  const { code, durations } = respuesta as { code?: unknown; durations?: unknown };
+  if (code !== "Ok" || !Array.isArray(durations) || durations.length !== cantidad) return null;
+  const valida = durations.every((fila) =>
+    Array.isArray(fila) && fila.length === cantidad &&
+    fila.every((valor) => valor === null || (Number.isFinite(valor) && valor >= 0)),
+  );
+  return valida ? durations : null;
+}
+
+const rutas = new Map<string, Promise<RutaVial | null>>();
+const matrices = new Map<string, Promise<MatrizDeTiempos | null>>();
+let proximoTurno = Promise.resolve();
+
+/** Reutiliza consultas y espacia los inicios de solicitudes por pestaña. */
+function consultar<T>(url: string, memoria: Map<string, Promise<T | null>>, leer: (datos: unknown) => T | null) {
+  const guardada = memoria.get(url);
   if (guardada) return guardada;
-  const pedido = fetch(url, { signal: AbortSignal.timeout(8000) })
+  const turno = proximoTurno;
+  proximoTurno = turno.then(() => new Promise<void>((resolver) => setTimeout(resolver, 1000)));
+  const pedido = turno
+    .then(() => fetch(url, { signal: AbortSignal.timeout(8000) }))
     .then((r) => (r.ok ? r.json() : null))
-    .then(leerRuta)
+    .then(leer)
     .catch(() => null);
-  enMemoria.set(url, pedido);
+  memoria.set(url, pedido);
   // Si falló, se olvida para poder intentarlo de nuevo más tarde.
-  pedido.then((ruta) => {
-    if (!ruta) enMemoria.delete(url);
+  pedido.then((resultado) => {
+    if (resultado === null) memoria.delete(url);
   });
   return pedido;
+}
+
+export function buscarRuta(origen: Coordenada, destino: Coordenada, paradas: readonly Coordenada[] = []) {
+  return consultar(urlRuta(origen, destino, paradas), rutas, leerRuta);
+}
+
+export function buscarTiempos(puntos: readonly Coordenada[]) {
+  return consultar(`${urlOsrm("table", puntos)}?annotations=duration`, matrices, (datos) => leerTiempos(datos, puntos.length));
 }

@@ -6,7 +6,7 @@ export default function Cargando() {
       <p className="sr-only" role="status">
         Cargando…
       </p>
-      <div aria-hidden="true" className="space-y-5 motion-safe:animate-pulse">
+      <div aria-hidden="true" className="movimiento-cargando space-y-5">
         <div className="h-8 w-2/3 rounded-lg bg-superficie" />
         <div className="h-44 rounded-2xl bg-superficie" />
         <div className="space-y-3">

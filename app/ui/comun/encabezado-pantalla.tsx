@@ -4,12 +4,12 @@ import { IconoAtras } from "./iconos-app";
 // Título de una pantalla interna, con el botón de volver (44 px de alto).
 export function EncabezadoPantalla({ titulo, volverA, texto }: { titulo: string; volverA?: string; texto?: string }) {
   return (
-    <header className="flex items-center gap-3">
+    <header className="producto-titulo">
       {volverA && (
         <Link
           href={volverA}
           aria-label="Volver"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-superficie text-texto"
+          className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-linea bg-superficie text-texto hover:text-secundario"
         >
           <IconoAtras className="size-5" />
         </Link>

@@ -31,12 +31,13 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
   return (
     <main className="space-y-5 px-5 pt-6 pb-5">
       <EncabezadoPantalla titulo="Administración" volverA={cola ? "/admin" : "/perfil"} />
+      <div className="admin-distribucion">
       <nav aria-label="Colas de administración">
-        <ul className="divide-y divide-texto-suave/20 border-y border-texto-suave/20">
+        <ul className="producto-panel space-y-1 p-2">
           {COLAS.map(({ clave, nombre, unidad }) => (
             <li key={clave}>
               <Link href={`/admin?cola=${clave}`} aria-current={cola === clave ? "page" : undefined}
-                className={`flex min-h-11 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg px-2 py-2 ${cola === clave ? "bg-superficie" : ""}`}>
+                className="admin-cola">
                 <span className="font-semibold text-secundario">{nombre}</span>
                 <span className="text-sm tabular-nums text-texto-suave">
                   {contadores[clave]} {unidad}{contadores[clave] === 1 ? "" : "s"}
@@ -46,13 +47,14 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
           ))}
         </ul>
       </nav>
+      <div className="min-w-0 space-y-4">
       {!cola && <ResumenOperativo />}
       {verHistorial && (
-        <nav aria-label="Estado de los casos" className="flex flex-wrap items-stretch gap-2 rounded-2xl bg-superficie p-1 text-sm">
+        <nav aria-label="Estado de los casos" className="producto-selector flex flex-wrap items-stretch gap-2 p-1 text-sm">
           <Link href={`/admin?cola=${cola}`} aria-current={!resueltos ? "page" : undefined}
-            className={`${claseVista} ${!resueltos ? "bg-primario text-sobre-primario" : "text-secundario"}`}>Pendientes</Link>
+            className={claseVista}>Pendientes</Link>
           <Link href={`/admin?cola=${cola}&vista=resueltos`} aria-current={resueltos ? "page" : undefined}
-            className={`${claseVista} ${resueltos ? "bg-primario text-sobre-primario" : "text-secundario"}`}>Historial</Link>
+            className={claseVista}>Historial</Link>
         </nav>
       )}
       {cola === "retiros" && (resueltos
@@ -64,6 +66,8 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
       {cola && cola !== "incidencias" && !(cola === "retiros" && resueltos) && (
         <PaginasAdmin pagina={pagina} total={contadores[cola]} href={(n) => `/admin?cola=${cola}&pagina=${n}`} />
       )}
+      </div>
+      </div>
     </main>
   );
 }

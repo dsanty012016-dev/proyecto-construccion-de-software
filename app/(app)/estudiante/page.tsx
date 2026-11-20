@@ -24,8 +24,7 @@ const BOTON_PRINCIPAL =
 const BOTON_BORDE =
   "flex min-h-14 w-full items-center justify-center rounded-xl border border-texto-suave/40 px-4 py-3 text-center font-titulo text-base font-semibold text-texto transition-colors hover:bg-superficie";
 
-// Inicio del estudiante (rediseño): el mapa arriba y, abajo, una sola cosa:
-// pedir un viaje (a la U o de vuelta a casa) o volver al que ya tiene en marcha.
+// El inicio da prioridad al viaje activo o a la siguiente salida.
 export default async function PaginaEstudiante({ searchParams }: { searchParams: Promise<{ clave?: string }> }) {
   const { usuario, perfil } = await exigirRol("estudiante");
   const { clave } = await searchParams;
@@ -46,35 +45,26 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
   const puntoSede = sede && sede.lat !== null && sede.lng !== null ? { lat: sede.lat, lng: sede.lng } : null;
 
   return (
-    <main>
-      <div className="relative h-80">
-        {puntoSede ? (
-          <Mapa etiqueta="Mapa con tu universidad" centro={puntoSede} destino={puntoSede} aRas className="h-full" />
-        ) : (
-          <div className="h-full bg-superficie" />
-        )}
-        <div className="absolute inset-x-4 top-4 z-10 flex flex-wrap items-center justify-between gap-3">
-          <BotonCambiarModo modoActual="estudiante" />
-          <PastillaSaldo personaId={usuario.id} />
-        </div>
+    <main className="space-y-6 px-5 pt-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <BotonCambiarModo modoActual="estudiante" />
+        <PastillaSaldo personaId={usuario.id} />
       </div>
 
-      <div className="relative -mt-5 space-y-5 rounded-t-3xl bg-fondo px-5 pt-5">
-        <h1 className="cartel text-[2.125rem]">Hola, {perfil.nombre.split(" ")[0]}. ¿Para dónde vamos?</h1>
+      {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
+      <EstadoCuenta personaId={usuario.id} />
 
-        {clave === "actualizada" && <Aviso tipo="listo">Tu contraseña quedó actualizada.</Aviso>}
-        <EstadoCuenta personaId={usuario.id} />
-        <InstalarApp cerrable />
-        <ActivarNotificaciones key={usuario.id} />
-
+      <div className={puntoSede ? "inicio-distribucion" : undefined}>
+        <div className="space-y-5">
+          <h1 className="cartel inicio-titulo">Hola, {perfil.nombre.split(" ")[0]}. ¿Para dónde vamos?</h1>
         {activo ? (
-          <section aria-labelledby="titulo-activo" className="space-y-4 rounded-2xl bg-superficie p-4">
-            <div className="flex items-center justify-between gap-3">
+          <section aria-labelledby="titulo-activo" className="producto-panel space-y-4 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 id="titulo-activo" className="text-lg">
                 {etiquetaEstado(activo.viaje.estado)}
               </h2>
               {activo.viaje.estado === "solicitado" && (
-                <span className="text-sm font-semibold text-secundario">
+                <span className="producto-estado">
                   {activo.ofertas.length === 0 ? "Sin ofertas aún" : `${activo.ofertas.length} ${activo.ofertas.length === 1 ? "oferta" : "ofertas"}`}
                 </span>
               )}
@@ -85,7 +75,7 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
             </Link>
           </section>
         ) : miPuesto ? (
-          <section aria-labelledby="titulo-mi-cupo" className="space-y-4 rounded-2xl bg-superficie p-4">
+          <section aria-labelledby="titulo-mi-cupo" className="producto-panel space-y-4 p-4">
             <div>
               <h2 id="titulo-mi-cupo" className="text-lg">
                 {miPuesto.cupo.estado === "en_curso" ? "Tu cupo ya salió" : etiquetaPuesto(miPuesto.puesto.estado)}
@@ -102,11 +92,11 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
             <h2 id="titulo-pedir" className="sr-only">
               Pedir un viaje
             </h2>
-            <nav aria-label="Cuándo sales" className="grid grid-cols-2 gap-1 rounded-2xl bg-superficie p-1">
-              <span aria-current="page" className="flex min-h-11 items-center justify-center rounded-xl bg-fondo text-sm font-bold">
+            <nav aria-label="Cuándo sales" className="producto-selector grid grid-cols-2 gap-1 p-1">
+              <span aria-current="page" className="flex min-h-11 items-center justify-center rounded-xl px-2 text-center text-sm font-bold">
                 Salir ahora
               </span>
-              <Link href="/estudiante/cupos" className="flex min-h-11 items-center justify-center rounded-xl text-sm font-semibold text-texto-suave hover:text-texto">
+              <Link href="/estudiante/cupos" className="flex min-h-11 items-center justify-center rounded-xl px-2 text-center text-sm font-semibold text-texto-suave hover:text-texto">
                 Con hora fija
               </Link>
             </nav>
@@ -119,10 +109,21 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
                   Volver a casa
                 </Link>
               </div>
-              <p className="text-center text-[13px] text-texto-suave">Los conductores te ofrecen precio y tú eliges.</p>
+              <p className="text-sm text-texto-suave">Compara las ofertas de los conductores y elige la tuya.</p>
             </div>
           </section>
         )}
+        </div>
+        {puntoSede && (
+          <figure className="producto-panel overflow-hidden">
+            <Mapa etiqueta="Mapa con tu universidad" centro={puntoSede} destino={puntoSede} aRas className="inicio-mapa" />
+            <figcaption className="border-t border-linea px-4 py-3 text-sm font-semibold">{sede?.nombre}</figcaption>
+          </figure>
+        )}
+      </div>
+
+      <InstalarApp cerrable />
+      <ActivarNotificaciones key={usuario.id} />
 
         {(porCalificar || cupoPorCalificar || ultimo) && (
           <ul className="divide-y divide-texto-suave/15 border-t border-texto-suave/15">
@@ -166,7 +167,6 @@ export default async function PaginaEstudiante({ searchParams }: { searchParams:
             )}
           </ul>
         )}
-      </div>
     </main>
   );
 }

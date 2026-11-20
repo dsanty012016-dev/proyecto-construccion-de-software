@@ -23,15 +23,16 @@ export default async function PaginaPerfil() {
 
   return (
     <main className="space-y-7 px-5 pt-6 pb-4">
-      <header className="flex flex-wrap items-center gap-4">
+      <section className="producto-panel" aria-labelledby="titulo-perfil">
+      <header className="producto-perfil flex flex-wrap items-center gap-4">
         <Avatar nombre={perfil?.nombre ?? "?"} grande />
         <div className="min-w-0 flex-1 basis-[12em]">
-          <h1 className="pb-1 cartel text-[2.125rem] [overflow-wrap:anywhere]">{perfil?.nombre}</h1>
-          <p className="text-sm font-semibold text-secundario">{conductor ? "Conductor" : "Estudiante"}</p>
+          <h1 id="titulo-perfil" className="cartel text-[2.125rem]">{perfil?.nombre || "Perfil"}</h1>
+          <p className="mt-2 producto-estado">{conductor ? "Conductor" : "Estudiante"}</p>
         </div>
       </header>
 
-      <dl className="divide-y divide-texto-suave/15 border-y border-texto-suave/15 text-sm">
+      <dl className="divide-y divide-linea px-4 text-sm">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3">
           <dt className="text-texto-suave">Correo</dt>
           <dd className="min-w-0 text-right font-semibold break-all">{usuario.email}</dd>
@@ -43,10 +44,11 @@ export default async function PaginaPerfil() {
           </div>
         )}
       </dl>
-      {perfil && <details className="border-b border-texto-suave/20 pb-4">
+      {perfil && <details className="movimiento-contacto border-t border-linea px-4">
         <summary className="min-h-11 cursor-pointer py-3 font-semibold text-secundario">Editar mi nombre y celular</summary>
-        <FormularioContacto nombre={perfil.nombre} telefono={perfil.telefono} />
+        <div className="pb-4"><FormularioContacto nombre={perfil.nombre} telefono={perfil.telefono} /></div>
       </details>}
+      </section>
 
       <EstadoCuenta personaId={usuario.id} siempre />
       <EnlaceDeAyuda motivo={{ tipo: "general" }} />
@@ -54,7 +56,7 @@ export default async function PaginaPerfil() {
       <ActivarNotificaciones key={usuario.id} enPerfil />
 
       {perfil?.rol && (
-        <section aria-labelledby="titulo-modo" className="space-y-3">
+        <section aria-labelledby="titulo-modo" className="producto-panel space-y-3 p-4">
           <h2 id="titulo-modo" className="text-lg">
             Modo de uso
           </h2>
@@ -69,7 +71,7 @@ export default async function PaginaPerfil() {
 
       {(conductor || perfil?.es_admin) && (
         <nav aria-label="Más opciones">
-          <ul className="divide-y divide-texto-suave/15 border-y border-texto-suave/15">
+          <ul className="producto-panel divide-y divide-linea px-4">
             {conductor && (
               <li>
                 <Link href="/conductor/vehiculo" className={FILA}>

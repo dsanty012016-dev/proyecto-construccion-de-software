@@ -1,10 +1,12 @@
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
+import "./mapa-visor.css";
 import type { GeoJSONSource, Map as MapaLibre, Marker } from "maplibre-gl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { type Coordenada, coordenadaValida, distanciaTexto, ESTILO_MAPA, limites } from "@/app/lib/mapa";
 import { buscarRuta, CREDITO_RUTAS } from "@/app/lib/ruta-vial";
+import { IconoAmpliarMapa, IconoReducirMapa } from "./iconos-app";
 import { escucharTema } from "./tema-navegador";
 
 // Mapa de la app (MapLibre con el estilo oscuro de OpenFreeMap, teñido con la
@@ -40,6 +42,8 @@ interface Props {
   aRas?: boolean;
   /** Regreso (017): la "U" va en el origen y el punto azul (la casa) en el destino. */
   uEnElOrigen?: boolean;
+  /** Estado del seguimiento visible en los dos tamaños. */
+  avisoSeguimiento?: ReactNode;
   className?: string;
 }
 
@@ -70,8 +74,8 @@ function elementoMarcador(tipo: "origen" | "destino" | "parada" | "paradaNumerad
 }
 
 /** Color de un token de globals.css (los colores no se escriben sueltos). */
-function colorDeToken(nombre: string) {
-  return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim() || "currentColor";
+function colorDeToken(mapa: MapaLibre, nombre: string) {
+  return getComputedStyle(mapa.getContainer()).getPropertyValue(nombre).trim() || "currentColor";
 }
 
 /**
@@ -82,11 +86,11 @@ function colorDeToken(nombre: string) {
  */
 function pintarEstilo(mapa: MapaLibre) {
   const c = {
-    fondo: colorDeToken("--color-fondo"),
-    tierra: colorDeToken("--color-mapa-tierra"),
-    via: colorDeToken("--color-mapa-via"),
-    viaMenor: colorDeToken("--color-mapa-via-menor"),
-    textoSuave: colorDeToken("--color-texto-suave"),
+    fondo: colorDeToken(mapa, "--color-fondo"),
+    tierra: colorDeToken(mapa, "--color-mapa-tierra"),
+    via: colorDeToken(mapa, "--color-mapa-via"),
+    viaMenor: colorDeToken(mapa, "--color-mapa-via-menor"),
+    textoSuave: colorDeToken(mapa, "--color-texto-suave"),
   };
   // MapLibre 6 tipa cada propiedad de pintura; aquí se arman por nombre.
   type Propiedad = Parameters<MapaLibre["setPaintProperty"]>[1];
@@ -144,7 +148,7 @@ function ponerLinea(mapa: MapaLibre, id: string, coordenadas: [number, number][]
     source: id,
     layout: { "line-join": "round", "line-cap": punteada ? "butt" : "round" },
     paint: {
-      "line-color": colorDeToken("--color-secundario"),
+      "line-color": colorDeToken(mapa, "--color-secundario"),
       "line-width": punteada ? 3 : 5,
       ...(punteada ? { "line-dasharray": [2, 1.5] } : {}),
     },
@@ -163,8 +167,13 @@ function encuadrar(mapa: MapaLibre, caja: [[number, number], [number, number]], 
   }, 1500);
 }
 
-export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, numerarParadas, vehiculo, aRas, uEnElOrigen, className }: Props) {
+export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, numerarParadas, vehiculo, aRas, uEnElOrigen, avisoSeguimiento, className }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
+  const visor = useRef<HTMLDialogElement>(null);
+  const botonAmpliar = useRef<HTMLButtonElement>(null);
+  const botonReducir = useRef<HTMLButtonElement>(null);
+  const tituloVisor = useId();
+  const [ampliado, setAmpliado] = useState(false);
   const mapaRef = useRef<MapaLibre | null>(null);
   const libRef = useRef<Libreria | null>(null);
   const marcadores = useRef<{ origen?: { marcador: Marker; estilo: "origen" | "destino" }; destino?: { marcador: Marker; estilo: "origen" | "destino" } }>({});
@@ -289,6 +298,9 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
   const oLng = origen?.lng;
   const dLat = destino?.lat;
   const dLng = destino?.lng;
+  const claveParadas = JSON.stringify(paradas ?? []);
+  const claveParadasDeRuta = numerarParadas ? claveParadas : "[]";
+  const claveRuta = `${oLat},${oLng},${dLat},${dLng}:${claveParadasDeRuta}`;
   // Al cambiar entre modo claro y oscuro, el mapa se vuelve a teñir con la
   // paleta del modo nuevo (los colores salen de globals.css).
   useEffect(() => {
@@ -298,7 +310,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
       if (!mapa) return;
       pintarEstilo(mapa);
       for (const id of ["ruta-vial", "ruta-recta"]) {
-        if (mapa.getLayer(id)) mapa.setPaintProperty(id, "line-color", colorDeToken("--color-secundario"));
+        if (mapa.getLayer(id)) mapa.setPaintProperty(id, "line-color", colorDeToken(mapa, "--color-secundario"));
       }
     });
   }, [estado]);
@@ -334,30 +346,30 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
 
     if (!coordenadaValida(o) || !coordenadaValida(d)) return;
 
-    // Primero la línea recta punteada; si llega la ruta por las vías, se cambia.
+    const intermedios = (JSON.parse(claveParadasDeRuta) as Coordenada[]).filter(coordenadaValida);
+    const recorrido = [o, ...intermedios, d];
+    // La línea provisional conserva el orden de las paradas.
     ponerLinea(mapa, "ruta-vial", [], false);
-    ponerLinea(mapa, "ruta-recta", [[o.lng, o.lat], [d.lng, d.lat]], true);
-    const caja = limites([o, d]);
+    ponerLinea(mapa, "ruta-recta", recorrido.map(({ lng, lat }) => [lng, lat]), true);
+    const caja = limites(recorrido);
     if (caja) encuadrar(mapa, caja, encuadrando, animar.current);
 
     let vigente = true;
-    const clave = `${o.lat},${o.lng},${d.lat},${d.lng}`;
-    buscarRuta(o, d).then((ruta) => {
+    buscarRuta(o, d, intermedios).then((ruta) => {
       if (!vigente || !ruta || mapaRef.current !== mapa) return;
       ponerLinea(mapa, "ruta-vial", ruta.coordenadas, false);
       ponerLinea(mapa, "ruta-recta", [], true);
       const puntos = ruta.coordenadas.map(([lng, lat]) => ({ lat, lng }));
-      const cajaRuta = limites(puntos);
+      const cajaRuta = limites([...recorrido, ...puntos]);
       if (cajaRuta) encuadrar(mapa, cajaRuta, encuadrando, animar.current);
-      setInfoRuta({ clave, km: ruta.km, minutos: ruta.minutos });
+      setInfoRuta({ clave: claveRuta, km: ruta.km, minutos: ruta.minutos });
     });
     return () => {
       vigente = false;
     };
-  }, [estado, oLat, oLng, dLat, dLng, uEnElOrigen]);
+  }, [estado, oLat, oLng, dLat, dLng, uEnElOrigen, claveParadasDeRuta, claveRuta]);
 
   // Paradas de los estudiantes (se comparan por contenido).
-  const claveParadas = JSON.stringify(paradas ?? []);
   useEffect(() => {
     const mapa = mapaRef.current;
     const lib = libRef.current;
@@ -399,47 +411,82 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     mapa.easeTo({ center: [irLng, irLat], zoom: Math.max(mapa.getZoom(), 16), duration: animar.current ? 600 : 0 }, { puntoElegido: true });
   }, [estado, irLat, irLng]);
 
+  function ampliar() {
+    if (!visor.current || visor.current.open) return;
+    visor.current.showModal();
+    setAmpliado(true);
+    botonReducir.current?.focus({ preventScroll: true });
+  }
+
+  function alCerrarVisor() {
+    // Al volver, el navegador mantiene el mismo lienzo y MapLibre ajusta su tamaño.
+    if (visor.current?.open) return;
+    setAmpliado(false);
+    botonAmpliar.current?.focus({ preventScroll: true });
+  }
+
   return (
-    <div role="region" aria-label={etiqueta} style={estado === "error" ? { height: "auto" } : undefined} className={`relative overflow-hidden bg-superficie ${aRas ? "" : "rounded-2xl"} ${className ?? "h-64"}`}>
-      {/* Alto y ancho explícitos: la hoja de MapLibre le pone position: relative
-          al contenedor y le gana a "absolute inset-0", que lo dejaba en 0 px. */}
-      <div ref={contenedor} inert={estado !== "listo"} aria-hidden={estado !== "listo"} className={estado === "error" ? "hidden" : "h-full w-full"} />
+    <div style={estado === "error" ? { height: "auto" } : undefined} className={className ?? "h-64"}>
+      <dialog ref={visor} className="mapa-visor" role={ampliado ? undefined : "presentation"}
+        aria-labelledby={ampliado ? tituloVisor : undefined} onClose={alCerrarVisor}>
+        <header className="mapa-visor-barra">
+          <p id={tituloVisor} className="min-w-0 font-semibold [overflow-wrap:anywhere]">{etiqueta}</p>
+          <button ref={botonReducir} type="button" onClick={() => visor.current?.close()} aria-label="Salir de pantalla completa"
+            className="mapa-visor-boton shrink-0">
+            <IconoReducirMapa className="size-5" />
+          </button>
+        </header>
+        <div role="region" aria-label={etiqueta} className={`mapa-visor-contenido relative min-w-0 overflow-hidden bg-superficie ${aRas || ampliado ? "" : "rounded-2xl"}`}>
+          {/* Alto y ancho explícitos: la hoja de MapLibre le pone position: relative
+              al contenedor y le gana a "absolute inset-0", que lo dejaba en 0 px. */}
+          <div ref={contenedor} inert={estado !== "listo"} aria-hidden={estado !== "listo"} className={estado === "error" ? "hidden" : "h-full w-full"} />
 
-      {modoElegir && estado === "listo" && (
-        // Pin fijo: la punta queda justo en el centro del mapa.
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-1/2 size-10 -translate-x-1/2 -translate-y-full text-primario drop-shadow-lg"
-        >
-          <path
-            d="M12 23s8-6.4 8-12.5a8 8 0 10-16 0C4 16.6 12 23 12 23z"
-            fill="currentColor"
-            className="stroke-texto"
-            strokeWidth={1.5}
-          />
-          <circle cx="12" cy="10.5" r="3" className="fill-texto" />
-        </svg>
-      )}
+          {modoElegir && estado === "listo" && (
+            // Pin fijo: la punta queda justo en el centro del mapa.
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-1/2 size-10 -translate-x-1/2 -translate-y-full text-primario drop-shadow-lg"
+            >
+              <path
+                d="M12 23s8-6.4 8-12.5a8 8 0 10-16 0C4 16.6 12 23 12 23z"
+                fill="currentColor"
+                className="stroke-texto"
+                strokeWidth={1.5}
+              />
+              <circle cx="12" cy="10.5" r="3" className="fill-texto" />
+            </svg>
+          )}
 
-      {estado === "listo" && infoRuta && infoRuta.clave === `${oLat},${oLng},${dLat},${dLng}` && (
-        <p className={`absolute left-2 rounded-lg ${aRas ? "bottom-8" : "bottom-2"} bg-fondo/90 px-2.5 py-1 text-xs font-semibold text-texto`}>
-          {distanciaTexto(infoRuta.km)} · {infoRuta.minutos} min por vía
-        </p>
-      )}
+          {estado === "listo" && infoRuta?.clave === claveRuta && (
+            <p className={`absolute left-2 rounded-lg ${aRas ? "bottom-8" : "bottom-2"} bg-fondo/90 px-2.5 py-1 text-xs font-semibold text-texto`}>
+              {distanciaTexto(infoRuta.km)} · {infoRuta.minutos} min por vía
+            </p>
+          )}
 
-      {estado !== "listo" && (
-        <div className={`${estado === "error" ? "relative min-h-52" : "absolute inset-0"} z-10 overflow-auto bg-superficie p-4 text-center text-sm text-texto-suave`}>
-          <div className={`flex ${estado === "error" ? "min-h-44" : "min-h-full"} flex-col items-center justify-center gap-3`}>
-          <p role="status">{estado === "cargando" ? "Cargando mapa…" : "No pudimos cargar el mapa. Revisa tu conexión y reintenta; los datos que escribiste se conservan."}</p>
-          {estado === "error" && <button type="button" onClick={() => {
-            setEstado("cargando");
-            setInfoRuta(null);
-            setIntento((valor) => valor + 1);
-          }} className="min-h-11 max-w-full shrink-0 rounded-xl border border-texto-suave/40 px-4 py-2 font-semibold text-texto hover:bg-fondo">Reintentar mapa</button>}
-          </div>
+          {avisoSeguimiento}
+
+          {estado === "listo" && (
+            <button ref={botonAmpliar} type="button" onClick={ampliar} aria-label="Ampliar mapa" aria-haspopup="dialog"
+              className="mapa-visor-boton mapa-visor-ampliar">
+              <IconoAmpliarMapa className="size-5" />
+            </button>
+          )}
+
+          {estado !== "listo" && (
+            <div className={`${estado === "error" ? "relative min-h-52" : "absolute inset-0"} z-10 overflow-auto bg-superficie p-4 text-center text-sm text-texto-suave`}>
+              <div className={`flex ${estado === "error" ? "min-h-44" : "min-h-full"} flex-col items-center justify-center gap-3`}>
+                <p role="status">{estado === "cargando" ? "Cargando mapa…" : "No pudimos cargar el mapa. Revisa tu conexión y reintenta; los datos que escribiste se conservan."}</p>
+                {estado === "error" && <button type="button" onClick={() => {
+                  setEstado("cargando");
+                  setInfoRuta(null);
+                  setIntento((valor) => valor + 1);
+                }} className="min-h-11 max-w-full shrink-0 rounded-xl border border-texto-suave/40 px-4 py-2 font-semibold text-texto hover:bg-fondo">Reintentar mapa</button>}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </dialog>
     </div>
   );
 }

@@ -14,9 +14,9 @@ import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoEstrella, IconoTelefono } from "@/app/ui/comun/iconos-app";
-import { Mapa } from "@/app/ui/comun/mapa";
 import { RutaViaje } from "@/app/ui/comun/ruta-viaje";
 import { horaDe, venceCupo } from "@/app/lib/vencimientos";
+import { RecorridoCupo } from "@/app/ui/conductor/recorrido-cupo";
 import { TransmisorUbicacion } from "@/app/ui/conductor/transmisor-ubicacion";
 
 export const metadata: Metadata = { title: "Tu cupo" };
@@ -43,6 +43,27 @@ function Persona({ solicitud, salida, destino }: { solicitud: SolicitudDePuesto;
   );
 }
 
+function PuestoAprobado({ solicitud, salida, destino }: { solicitud: SolicitudDePuesto; salida: Coordenada; destino: Coordenada }) {
+  const { pagado } = solicitud.puesto;
+  return (
+    <>
+      <Persona solicitud={solicitud} salida={salida} destino={destino} />
+      <p className={`text-sm font-semibold ${pagado > 0 ? "text-secundario" : "text-texto-suave"}`}>
+        {pagado > 0 ? `Pagó ${pesos(pagado)}` : "Aún no ha pagado (tiene hasta 10 minutos antes de salir)"}
+      </p>
+      {solicitud.telefono && (
+        <a
+          href={`tel:${solicitud.telefono}`}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-texto-suave/30 text-sm font-semibold text-texto hover:bg-fondo"
+        >
+          <IconoTelefono className="size-4" />
+          Llamar
+        </a>
+      )}
+    </>
+  );
+}
+
 // El cupo publicado del conductor: solicitudes por aprobar, estudiantes
 // aprobados en orden de recogida o de bajada (con su teléfono) y los botones para salir,
 // llegar o cancelar. Mientras va en camino, transmite su ubicación (014).
@@ -61,9 +82,18 @@ export default async function PaginaCupoConductor() {
     destino,
     aprobados.map((s) => ({ ...s, recogida: { lat: s.puesto.recogida_lat, lng: s.puesto.recogida_lng } })),
   );
-  const paradas = enOrden.length > 0 ? enOrden.map((s) => s.recogida) : pendientes.map((s) => ({ lat: s.puesto.recogida_lat, lng: s.puesto.recogida_lng }));
+  const confirmadas = enOrden.filter(({ puesto }) => puesto.pagado > 0).map((solicitud) => ({
+    id: solicitud.puesto.id,
+    punto: solicitud.recogida,
+    lugar: solicitud.puesto.recogida_texto,
+    detalle: <PuestoAprobado solicitud={solicitud} salida={salida} destino={destino} />,
+  }));
+  const sinPagar = enOrden.filter(({ puesto }) => puesto.pagado === 0);
+  const otrasParadas = sinPagar.length > 0
+    ? sinPagar.map((s) => s.recogida)
+    : pendientes.map(({ puesto }) => ({ lat: puesto.recogida_lat, lng: puesto.recogida_lng }));
   const publicado = cupo.estado === "publicado";
-  const hayPagos = aprobados.some((s) => s.puesto.pagado > 0);
+  const hayPagos = confirmadas.length > 0;
 
   return (
     <main className="space-y-5 px-5 pt-6">
@@ -83,92 +113,57 @@ export default async function PaginaCupoConductor() {
         </p>
       </section>
 
-      <Mapa
-        etiqueta={
-          enOrden.length > 0
-            ? regreso
-              ? "Mapa del cupo con las bajadas numeradas en orden"
-              : "Mapa del cupo con las recogidas numeradas en orden"
-            : "Mapa del cupo con las solicitudes"
-        }
-        centro={salida}
-        origen={salida}
+      <RecorridoCupo
+        key={JSON.stringify([cupo.id, salida, destino, confirmadas.map(({ id, punto }) => [id, punto])])}
+        cupoId={cupo.id}
+        salida={salida}
         destino={destino}
-        paradas={paradas}
-        numerarParadas={enOrden.length > 0}
-        uEnElOrigen={regreso}
-        className="h-56"
-      />
-      {!publicado && <TransmisorUbicacion enviar={reportarUbicacionCupo.bind(null, cupo.id)} clave={cupo.id} quienVe="Tus estudiantes" />}
-
-      {publicado && (
-        <section aria-labelledby="titulo-pendientes" className="space-y-3">
-          <h2 id="titulo-pendientes" className="text-lg">
-            Solicitudes {pendientes.length > 0 && `(${pendientes.length})`}
-          </h2>
-          {pendientes.length === 0 ? (
-            <p role="status" className="rounded-2xl border border-texto-suave/25 p-5 text-center text-sm text-texto-suave">
-              {libres === 0 ? "Ya llenaste tus puestos." : "Aún no hay solicitudes. Aparecen aquí sin recargar."}
-            </p>
-          ) : (
+        regreso={regreso}
+        publicado={publicado}
+        confirmadas={confirmadas}
+        otrasParadas={otrasParadas}
+        seguimiento={!publicado && <TransmisorUbicacion enviar={reportarUbicacionCupo.bind(null, cupo.id)} clave={cupo.id} quienVe="Tus estudiantes" />}
+        solicitudes={publicado && (
+          <section aria-labelledby="titulo-pendientes" className="space-y-3">
+            <h2 id="titulo-pendientes" className="text-lg">
+              Solicitudes {pendientes.length > 0 && `(${pendientes.length})`}
+            </h2>
+            {pendientes.length === 0 ? (
+              <p role="status" className="rounded-2xl border border-texto-suave/25 p-5 text-center text-sm text-texto-suave">
+                {libres === 0 ? "Ya llenaste tus puestos." : "Aún no hay solicitudes. Aparecen aquí sin recargar."}
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {pendientes.map((solicitud) => (
+                  <li key={solicitud.puesto.id} className="space-y-3 rounded-2xl bg-superficie p-4">
+                    <Persona solicitud={solicitud} salida={salida} destino={destino} />
+                    <div className="grid grid-cols-2 gap-2">
+                      <BotonAccion accion={responderPuesto} campos={{ puesto: solicitud.puesto.id, decision: "rechazar" }} estilo="pequenoBorde" enviando="…">
+                        Rechazar
+                      </BotonAccion>
+                      <BotonAccion accion={responderPuesto} campos={{ puesto: solicitud.puesto.id, decision: "aprobar" }} estilo="pequeno" enviando="Aprobando…">
+                        Aprobar
+                      </BotonAccion>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+        porPagar={sinPagar.length > 0 && (
+          <>
+            <h3 className="text-base">Puestos aprobados pendientes de pago</h3>
             <ul className="space-y-3">
-              {pendientes.map((solicitud) => (
+              {sinPagar.map((solicitud) => (
                 <li key={solicitud.puesto.id} className="space-y-3 rounded-2xl bg-superficie p-4">
-                  <Persona solicitud={solicitud} salida={salida} destino={destino} />
-                  <div className="grid grid-cols-2 gap-2">
-                    <BotonAccion accion={responderPuesto} campos={{ puesto: solicitud.puesto.id, decision: "rechazar" }} estilo="pequenoBorde" enviando="…">
-                      Rechazar
-                    </BotonAccion>
-                    <BotonAccion accion={responderPuesto} campos={{ puesto: solicitud.puesto.id, decision: "aprobar" }} estilo="pequeno" enviando="Aprobando…">
-                      Aprobar
-                    </BotonAccion>
-                  </div>
+                  <PuestoAprobado solicitud={solicitud} salida={salida} destino={destino} />
                 </li>
               ))}
             </ul>
-          )}
-        </section>
-      )}
-
-      <section aria-labelledby="titulo-aprobados" className="space-y-3">
-        <h2 id="titulo-aprobados" className="text-lg">
-          {enOrden.length > 1 ? (regreso ? "Orden de bajada" : "Orden de recogida") : "Van contigo"}
-        </h2>
-        {enOrden.length === 0 ? (
-          <p className="text-sm text-texto-suave">Todavía no has aprobado a nadie.</p>
-        ) : (
-          <ol className="space-y-3">
-            {enOrden.map((solicitud, i) => (
-              <li key={solicitud.puesto.id} className="flex gap-3 rounded-2xl bg-superficie p-4">
-                <span
-                  aria-hidden="true"
-                  className="flex size-7 shrink-0 items-center justify-center rounded-full bg-texto font-titulo text-sm font-bold text-fondo"
-                >
-                  {i + 1}
-                </span>
-                <div className="min-w-0 flex-1 space-y-3">
-                  <span className="sr-only">
-                    {regreso ? "Bajada" : "Recogida"} {i + 1}:{" "}
-                  </span>
-                  <Persona solicitud={solicitud} salida={salida} destino={destino} />
-                  <p className={`text-sm font-semibold ${solicitud.puesto.pagado > 0 ? "text-secundario" : "text-texto-suave"}`}>
-                    {solicitud.puesto.pagado > 0 ? `Pagó ${pesos(solicitud.puesto.pagado)}` : "Aún no ha pagado (tiene hasta 10 minutos antes de salir)"}
-                  </p>
-                  {solicitud.telefono && (
-                    <a
-                      href={`tel:${solicitud.telefono}`}
-                      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-texto-suave/30 text-sm font-semibold text-texto hover:bg-fondo"
-                    >
-                      <IconoTelefono className="size-4" />
-                      Llamar
-                    </a>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
+          </>
         )}
-      </section>
+      />
 
       <EnlaceDeAyuda motivo={{ tipo: "cupo", referencia: cupo.id }} />
 

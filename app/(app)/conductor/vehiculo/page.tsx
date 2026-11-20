@@ -16,10 +16,10 @@ export default async function PaginaVehiculo() {
         titulo="Mi vehículo"
         texto={vehiculo ? "Los estudiantes ven estos datos cuando ofertas." : "Lo necesitas para ponerte disponible y ofertar."}
       />
-      <FormularioVehiculo vehiculo={vehiculo} />
+      <div className="producto-panel p-4"><FormularioVehiculo vehiculo={vehiculo} /></div>
       <Link
         href="/conductor/documentos"
-        className="flex min-h-12 w-full items-center justify-center rounded-xl border border-texto-suave/30 font-semibold text-texto hover:bg-superficie"
+        className="flex min-h-12 w-full items-center justify-center rounded-xl border border-linea px-3 py-2 text-center font-semibold text-texto hover:bg-superficie"
       >
         Mis documentos (cédula, licencia, tarjeta de propiedad)
       </Link>

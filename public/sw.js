@@ -7,7 +7,7 @@
 // No guarda páginas ni datos de la app: viajes, saldo y ubicación siempre
 // vienen frescos del servidor.
 
-const VERSION = "unigo-v2";
+const VERSION = "unigo-v3";
 const LOGOS = ["/brand/logo-oscuro.png", "/brand/logo-claro.png"];
 const ESTATICOS = "unigo-estaticos";
 const SIN_CONEXION = "/sin-conexion";

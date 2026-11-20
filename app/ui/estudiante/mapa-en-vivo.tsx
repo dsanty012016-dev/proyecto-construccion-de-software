@@ -96,25 +96,22 @@ export function MapaEnVivo({
   const texto = textoUbicacion(actual ? Date.parse(actual.actualizado_en) : null, ahora);
 
   return (
-    <div className={`relative ${className ?? "h-72"}`}>
-      <Mapa
-        etiqueta="Mapa del viaje con la ubicación del conductor"
-        centro={origen}
-        origen={origen}
-        destino={destino}
-        paradas={paradas}
-        vehiculo={actual ? { lat: actual.lat, lng: actual.lng } : null}
-        uEnElOrigen={uEnElOrigen}
-        aRas
-        className="h-full"
-      />
-      <p
-        role="status"
-        className="absolute top-4 right-4 z-10 flex items-center gap-2 rounded-full bg-fondo px-3 py-2 text-xs font-semibold text-texto"
-      >
-        <span aria-hidden="true" className={`size-2 rounded-full ${texto === "Ubicación en vivo" ? "bg-secundario motion-safe:animate-pulse" : "bg-texto-suave"}`} />
-        {texto}
-      </p>
-    </div>
+    <Mapa
+      etiqueta="Mapa del viaje con la ubicación del conductor"
+      centro={origen}
+      origen={origen}
+      destino={destino}
+      paradas={paradas}
+      vehiculo={actual ? { lat: actual.lat, lng: actual.lng } : null}
+      uEnElOrigen={uEnElOrigen}
+      aRas
+      className={className ?? "h-72"}
+      avisoSeguimiento={
+        <p role="status" className="absolute top-4 right-4 z-10 flex items-center gap-2 rounded-full bg-fondo px-3 py-2 text-xs font-semibold text-texto">
+          <span aria-hidden="true" className={`size-2 rounded-full ${texto === "Ubicación en vivo" ? "bg-secundario motion-safe:animate-pulse" : "bg-texto-suave"}`} />
+          {texto}
+        </p>
+      }
+    />
   );
 }

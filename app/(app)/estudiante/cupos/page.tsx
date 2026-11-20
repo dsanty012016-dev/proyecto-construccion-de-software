@@ -32,16 +32,16 @@ export default async function PaginaCupos({ searchParams }: { searchParams: Prom
   }
 
   return (
-    <main className="flex min-h-[calc(100dvh-6rem)] flex-col px-5 pt-4">
+    <main className="space-y-5 px-5 pt-4">
       <EnVivo escuchas={[{ tabla: "cupos" }]} />
       <EncabezadoPantalla titulo="Salidas con hora fija" texto="Conductores que van a la U o salen de ella a una hora fija" volverA="/estudiante" />
-      <nav aria-label="Sentido de los cupos" className="mt-4 grid grid-cols-2 gap-1 rounded-2xl bg-superficie p-1">
+      <nav aria-label="Sentido de los cupos" className="producto-selector grid grid-cols-2 gap-1 p-1">
         {SENTIDOS.map((s) => (
           <Link
             key={s}
             href={s === "ida" ? "/estudiante/cupos" : "/estudiante/cupos?sentido=regreso"}
             aria-current={s === sentido ? "page" : undefined}
-            className={`flex min-h-11 items-center justify-center rounded-xl text-sm font-semibold ${s === sentido ? "bg-primario text-sobre-primario" : "text-texto-suave hover:text-texto"}`}
+            className="flex min-h-11 items-center justify-center rounded-xl px-2 text-center text-sm font-semibold text-texto-suave hover:text-texto"
           >
             {PALABRAS[s].corto}
           </Link>
@@ -51,7 +51,7 @@ export default async function PaginaCupos({ searchParams }: { searchParams: Prom
       {miPuesto && (
         <Link
           href={`/estudiante/cupos/${miPuesto.cupo.id}`}
-          className="mt-4 flex min-h-14 items-center gap-3 rounded-2xl bg-superficie px-4 py-3 text-texto"
+          className="producto-panel flex min-h-14 items-center gap-3 px-4 py-3 text-texto"
         >
           <span className="min-w-0 flex-1">
             <span className="block font-semibold">{etiquetaPuesto(miPuesto.puesto.estado)}</span>
@@ -62,13 +62,13 @@ export default async function PaginaCupos({ searchParams }: { searchParams: Prom
       )}
 
       {cupos.length === 0 ? (
-        <p role="status" className="mt-8 text-center text-texto-suave">
+        <p role="status" className="producto-panel p-4 text-texto-suave">
           {sentido === "regreso" ? "No hay cupos saliendo de la U por ahora." : "No hay cupos hacia la U por ahora."} Aparecen aquí sin recargar.
         </p>
       ) : (
         dias.map(({ dia, cupos: delDia }) => (
-          <section key={dia} aria-labelledby={`dia-${dia}`} className="mt-5">
-            <h2 id={`dia-${dia}`} className="font-texto text-xs font-bold text-texto-suave">
+          <section key={dia} aria-labelledby={`dia-${dia}`} className="producto-panel px-4">
+            <h2 id={`dia-${dia}`} className="border-b border-linea pb-2 pt-3 text-sm text-texto-suave">
               {dia}
             </h2>
             <ul>
@@ -80,7 +80,7 @@ export default async function PaginaCupos({ searchParams }: { searchParams: Prom
         ))
       )}
 
-      <p className="mt-auto border-t border-texto-suave/15 py-4 text-[13px] leading-relaxed text-texto-suave">
+      <p className="border-t border-linea py-4 text-[13px] leading-relaxed text-texto-suave">
         Pides el puesto con tu punto ({sentido === "regreso" ? "donde te bajas" : "donde te recogen"}) y el conductor lo aprueba. Pagas hasta {MINUTOS_LIMITE_PAGO} min antes de salir. Si te retiras con
         menos de {MINUTOS_CUPO_SIN_COBRO} min, se cobra el {COBRO_CUPO_TARDE} % y suma una falta.
       </p>
@@ -103,15 +103,15 @@ function FilaCupo({ item }: { item: CupoDisponible }) {
     <li className="border-b border-texto-suave/15 last:border-b-0">
       <Link
         href={`/estudiante/cupos/${cupo.id}`}
-        className={`grid grid-cols-[76px_minmax(0,1fr)_auto] items-start gap-x-3 py-4 ${lleno ? "text-texto-suave" : "text-texto"}`}
+        className={`grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 py-4 min-[440px]:grid-cols-[auto_minmax(0,1fr)_auto] ${lleno ? "text-texto-suave" : "text-texto"}`}
       >
-        <span className="cifra text-[2rem]">
+        <span className="cifra text-xl">
           {hora}
           <span className="mt-1 block text-xs font-semibold [font-stretch:100%] text-texto-suave">{periodo}</span>
         </span>
         <span className="flex min-w-0 flex-col gap-1">
           <span className="font-bold">{quien}</span>
-          <span className="truncate text-[13px] text-texto-suave">
+          <span className="text-[13px] text-texto-suave [overflow-wrap:anywhere]">
             {cupo.sentido === "regreso" ? `Hasta ${cupo.destino_texto}` : `Desde ${cupo.salida_texto}`}
           </span>
           {lleno ? (
@@ -134,7 +134,7 @@ function FilaCupo({ item }: { item: CupoDisponible }) {
             </span>
           )}
         </span>
-        <span className="text-right cifra text-[1.375rem]">
+        <span className="col-start-2 text-left cifra text-lg [overflow-wrap:anywhere] min-[440px]:col-start-auto min-[440px]:text-right">
           {lleno ? (
             "Lleno"
           ) : (

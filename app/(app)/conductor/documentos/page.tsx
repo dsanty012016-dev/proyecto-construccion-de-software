@@ -24,7 +24,7 @@ export default async function PaginaDocumentos() {
   return (
     <main className="space-y-6 px-5 pt-4">
       <EncabezadoPantalla titulo={aprobados === 3 ? "Cuenta verificada" : "Antes de tu primer viaje"} volverA="/conductor" />
-      <div className="space-y-2.5">
+      <div className="trayecto-panel space-y-2.5">
         <p className="cifra text-[2.5rem]">
           {enviados} de 3 <span className="text-lg font-semibold [font-stretch:100%] text-texto-suave">enviados</span>
         </p>
@@ -43,7 +43,7 @@ export default async function PaginaDocumentos() {
         )}
         <ActualizarEstado />
       </div>
-      <div>
+      <div className="producto-panel px-4">
         {TIPOS_DOCUMENTO.map((tipo) => (
           <SubirDocumento
             key={tipo}
