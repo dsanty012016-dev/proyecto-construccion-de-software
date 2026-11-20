@@ -87,7 +87,8 @@ test("el selector de tema cambia al instante con movimiento reducido", async ({ 
 });
 
 test.describe("reflejo en Android", () => {
-  test.use({ ...devices["Pixel 7"], defaultBrowserType: "chromium" });
+  const { userAgent, viewport, deviceScaleFactor, hasTouch, isMobile } = devices["Pixel 7"];
+  test.use({ userAgent, viewport, deviceScaleFactor, hasTouch, isMobile });
 
   test("barre la pantalla y conserva el tema sin tomar capturas", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
