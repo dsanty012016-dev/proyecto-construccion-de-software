@@ -51,7 +51,7 @@
   .barra .marco > a { flex-shrink: 0; }
   .barra img { height: 2rem; width: auto; }
   /* En computador el logo crece hasta que se lee el lema de abajo ("Tu viaje, tu universidad"). */
-  @media (min-width: 48rem) { .barra img { height: 5rem; } }
+  @media (min-width: 48rem) { .barra img { height: 3.5rem; } }
   .barra nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; max-width: 100%; }
   .barra .enlace { color: var(--color-texto); display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.85rem; font-weight: 600; text-decoration: none; }
   .barra .enlace:hover { text-decoration: underline; text-underline-offset: 0.3em; }
@@ -203,6 +203,7 @@
   .pie { border-top: 1px solid var(--color-linea); padding-block: 1.75rem 2.25rem; font-size: 0.9375rem; color: var(--color-texto-suave); }
   .pie .marco { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 2rem; }
   .pie img { height: 1.6rem; width: auto; }
+  @media (min-width: 48rem) { .pie img { height: 3.5rem; } }
   .pie nav { display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
   .pie a { color: inherit; display: inline-flex; align-items: center; min-height: 2.75rem; text-decoration: none; }
   .pie a:hover { color: var(--color-texto); text-decoration: underline; text-underline-offset: 0.3em; }
