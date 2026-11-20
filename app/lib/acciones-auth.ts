@@ -204,6 +204,40 @@ export async function guardarNuevaClave(
   redirect("/inicio?clave=actualizada");
 }
 
+/**
+ * Recuperar la contraseña desde el enlace del correo, en un solo paso: el
+ * enlace se usa recién cuando la persona escribe la contraseña nueva. Así los
+ * revisores de enlaces del correo institucional (Outlook "abre" los enlaces y
+ * hasta toca botones para revisarlos) no lo gastan antes que ella, que era lo
+ * que causaba el falso "Ese enlace ya se usó o venció".
+ */
+export async function recuperarConEnlace(
+  _anterior: EstadoFormulario,
+  formulario: FormData,
+): Promise<EstadoFormulario> {
+  const validado = esquemaNuevaClave.safeParse(datosDelFormulario(formulario));
+  if (!validado.success) {
+    return { resultado: "error", errores: erroresPorCampo(validado.error) };
+  }
+  const tokenHash = String(formulario.get("token_hash") ?? "");
+  if (!/^[A-Za-z0-9_-]{8,256}$/.test(tokenHash)) redirect("/entrar?error=enlace");
+
+  const supabase = await crearClienteServidor();
+  const { error: errorEnlace } = await supabase.auth.verifyOtp({ type: "recovery", token_hash: tokenHash });
+  if (errorEnlace) {
+    // Ahora sí es real: el enlace se usó antes o venció (o llegó uno más nuevo).
+    return {
+      resultado: "error",
+      mensaje: "Este enlace ya se usó, venció o pediste uno más nuevo. Usa el último correo que te llegó o pide otro enlace.",
+    };
+  }
+  const { error } = await supabase.auth.updateUser({ password: validado.data.clave });
+  if (error) {
+    return { resultado: "error", mensaje: traducirError(error.message, error.code) };
+  }
+  redirect("/inicio?clave=actualizada");
+}
+
 export async function elegirRol(
   _anterior: EstadoFormulario,
   formulario: FormData,

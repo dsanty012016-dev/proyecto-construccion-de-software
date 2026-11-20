@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { guardarNuevaClave, recuperarClave } from "@/app/lib/acciones-auth";
+import { guardarNuevaClave, recuperarClave, recuperarConEnlace } from "@/app/lib/acciones-auth";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { LARGO_MINIMO_CLAVE } from "@/app/lib/validaciones-auth";
 import { Aviso, BotonEnviar, Campo, CampoClave, ResumenErrores } from "./campos";
@@ -59,6 +59,32 @@ export function FormularioNuevaClave() {
         error={e.confirmacion}
         required
       />
+      <BotonEnviar enviando="Guardando…">Guardar contraseña</BotonEnviar>
+    </form>
+  );
+}
+
+/**
+ * La contraseña nueva escrita directamente en la página del enlace del correo
+ * (/continuar). El enlace se usa al guardar, no al abrirlo ni al tocar un botón.
+ */
+export function FormularioClaveConEnlace({ tokenHash }: { tokenHash: string }) {
+  const [estado, accion] = useActionState(recuperarConEnlace, ESTADO_INICIAL);
+  const e = estado.errores ?? {};
+
+  return (
+    <form action={accion} noValidate className="mt-8 space-y-4">
+      <ResumenErrores estado={estado} />
+      <input type="hidden" name="token_hash" value={tokenHash} />
+      <CampoClave
+        etiqueta="Contraseña nueva"
+        name="clave"
+        autoComplete="new-password"
+        placeholder={`Mínimo ${LARGO_MINIMO_CLAVE} caracteres, con letras y números`}
+        error={e.clave}
+        required
+      />
+      <CampoClave etiqueta="Confirmar contraseña" name="confirmacion" autoComplete="new-password" error={e.confirmacion} required />
       <BotonEnviar enviando="Guardando…">Guardar contraseña</BotonEnviar>
     </form>
   );
