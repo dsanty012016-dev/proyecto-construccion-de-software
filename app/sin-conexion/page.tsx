@@ -12,7 +12,7 @@ export default function PaginaSinConexion() {
     <div className="producto-tema" data-movimiento="sistema">
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-start justify-center gap-5 px-5 py-10">
       <div className="flex w-full items-center justify-between gap-3">
-        <Logo ancho={159} alto={56} className="h-[34px] w-auto md:h-14" prioridad sinOptimizar />
+        <Logo ancho={136} alto={48} className="h-[34px] w-auto md:h-12" prioridad sinOptimizar />
         <BotonTema />
       </div>
       <h1 className="cartel text-[2.75rem]">Sin conexión</h1>
