@@ -1,0 +1,205 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { preguntarAlAsistente } from "@/app/lib/acciones-asistente";
+import { MAX_LARGO_MENSAJE, NOMBRE_ASISTENTE, saludo, type AccionAsistente, type RolAsistente } from "@/app/lib/asistente";
+
+// Uni, el asistente de UniGo: un botón flotante en toda la zona privada que
+// abre un chat. Ayuda a moverse por la app y a decidir (pedir ya o buscar un
+// cupo según la hora), con humor pícaro pero amable. Responde la Server Action
+// preguntarAlAsistente (Gemini, o el guion propio si la IA no está). Las
+// conversaciones no se guardan: viven solo mientras la pantalla esté abierta.
+
+interface Burbuja {
+  de: "persona" | "asistente";
+  texto: string;
+  acciones?: AccionAsistente[];
+}
+
+const SUGERENCIAS: Record<RolAsistente, string[]> = {
+  estudiante: ["Tengo que estar en la U a las 6", "¿Cómo pido un viaje?", "¿Qué es un cupo?", "¿Cómo recargo saldo?"],
+  conductor: ["Salgo para la U a las 6:30", "¿Qué documentos necesito?", "¿Cómo retiro mi plata?", "¿Cómo consigo pasajeros?"],
+};
+
+export function Asistente({ rol }: { rol: RolAsistente }) {
+  const [abierto, setAbierto] = useState(false);
+  const [burbujas, setBurbujas] = useState<Burbuja[]>([]);
+  const [texto, setTexto] = useState("");
+  const [pensando, iniciar] = useTransition();
+  const entrada = useRef<HTMLTextAreaElement>(null);
+  const lista = useRef<HTMLOListElement>(null);
+  const boton = useRef<HTMLButtonElement>(null);
+  const idPanel = useId();
+  const idTitulo = useId();
+
+  // Al abrir por primera vez, Uni saluda según la hora (con el reloj del navegador).
+  function abrir() {
+    if (burbujas.length === 0) setBurbujas([{ de: "asistente", texto: saludo(rol, new Date(), Math.random()) }]);
+    setAbierto(true);
+  }
+
+  function cerrar() {
+    setAbierto(false);
+    boton.current?.focus();
+  }
+
+  useEffect(() => {
+    if (abierto) entrada.current?.focus();
+  }, [abierto]);
+
+  useEffect(() => {
+    lista.current?.lastElementChild?.scrollIntoView({ block: "end" });
+  }, [burbujas, pensando]);
+
+  function enviar(mensaje: string) {
+    const limpio = mensaje.trim().slice(0, MAX_LARGO_MENSAJE);
+    if (!limpio || pensando) return;
+    const historial = [...burbujas, { de: "persona" as const, texto: limpio }];
+    setBurbujas(historial);
+    setTexto("");
+    iniciar(async () => {
+      try {
+        const respuesta = await preguntarAlAsistente(historial.map(({ de, texto }) => ({ de, texto })));
+        setBurbujas((actual) => [...actual, { de: "asistente", texto: respuesta.texto, acciones: respuesta.acciones }]);
+      } catch {
+        setBurbujas((actual) => [...actual, { de: "asistente", texto: "Se me cayó la señal un momento. ¿Lo intentas otra vez?" }]);
+      }
+    });
+  }
+
+  return (
+    <>
+      <button
+        ref={boton}
+        type="button"
+        onClick={abierto ? cerrar : abrir}
+        aria-expanded={abierto}
+        aria-controls={idPanel}
+        aria-label={abierto ? `Cerrar a ${NOMBRE_ASISTENTE}` : `Hablar con ${NOMBRE_ASISTENTE}, el asistente`}
+        className="asistente-boton fixed right-4 z-40 flex size-14 items-center justify-center rounded-full bg-primario text-sobre-primario shadow-lg transition-transform duration-150 hover:scale-105 active:scale-95 motion-reduce:transition-none"
+      >
+        {abierto ? (
+          <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+            <path d="M4 5h16v11H9l-5 4z" />
+            <path d="M9 10h.01M12 10h.01M15 10h.01" strokeWidth={2.6} />
+          </svg>
+        )}
+      </button>
+
+      {abierto && (
+        <section
+          id={idPanel}
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby={idTitulo}
+          onKeyDown={(e) => e.key === "Escape" && cerrar()}
+          className="asistente-panel fixed right-4 left-4 z-40 flex flex-col overflow-hidden rounded-[var(--radio-panel)] border border-linea bg-superficie text-texto shadow-2xl sm:left-auto sm:w-[24rem]"
+        >
+          <header className="flex items-center gap-3 border-b border-linea px-4 py-3">
+            <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primario font-bold text-sobre-primario">
+              U
+            </span>
+            <div className="min-w-0">
+              <h2 id={idTitulo} className="font-bold leading-tight">
+                {NOMBRE_ASISTENTE}, tu copiloto
+              </h2>
+              <p className="text-xs text-texto-suave">Te ayuda a moverte por UniGo y a decidir</p>
+            </div>
+          </header>
+
+          <ol ref={lista} aria-live="polite" className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+            {burbujas.map((b, i) => (
+              <li key={i} className={b.de === "persona" ? "flex justify-end" : "flex flex-col items-start gap-2"}>
+                <p
+                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-line ${
+                    b.de === "persona" ? "bg-primario text-sobre-primario" : "bg-fondo text-texto"
+                  }`}
+                >
+                  <span className="sr-only">{b.de === "persona" ? "Tú: " : `${NOMBRE_ASISTENTE}: `}</span>
+                  {b.texto}
+                </p>
+                {b.acciones && b.acciones.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {b.acciones.map((a) => (
+                      <Link
+                        key={a.ruta}
+                        href={a.ruta}
+                        onClick={() => setAbierto(false)}
+                        className="inline-flex min-h-11 items-center rounded-full border border-secundario px-4 text-sm font-semibold text-secundario hover:bg-fondo"
+                      >
+                        {a.etiqueta}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
+            {pensando && (
+              <li className="text-sm text-texto-suave" aria-label={`${NOMBRE_ASISTENTE} está escribiendo`}>
+                {NOMBRE_ASISTENTE} está pensando…
+              </li>
+            )}
+          </ol>
+
+          {burbujas.length <= 1 && (
+            <div className="flex gap-2 overflow-x-auto px-4 pb-2" aria-label="Preguntas sugeridas">
+              {SUGERENCIAS[rol].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => enviar(s)}
+                  className="min-h-11 shrink-0 rounded-full border border-linea px-3 text-sm whitespace-nowrap text-texto hover:border-secundario"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              enviar(texto);
+            }}
+            className="flex items-end gap-2 border-t border-linea px-3 py-3"
+          >
+            <label htmlFor={`${idPanel}-texto`} className="sr-only">
+              Escríbele a {NOMBRE_ASISTENTE}
+            </label>
+            <textarea
+              id={`${idPanel}-texto`}
+              ref={entrada}
+              rows={1}
+              value={texto}
+              maxLength={MAX_LARGO_MENSAJE}
+              onChange={(e) => setTexto(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  enviar(texto);
+                }
+              }}
+              placeholder="Ej.: voy a la U a las 7"
+              className="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-linea bg-fondo px-3 py-2.5 text-sm text-texto placeholder:text-texto-suave"
+            />
+            <button
+              type="submit"
+              disabled={pensando || !texto.trim()}
+              className="prensa inline-flex min-h-11 items-center rounded-xl bg-primario px-4 text-sm font-bold text-sobre-primario disabled:opacity-50"
+            >
+              Enviar
+            </button>
+          </form>
+          <p className="px-4 pb-3 text-[0.7rem] leading-snug text-texto-suave">
+            Las respuestas las genera la IA Gemini de Google y pueden equivocarse. No escribas datos personales.
+          </p>
+        </section>
+      )}
+    </>
+  );
+}
