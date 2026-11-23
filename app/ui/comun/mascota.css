@@ -1,0 +1,96 @@
+/* Uni, la mascota (ui/comun/uni-mascota.tsx) y lo que la rodea: el globo
+   del consejo diario y la celebración de logros. Colores con los tokens de
+   app/globals.css; la carita es clara y los rasgos azul noche en los dos modos. */
+
+.uni-mascota {
+  display: block;
+  overflow: visible;
+}
+.uni-azul { fill: var(--color-primario); }
+.uni-punto { fill: var(--color-secundario); }
+.uni-sueno .uni-punto { fill: color-mix(in srgb, var(--color-secundario) 45%, var(--color-noche)); }
+.uni-celebrando .uni-punto { fill: var(--color-sobre-primario); }
+.uni-cara { fill: var(--color-sobre-primario); }
+.uni-noche,
+.uni-tinta { fill: var(--color-noche); }
+.uni-trazo {
+  fill: none;
+  stroke: var(--color-noche);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.uni-borla {
+  fill: none;
+  stroke: var(--color-secundario);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.uni-borla-punta,
+.uni-gota,
+.uni-confeti-a { fill: var(--color-secundario); }
+.uni-confeti-b { fill: var(--color-primario); }
+.uni-cachete { fill: color-mix(in srgb, var(--color-secundario) 45%, transparent); }
+.uni-zeta {
+  fill: none;
+  stroke: var(--color-texto-suave);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Movimiento: solo si la persona no pidió reducirlo. */
+@media (prefers-reduced-motion: no-preference) {
+  .uni-cuerpo {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: uni-flotar 2.4s ease-in-out infinite alternate;
+  }
+  .uni-quieta .uni-cuerpo { animation: none; }
+  .uni-celebrando .uni-cuerpo { animation: uni-saltar 1.1s cubic-bezier(0.34, 1.4, 0.64, 1) infinite; }
+  .uni-sueno .uni-cuerpo { animation: uni-cabecear 3.2s ease-in-out infinite; }
+  .uni-ojo {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: uni-parpadear 4.2s infinite;
+  }
+  .uni-zetas { animation: uni-zetas 2.4s ease-out infinite; }
+  .uni-confeti { animation: uni-brillar 1.4s ease-in-out infinite; }
+  .uni-entrar { animation: uni-entrar 260ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+}
+
+@keyframes uni-flotar { to { transform: translateY(-5px); } }
+@keyframes uni-saltar {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-24px) rotate(-5deg); }
+  60% { transform: translateY(0) rotate(4deg); }
+}
+@keyframes uni-cabecear {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+@keyframes uni-parpadear {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.1); }
+}
+@keyframes uni-zetas {
+  from { opacity: 0; transform: translate(0, 8px); }
+  30% { opacity: 1; }
+  to { opacity: 0; transform: translate(10px, -16px); }
+}
+@keyframes uni-brillar { 50% { opacity: 0.35; } }
+@keyframes uni-entrar { from { opacity: 0; transform: translateY(12px) scale(0.96); } }
+
+/* Globo del consejo diario, a la izquierda del botón de Uni. */
+.asistente-consejo {
+  right: 5.5rem;
+  bottom: calc(5.75rem + env(safe-area-inset-bottom));
+  width: min(16rem, calc(100vw - 7rem));
+}
+
+@media (min-width: 60rem) {
+  .asistente-consejo {
+    right: 6.5rem;
+    bottom: 1.5rem;
+  }
+}

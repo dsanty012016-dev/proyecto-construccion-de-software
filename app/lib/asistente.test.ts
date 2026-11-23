@@ -11,6 +11,7 @@ import {
   interpretarRespuestaIA,
   minutosHasta,
   respuestaDeGuion,
+  saludo,
   sugerirModo,
   textoHora,
 } from "./asistente";
@@ -165,5 +166,24 @@ describe("lo que se manda a la IA", () => {
     expect(recortado[0].de).toBe("persona");
     expect(recortado.length).toBeLessThanOrEqual(12);
     expect(recortado.every((m) => m.texto.length <= 500)).toBe(true);
+  });
+});
+
+describe("saludo", () => {
+  it("saluda por el primer nombre cuando lo hay", () => {
+    expect(saludo("estudiante", new Date("2026-11-23T14:00:00Z"), 0, "Laura")).toContain("Buenos días, Laura.");
+  });
+  it("de madrugada bromea con el sueño", () => {
+    expect(saludo("estudiante", new Date("2026-11-23T10:20:00Z"), 0, "Laura")).toContain("¡Buenos días, Laura! ¿A esta hora?");
+  });
+  it("sin nombre saluda igual", () => {
+    expect(saludo("conductor", new Date("2026-11-23T20:00:00Z"), 0)).toContain("Buenas tardes.");
+  });
+  it("el saludo con el nombre no llega a la IA", () => {
+    const historial = [
+      { de: "asistente" as const, texto: saludo("estudiante", cincoAM, 0, "Laura") },
+      { de: "persona" as const, texto: "Tengo clase a las 6" },
+    ];
+    expect(historialParaIA(historial).some((m) => m.texto.includes("Laura"))).toBe(false);
   });
 });
