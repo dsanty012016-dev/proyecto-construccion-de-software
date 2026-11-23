@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { politicaAlDia } from "@/app/lib/privacidad";
 import { perfilActual } from "@/app/lib/sesion";
+import { Asistente } from "@/app/ui/comun/asistente";
 import { BarraInferior } from "@/app/ui/comun/barra-inferior";
 import { BotonTema } from "@/app/ui/comun/boton-tema";
 import { Logo } from "@/app/ui/comun/logo";
@@ -30,6 +31,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
           <TransicionPantalla>{children}</TransicionPantalla>
         </div>
       </div>
+      {perfil?.rol && <Asistente rol={perfil.rol} />}
     </div>
   );
 }
