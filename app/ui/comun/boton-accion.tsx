@@ -38,6 +38,8 @@ interface Props {
   textoSi?: string;
   /** Nombre para lectores de pantalla cuando el texto visible no basta. */
   etiqueta?: string;
+  /** Dibujo junto a la pregunta (por ejemplo, Uni preocupado antes de cancelar). */
+  ilustracion?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -49,6 +51,7 @@ export function BotonAccion({
   confirmar,
   textoSi = "Sí, continuar",
   etiqueta,
+  ilustracion,
   children,
 }: Props) {
   const [estado, ejecutar, pendiente] = useActionState(accion, ESTADO_INICIAL);
@@ -80,9 +83,12 @@ export function BotonAccion({
             if (e.key === "Escape") cerrar();
           }}
         >
-          <p ref={pregunta} tabIndex={-1} className="text-sm leading-relaxed text-texto outline-none">
-            {confirmar}
-          </p>
+          <div className="flex items-center gap-3">
+            {ilustracion}
+            <p ref={pregunta} tabIndex={-1} className="flex-1 text-sm leading-relaxed text-texto outline-none">
+              {confirmar}
+            </p>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"

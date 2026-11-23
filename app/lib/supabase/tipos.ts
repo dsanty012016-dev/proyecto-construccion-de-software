@@ -470,6 +470,10 @@ export type Database = {
       iniciar_recarga: { Args: { p_monto: number }; Returns: string };
       checkout_wompi_disponible: { Args: { p_ambiente: "test" | "prod" }; Returns: boolean };
       usar_asistente: { Args: Record<string, never>; Returns: boolean };
+      mis_logros: { Args: Record<string, never>; Returns: {
+        viajes_estudiante: number; viajes_conductor: number; cinco_estrellas: number; celebrados: string[];
+      } | null };
+      celebrar_logro: { Args: { p_logro: string }; Returns: undefined };
       resumen_operativo: { Args: Record<string, never>; Returns: {
         recargas_pendientes: number; retiros_por_vencer: number; retiros_vencidos: number;
         avisos_atrasados: number; archivos_por_limpiar: number; licencias_sin_vigencia: number;

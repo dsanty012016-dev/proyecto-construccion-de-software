@@ -6,11 +6,13 @@ import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
 import { pesos } from "@/app/lib/formato";
 import { BotonAccion } from "./boton-accion";
 import { cancelacionDeViaje } from "@/app/lib/pagos";
+import { UniMascota } from "./uni-mascota";
 
 // Cancelar un viaje ya aceptado, diciendo antes cuánto cuesta (012):
 // - Estudiante: se le cobra el 20 % y suma un strike, salvo que reporte mal
 //   comportamiento o algo raro del conductor (no paga ni recibe strike).
 // - Conductor: el estudiante recupera todo y el conductor suma un strike.
+// Al preguntar, Uni aparece preocupado junto al aviso.
 export function CancelarViaje({ viajeId, quien, precio }: { viajeId: string; quien: "estudiante" | "conductor"; precio: number }) {
   const [estado, accion, pendiente] = useActionState(cancelarViaje, ESTADO_INICIAL);
   const idMotivo = useId();
@@ -30,6 +32,7 @@ export function CancelarViaje({ viajeId, quien, precio }: { viajeId: string; qui
           enviando="Cancelando…"
           confirmar={aviso}
           textoSi="Sí, cancelar"
+          ilustracion={<UniMascota expresion="preocupado" className="h-20 w-auto shrink-0" />}
         >
           {quien === "estudiante" && cobro > 0 ? `Cancelar viaje · te cuesta ${pesos(cobro)}` : "Cancelar viaje"}
         </BotonAccion>

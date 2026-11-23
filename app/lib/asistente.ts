@@ -174,10 +174,21 @@ export function comentarioDeHora(hora: Hora, azar: number): string {
   return elegir(lista, azar).replace("{hora}", textoHora(hora));
 }
 
-export function saludo(rol: RolAsistente, ahora: Date, azar: number): string {
+export function saludo(rol: RolAsistente, ahora: Date, azar: number, nombre = ""): string {
   const { h } = horaEnColombia(ahora);
+  // El nombre lo pone la app en el saludo; nunca llega a la IA (historialParaIA
+  // descarta lo que Uni dice antes del primer mensaje de la persona).
+  const n = nombre ? `, ${nombre}` : "";
   const momento =
-    h < 5 ? "¿Despierto a esta hora? Yo porque no duermo, ¿y tú?" : h < 12 ? "Buenos días." : h < 19 ? "Buenas tardes." : "Buenas noches.";
+    h < 5
+      ? `¿Despierto a esta hora${n}? Yo porque no duermo, ¿y tú?`
+      : h < 6
+        ? `¡Buenos días${n}! ¿A esta hora? Hasta yo sigo en pijama.`
+        : h < 12
+          ? `Buenos días${n}.`
+          : h < 19
+            ? `Buenas tardes${n}.`
+            : `Buenas noches${n}.`;
   const oferta =
     rol === "estudiante"
       ? "Dime a qué hora tienes que llegar a la U y te digo si pides ya o buscas un cupo."

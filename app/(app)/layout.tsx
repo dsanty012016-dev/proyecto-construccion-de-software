@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { politicaAlDia } from "@/app/lib/privacidad";
+import { primerNombre } from "@/app/lib/mascota";
 import { perfilActual } from "@/app/lib/sesion";
 import { Asistente } from "@/app/ui/comun/asistente";
 import { BarraInferior } from "@/app/ui/comun/barra-inferior";
 import { BotonTema } from "@/app/ui/comun/boton-tema";
+import { CelebracionLogros } from "@/app/ui/comun/celebracion-logros";
 import { Logo } from "@/app/ui/comun/logo";
 import { TransicionPantalla } from "@/app/ui/comun/transicion-pantalla";
 
@@ -31,7 +33,8 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
           <TransicionPantalla>{children}</TransicionPantalla>
         </div>
       </div>
-      {perfil?.rol && <Asistente rol={perfil.rol} />}
+      {perfil?.rol && <Asistente rol={perfil.rol} nombre={primerNombre(perfil.nombre)} />}
+      {perfil?.rol && <CelebracionLogros />}
     </div>
   );
 }
