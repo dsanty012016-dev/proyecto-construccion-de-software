@@ -27,6 +27,11 @@ solo parpadeas fuerte?"). Nunca bromea con seguridad, plata o reportes.
 - `GEMINI_API_KEY`: clave de Google AI Studio (aistudio.google.com → Get API key).
   El plan gratuito de la API no pide tarjeta. Ojo: Google AI Plus (la
   suscripción de la app de Gemini) no trae clave ni créditos de API.
+- **Sin costo:** el proyecto "UniGo" de AI Studio está en el nivel gratuito y
+  **sin cuenta de facturación** (revisado el 22 de noviembre de 2026), así que
+  Google no puede cobrar nada. Gemini 3.5 Flash Lite tiene ahí 15 solicitudes
+  por minuto y 500 por día; al pasarse, Google responde con error y Uni usa el
+  guion. **No configurar facturación** en ese proyecto.
 - `GEMINI_MODELO` (opcional): por defecto `gemini-3.5-flash-lite`. Si Google lo
   cambia, se pone aquí el modelo gratuito vigente sin tocar código.
 - Aplicar `supabase/migraciones/034-asistente.sql`. Sin ella, Uni responde solo con el guion.
