@@ -33,7 +33,7 @@ export default async function PaginaOfertar({ params }: { params: Promise<{ viaj
       />
       <RutaViaje origen={viaje.origen_texto} destino={viaje.destino_texto} etiquetaOrigen="Recoges en" etiquetaDestino="Llevas a" />
       <Mapa etiqueta="Mapa de la solicitud" centro={origen} origen={origen} destino={destino} uEnElOrigen={viaje.sentido === "regreso"} className="h-40" />
-      <FormularioOferta viajeId={viaje.id} precioActual={miOferta?.precio} />
+      <FormularioOferta viajeId={viaje.id} precioActual={miOferta?.precio} origen={origen} destino={destino} />
     </main>
   );
 }

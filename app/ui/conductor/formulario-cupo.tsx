@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useId, useState } from "react";
+import { PrecioSugerido } from "./precio-sugerido";
 import { publicarCupo } from "@/app/lib/acciones-cupo";
 import { gananciaConductor, PORCENTAJE_COMISION } from "@/app/lib/comision";
 import { ESTADO_INICIAL } from "@/app/lib/estado-formulario";
@@ -187,6 +188,9 @@ export function FormularioCupo({ sede, puestosMaximos }: Props) {
             aria-invalid={errores.precio ? true : undefined}
             className="h-12 w-full rounded-xl border border-texto-suave/60 bg-superficie px-4 text-texto outline-none placeholder:text-texto-suave focus:border-secundario aria-[invalid=true]:border-error"
           />
+          <div className="mt-2">
+            <PrecioSugerido desde={punto} hasta={enLaU} tipo="puesto" alUsar={(v) => setPrecio(String(v))} />
+          </div>
           <p className={`mt-1.5 text-sm ${errores.precio ? "text-error" : "text-texto-suave"}`} aria-live="polite">
             {errores.precio ??
               (precioValido
