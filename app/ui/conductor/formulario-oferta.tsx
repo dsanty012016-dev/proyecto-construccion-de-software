@@ -8,6 +8,8 @@ import { pesos } from "@/app/lib/formato";
 import { PRECIO_MAXIMO, PRECIO_MINIMO } from "@/app/lib/viaje";
 import { Aviso, BotonEnviar } from "@/app/ui/auth/campos";
 import { IconoMas, IconoMenos } from "@/app/ui/comun/iconos-app";
+import type { Coordenada } from "@/app/lib/mapa";
+import { PrecioSugerido } from "./precio-sugerido";
 
 // El conductor escribe su precio (con − y + de a $500) y ve cuánto recibe
 // después de la comisión de UniGo. La regla de los límites la repite la base.
@@ -15,7 +17,17 @@ import { IconoMas, IconoMenos } from "@/app/ui/comun/iconos-app";
 const PASO = 500;
 const PRECIO_INICIAL_AL_SUBIR = 5000;
 
-export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; precioActual?: number }) {
+export function FormularioOferta({
+  viajeId,
+  precioActual,
+  origen,
+  destino,
+}: {
+  viajeId: string;
+  precioActual?: number;
+  origen: Coordenada;
+  destino: Coordenada;
+}) {
   const [estado, accion] = useActionState(ofertarViaje, ESTADO_INICIAL);
   const [precio, setPrecio] = useState<string>(precioActual ? String(precioActual) : (estado.valores?.precio ?? ""));
   const idPrecio = useId();
@@ -70,6 +82,7 @@ export function FormularioOferta({ viajeId, precioActual }: { viajeId: string; p
             </button>
           </div>
         </div>
+        <PrecioSugerido desde={origen} hasta={destino} tipo="viaje" alUsar={(v) => setPrecio(String(v))} />
         <p id={`${idPrecio}-ayuda`} className={`text-center text-[13px] ${estado.errores?.precio ? "text-error" : "text-texto-suave"}`}>
           {estado.errores?.precio ?? `Entre ${pesos(PRECIO_MINIMO)} y ${pesos(PRECIO_MAXIMO)}, en pesos.`}
         </p>
