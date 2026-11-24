@@ -1,6 +1,6 @@
 // Pruebas de las reglas puras de los cupos.
 import { describe, expect, it } from "vitest";
-import { avanceEnTramo, distanciaATramoKm, esMoto, etiquetaPuesto, horaLocalAIso, ordenarRecogidas, puestosLibres, puestosMaximos, salidaValida } from "./cupo";
+import { avanceEnTramo, compartiendoUbicacion, distanciaATramoKm, esMoto, etiquetaPuesto, horaLocalAIso, ordenarRecogidas, puestosLibres, puestosMaximos, puedeIrParaLaU, salidaValida } from "./cupo";
 
 describe("vehículo y puestos", () => {
   it("reconoce la placa de moto", () => {
@@ -98,5 +98,35 @@ describe("orden de recogida", () => {
 
   it("con salida y destino iguales no se rompe", () => {
     expect(ordenarRecogidas(salida, salida, [{ recogida: destino }, { recogida: salida }])).toHaveLength(2);
+  });
+});
+
+describe("ubicación del conductor en el cupo (036)", () => {
+  const regreso = { estado: "publicado", sentido: "regreso", rumbo_a_la_u_en: null };
+
+  it("en el regreso puede avisar que va para la U si hay puestos pagados", () => {
+    expect(puedeIrParaLaU(regreso, true)).toBe(true);
+  });
+  it("sin puestos pagados no hay a quién mostrarle la ubicación", () => {
+    expect(puedeIrParaLaU(regreso, false)).toBe(false);
+  });
+  it("solo una vez, solo en el regreso y solo antes de salir", () => {
+    expect(puedeIrParaLaU({ ...regreso, rumbo_a_la_u_en: "2026-11-24T21:00:00Z" }, true)).toBe(false);
+    expect(puedeIrParaLaU({ ...regreso, sentido: "ida" }, true)).toBe(false);
+    expect(puedeIrParaLaU({ ...regreso, estado: "en_curso" }, true)).toBe(false);
+  });
+  it("comparte la ubicación con el cupo en camino, en la ida y en el regreso", () => {
+    expect(compartiendoUbicacion({ ...regreso, estado: "en_curso" })).toBe(true);
+    expect(compartiendoUbicacion({ ...regreso, sentido: "ida", estado: "en_curso" })).toBe(true);
+  });
+  it("en el regreso la comparte desde que va para la U", () => {
+    expect(compartiendoUbicacion(regreso)).toBe(false);
+    expect(compartiendoUbicacion({ ...regreso, rumbo_a_la_u_en: "2026-11-24T21:00:00Z" })).toBe(true);
+  });
+  it("en la ida publicada no la comparte", () => {
+    expect(compartiendoUbicacion({ ...regreso, sentido: "ida", rumbo_a_la_u_en: "2026-11-24T21:00:00Z" })).toBe(false);
+  });
+  it("un cupo cerrado no comparte nada", () => {
+    for (const estado of ["terminado", "cancelado"]) expect(compartiendoUbicacion({ ...regreso, estado, rumbo_a_la_u_en: "x" })).toBe(false);
   });
 });

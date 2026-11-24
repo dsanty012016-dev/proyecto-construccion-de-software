@@ -112,3 +112,29 @@ export function ordenarRecogidas<T extends { recogida: Coordenada }>(salida: Coo
     .sort((x, y) => x.avance - y.avance || x.indice - y.indice)
     .map(({ item }) => item);
 }
+
+// ---------- Ubicación del conductor en el cupo (036) ----------
+
+interface EstadoParaUbicacion {
+  estado: string;
+  sentido: string;
+  rumbo_a_la_u_en: string | null;
+}
+
+/**
+ * En el regreso todos se suben en la U, así que el conductor avisa "Voy para
+ * la U" antes de salir: solo con el cupo publicado, una vez, y si ya hay algún
+ * puesto pagado (si no, no hay a quién mostrarle la ubicación).
+ */
+export function puedeIrParaLaU(cupo: EstadoParaUbicacion, hayPuestosPagados: boolean): boolean {
+  return cupo.estado === "publicado" && cupo.sentido === "regreso" && cupo.rumbo_a_la_u_en === null && hayPuestosPagados;
+}
+
+/**
+ * Si el conductor comparte su ubicación con quienes pagaron: con el cupo en
+ * camino o, en el regreso, desde que avisó que va para la U.
+ */
+export function compartiendoUbicacion(cupo: EstadoParaUbicacion): boolean {
+  if (cupo.estado === "en_curso") return true;
+  return cupo.estado === "publicado" && cupo.sentido === "regreso" && cupo.rumbo_a_la_u_en !== null;
+}

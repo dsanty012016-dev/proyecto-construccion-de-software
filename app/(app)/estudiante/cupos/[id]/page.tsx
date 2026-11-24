@@ -7,7 +7,7 @@ import { pagarPuesto, retirarPuesto } from "@/app/lib/acciones-cupo";
 import { compartirPuesto } from "@/app/lib/acciones-seguimiento";
 import { cupoParaEstudiante } from "@/app/lib/consultas-cupo";
 import { ubicacionDelCupoConHora } from "@/app/lib/consultas-seguimiento";
-import { etiquetaPuesto } from "@/app/lib/cupo";
+import { compartiendoUbicacion, etiquetaPuesto } from "@/app/lib/cupo";
 import { calificacionTexto, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { limiteDePago, puedePagarPuesto, salidaDeCupo } from "@/app/lib/pagos";
 import { exigirRol } from "@/app/lib/sesion";
@@ -46,8 +46,10 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
   const regreso = cupo.sentido === "regreso";
   // Mi punto: donde me recogen (ida) o donde me bajo (regreso).
   const miRecogida = miPuesto ? { lat: miPuesto.recogida_lat, lng: miPuesto.recogida_lng } : salida;
-  // Con el cupo en camino y el puesto pagado, la ubicación del conductor (014).
-  const enVivo = cupo.estado === "en_curso" && pagado ? await ubicacionDelCupoConHora(cupo.id) : null;
+  // Con el puesto pagado, la ubicación del conductor: con el cupo en camino (014)
+  // o, en el regreso, desde que avisa que va para la U (036).
+  const enVivo = compartiendoUbicacion(cupo) && pagado ? await ubicacionDelCupoConHora(cupo.id) : null;
+  const rumboALaU = regreso && cupo.estado === "publicado" && cupo.rumbo_a_la_u_en !== null;
 
   return (
     <main className="space-y-5 px-5 pt-6">
@@ -84,13 +86,13 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
       {tengoPuesto && activo && miPuesto ? (
         <section aria-labelledby="titulo-mi-puesto" className="space-y-4 rounded-2xl border border-secundario/50 p-4">
           <h2 id="titulo-mi-puesto" className="text-lg">
-            {cupo.estado === "en_curso" ? "El conductor ya salió" : etiquetaPuesto(miPuesto.estado)}
+            {cupo.estado === "en_curso" ? "El conductor ya salió" : rumboALaU && pagado ? "Tu conductor va para la U" : etiquetaPuesto(miPuesto.estado)}
           </h2>
           <p className="text-sm">
             {regreso ? `Te subes en ${cupo.salida_texto} y te bajas en ${miPuesto.recogida_texto}` : `Te subes en: ${miPuesto.recogida_texto}`}
           </p>
           {enVivo ? (
-            // El conductor ya salió: se ve moverse en vivo (014). Solo tu recogida en el mapa.
+            // El conductor ya salió o, en el regreso, viene para la U: se ve moverse en vivo. Solo tu punto en el mapa.
             <div className="-mx-4 overflow-hidden">
               <MapaEnVivo
                 fuente={{ tabla: "ubicaciones_cupo", columna: "cupo_id", id: cupo.id }}

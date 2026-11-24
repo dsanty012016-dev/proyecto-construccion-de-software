@@ -128,7 +128,7 @@ export async function responderPuesto(_anterior: EstadoFormulario, formulario: F
 /** Acciones con solo el id del cupo: retirar mi puesto, iniciar, terminar o cancelar el cupo. */
 async function accionSobreCupo(
   formulario: FormData,
-  funcion: "retirar_puesto" | "iniciar_cupo" | "terminar_cupo" | "cancelar_cupo" | "pagar_puesto",
+  funcion: "retirar_puesto" | "iniciar_cupo" | "terminar_cupo" | "cancelar_cupo" | "pagar_puesto" | "voy_para_la_u",
 ): Promise<{ error: string | null; cupo: string | null }> {
   const validado = esquemaIdCupo.safeParse(datosDelFormulario(formulario));
   if (!validado.success) return { error: "Ese cupo no existe.", cupo: null };
@@ -151,6 +151,12 @@ export async function retirarPuesto(_anterior: EstadoFormulario, formulario: For
 
 export async function iniciarCupo(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
   const { error } = await accionSobreCupo(formulario, "iniciar_cupo");
+  return error ? falla(error) : LISTO;
+}
+
+/** Regreso (036): el conductor avisa que va para la U y empieza a compartir su ubicación con quienes pagaron. */
+export async function voyParaLaU(_anterior: EstadoFormulario, formulario: FormData): Promise<EstadoFormulario> {
+  const { error } = await accionSobreCupo(formulario, "voy_para_la_u");
   return error ? falla(error) : LISTO;
 }
 

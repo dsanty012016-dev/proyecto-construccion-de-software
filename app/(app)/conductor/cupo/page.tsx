@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { cancelarCupo, iniciarCupo, responderPuesto, terminarCupo } from "@/app/lib/acciones-cupo";
+import { cancelarCupo, iniciarCupo, responderPuesto, terminarCupo, voyParaLaU } from "@/app/lib/acciones-cupo";
 import { EnlaceDeAyuda } from "@/app/ui/comun/ayuda-unigo";
 import { reportarUbicacionCupo } from "@/app/lib/acciones-seguimiento";
 import { gananciaConductor } from "@/app/lib/comision";
 import { cupoActivoDelConductor, type SolicitudDePuesto } from "@/app/lib/consultas-cupo";
-import { distanciaATramoKm, ordenarRecogidas } from "@/app/lib/cupo";
+import { compartiendoUbicacion, distanciaATramoKm, ordenarRecogidas, puedeIrParaLaU } from "@/app/lib/cupo";
 import { calificacionTexto, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { type Coordenada, distanciaTexto } from "@/app/lib/mapa";
 import { exigirRol } from "@/app/lib/sesion";
+import { Aviso } from "@/app/ui/auth/campos";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
@@ -66,7 +67,8 @@ function PuestoAprobado({ solicitud, salida, destino }: { solicitud: SolicitudDe
 
 // El cupo publicado del conductor: solicitudes por aprobar, estudiantes
 // aprobados en orden de recogida o de bajada (con su teléfono) y los botones para salir,
-// llegar o cancelar. Mientras va en camino, transmite su ubicación (014).
+// llegar o cancelar. Mientras va en camino, transmite su ubicación (014); en
+// el regreso, también desde que avisa "Voy para la U" (036).
 export default async function PaginaCupoConductor() {
   const { usuario } = await exigirRol("conductor");
   const datos = await cupoActivoDelConductor(usuario.id);
@@ -94,6 +96,7 @@ export default async function PaginaCupoConductor() {
     : pendientes.map(({ puesto }) => ({ lat: puesto.recogida_lat, lng: puesto.recogida_lng }));
   const publicado = cupo.estado === "publicado";
   const hayPagos = confirmadas.length > 0;
+  const compartiendo = compartiendoUbicacion(cupo);
 
   return (
     <main className="space-y-5 px-5 pt-6">
@@ -122,7 +125,23 @@ export default async function PaginaCupoConductor() {
         publicado={publicado}
         confirmadas={confirmadas}
         otrasParadas={otrasParadas}
-        seguimiento={!publicado && <TransmisorUbicacion enviar={reportarUbicacionCupo.bind(null, cupo.id)} clave={cupo.id} quienVe="Tus estudiantes" />}
+        seguimiento={compartiendo && <TransmisorUbicacion enviar={reportarUbicacionCupo.bind(null, cupo.id)} clave={cupo.id} quienVe="Tus estudiantes" />}
+        rumbo={
+          puedeIrParaLaU(cupo, hayPagos) ? (
+            <BotonAccion
+              accion={voyParaLaU}
+              campos={{ cupo: cupo.id }}
+              estilo="borde"
+              enviando="Avisando…"
+              textoSi="Sí, voy"
+              confirmar="¿Vas para la U? Los estudiantes que pagaron empiezan a verte llegar en el mapa."
+            >
+              Voy para la U
+            </BotonAccion>
+          ) : publicado && compartiendo ? (
+            <Aviso tipo="listo">Vas para la U: quienes pagaron te ven llegar. Cuando todos estén en el carro, toca «Salir ahora».</Aviso>
+          ) : null
+        }
         solicitudes={publicado && (
           <section aria-labelledby="titulo-pendientes" className="space-y-3">
             <h2 id="titulo-pendientes" className="text-lg">
