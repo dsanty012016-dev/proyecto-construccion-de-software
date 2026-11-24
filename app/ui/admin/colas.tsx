@@ -1,4 +1,8 @@
+import { atenderEmergencia } from "@/app/lib/acciones-emergencia";
+import { emergenciasPendientes } from "@/app/lib/consultas-admin";
 import { reportesRecientes } from "@/app/lib/consultas-billetera";
+import { enlaceMapaEmergencia } from "@/app/lib/emergencia";
+import { BotonAccion } from "@/app/ui/comun/boton-accion";
 import { conductoresPorRevisar } from "@/app/lib/consultas-verificacion";
 import { nombreDocumento } from "@/app/lib/documentos";
 import { fechaCorta, pesos } from "@/app/lib/formato";
@@ -119,5 +123,52 @@ export async function ReportesRecibidos({ pagina }: { pagina: number }) {
         )}
       </section>
 
+  );
+}
+
+export async function EmergenciasPendientes({ pagina }: { pagina: number }) {
+  const avisos = await emergenciasPendientes(pagina);
+  return (
+    <section aria-labelledby="titulo-emergencias" className="space-y-3">
+      <h2 id="titulo-emergencias" className="text-lg">
+        Avisos de emergencia
+      </h2>
+      <p className="text-sm text-texto-suave">Llama primero a quien avisó. Si no contesta y hay ubicación, comunícate con el 123 con esos datos.</p>
+      {avisos.length === 0 ? (
+        <p className="text-sm text-texto-suave">No hay avisos pendientes.</p>
+      ) : (
+        <ul className="space-y-3">
+          {avisos.map((a) => (
+            <li key={a.id} className="space-y-3 rounded-2xl border border-error/40 bg-superficie p-4">
+              <p className="text-sm">
+                <span className="font-semibold">{a.autor}</span> ({a.rol}) pidió ayuda en un {a.donde}.
+              </p>
+              <p className="text-xs text-texto-suave">{fechaCorta(a.creadaEn)}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {a.telefono ? (
+                  <a href={`tel:${a.telefono}`} className="flex min-h-11 items-center justify-center rounded-xl border border-texto-suave/30 px-3 text-sm font-semibold hover:bg-fondo">
+                    Llamar {a.telefono}
+                  </a>
+                ) : (
+                  <p className="flex min-h-11 items-center justify-center text-sm text-texto-suave">Sin teléfono</p>
+                )}
+                {a.lat !== null && a.lng !== null ? (
+                  <a href={enlaceMapaEmergencia(a.lat, a.lng)} target="_blank" rel="noopener noreferrer"
+                    className="flex min-h-11 items-center justify-center rounded-xl border border-texto-suave/30 px-3 text-sm font-semibold hover:bg-fondo">
+                    Ver ubicación
+                  </a>
+                ) : (
+                  <p className="flex min-h-11 items-center justify-center text-sm text-texto-suave">Sin ubicación</p>
+                )}
+              </div>
+              <BotonAccion accion={atenderEmergencia} campos={{ emergencia: a.id }} estilo="borde" enviando="Guardando…" textoSi="Sí, atendida"
+                confirmar="¿Ya se atendió este aviso? Saldrá de la lista de pendientes.">
+                Marcar como atendida
+              </BotonAccion>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

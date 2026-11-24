@@ -1369,4 +1369,5 @@ select prueba.ok(
 \ir asistente.sql
 \ir logros.sql
 \ir rumbo.sql
+\ir emergencias.sql
 \echo '== Todas las pruebas pasaron'

@@ -8,12 +8,14 @@ import { compartirPuesto } from "@/app/lib/acciones-seguimiento";
 import { cupoParaEstudiante } from "@/app/lib/consultas-cupo";
 import { ubicacionDelCupoConHora } from "@/app/lib/consultas-seguimiento";
 import { compartiendoUbicacion, etiquetaPuesto } from "@/app/lib/cupo";
+import { emergenciaDisponible } from "@/app/lib/emergencia";
 import { calificacionTexto, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { limiteDePago, puedePagarPuesto, salidaDeCupo } from "@/app/lib/pagos";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
+import { BotonEmergencia } from "@/app/ui/comun/boton-emergencia";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoEstrella, IconoTelefono } from "@/app/ui/comun/iconos-app";
@@ -55,6 +57,9 @@ export default async function PaginaCupo({ params }: { params: Promise<{ id: str
     <main className="space-y-5 px-5 pt-6">
       <EnVivo escuchas={[{ tabla: "cupos", filtro: `id=eq.${cupo.id}` }, { tabla: "puestos", filtro: `cupo_id=eq.${cupo.id}` }]} />
       <EncabezadoPantalla titulo={`Cupo de ${nombre}`} volverA="/estudiante/cupos" />
+      {emergenciaDisponible({ tipo: "cupo", estado: cupo.estado, soyConductor: false, pagado }) && (
+        <BotonEmergencia cupo={cupo.id} compartir={compartirPuesto.bind(null, cupo.id)} />
+      )}
 
       <section aria-label="Datos del cupo" className="space-y-4 rounded-2xl bg-superficie p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-3">

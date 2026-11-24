@@ -12,6 +12,7 @@ import { exigirRol } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { EnlaceDeAyuda } from "@/app/ui/comun/ayuda-unigo";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
+import { BotonEmergencia } from "@/app/ui/comun/boton-emergencia";
 import { CancelarViaje } from "@/app/ui/comun/cancelar-viaje";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
@@ -133,6 +134,7 @@ export default async function PaginaViajeEstudiante({ searchParams }: { searchPa
       </div>
 
       <div className="relative -mt-5 space-y-5 rounded-t-3xl bg-fondo px-5 pt-5">
+        <BotonEmergencia viaje={viaje.id} compartir={compartirViaje.bind(null, viaje.id)} />
         <div className="trayecto-panel space-y-4">
           <div role="status">
             <div key={viaje.estado} className="trayecto-hito">

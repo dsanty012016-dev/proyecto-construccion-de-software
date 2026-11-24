@@ -6,12 +6,14 @@ import { reportarUbicacionCupo } from "@/app/lib/acciones-seguimiento";
 import { gananciaConductor } from "@/app/lib/comision";
 import { cupoActivoDelConductor, type SolicitudDePuesto } from "@/app/lib/consultas-cupo";
 import { compartiendoUbicacion, distanciaATramoKm, ordenarRecogidas, puedeIrParaLaU } from "@/app/lib/cupo";
+import { emergenciaDisponible } from "@/app/lib/emergencia";
 import { calificacionTexto, fechaCorta, nombreCorto, pesos } from "@/app/lib/formato";
 import { type Coordenada, distanciaTexto } from "@/app/lib/mapa";
 import { exigirRol } from "@/app/lib/sesion";
 import { Aviso } from "@/app/ui/auth/campos";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
+import { BotonEmergencia } from "@/app/ui/comun/boton-emergencia";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
 import { IconoEstrella, IconoTelefono } from "@/app/ui/comun/iconos-app";
@@ -102,6 +104,7 @@ export default async function PaginaCupoConductor() {
     <main className="space-y-5 px-5 pt-6">
       <EnVivo escuchas={[{ tabla: "cupos", filtro: `id=eq.${cupo.id}` }, { tabla: "puestos", filtro: `cupo_id=eq.${cupo.id}` }]} />
       <EncabezadoPantalla titulo={publicado ? "Tu cupo" : "Cupo en camino"} volverA="/conductor" />
+      {emergenciaDisponible({ tipo: "cupo", estado: cupo.estado, soyConductor: true, pagado: false }) && <BotonEmergencia cupo={cupo.id} />}
 
       <section aria-label="Datos del cupo" className="space-y-4 rounded-2xl bg-superficie p-4">
         <div className="flex items-baseline justify-between gap-3">
