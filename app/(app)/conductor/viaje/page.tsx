@@ -9,6 +9,7 @@ import { exigirRol } from "@/app/lib/sesion";
 import { Avatar } from "@/app/ui/comun/avatar";
 import { EnlaceDeAyuda } from "@/app/ui/comun/ayuda-unigo";
 import { BotonAccion } from "@/app/ui/comun/boton-accion";
+import { BotonEmergencia } from "@/app/ui/comun/boton-emergencia";
 import { CancelarViaje } from "@/app/ui/comun/cancelar-viaje";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 import { EnVivo } from "@/app/ui/comun/en-vivo";
@@ -46,6 +47,7 @@ export default async function PaginaViajeConductor() {
         </div>
         <PasosViaje estado={viaje.estado as "aceptado" | "en_curso"} regreso={regreso} />
       </div>
+      <BotonEmergencia viaje={viaje.id} />
       <Mapa etiqueta="Mapa del viaje" centro={origen} origen={origen} destino={destino} uEnElOrigen={regreso} className="h-52" />
       <TransmisorUbicacion enviar={reportarUbicacion.bind(null, viaje.id)} clave={viaje.id} />
       <a

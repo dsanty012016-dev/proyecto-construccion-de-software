@@ -4,7 +4,7 @@ import { contadoresAdmin } from "@/app/lib/consultas-admin";
 import { paginaValida } from "@/app/lib/retiros";
 import { exigirAdmin } from "@/app/lib/sesion";
 import type { ParametrosUrl } from "@/app/lib/validaciones-historial";
-import { DocumentosPendientes, ReportesRecibidos, RetirosPendientes } from "@/app/ui/admin/colas";
+import { DocumentosPendientes, EmergenciasPendientes, ReportesRecibidos, RetirosPendientes } from "@/app/ui/admin/colas";
 import { IncidenciasAdmin, PaginasAdmin, RetirosResueltos } from "@/app/ui/admin/resoluciones";
 import { ResumenOperativo } from "@/app/ui/admin/resumen-operativo";
 import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
@@ -12,6 +12,7 @@ import { EncabezadoPantalla } from "@/app/ui/comun/encabezado-pantalla";
 export const metadata: Metadata = { title: "Administración" };
 
 const COLAS = [
+  { clave: "emergencias", nombre: "Emergencias", unidad: "pendiente" },
   { clave: "retiros", nombre: "Retiros", unidad: "pendiente" },
   { clave: "incidencias", nombre: "Incidencias Wompi", unidad: "pendiente" },
   { clave: "documentos", nombre: "Documentos", unidad: "pendiente" },
@@ -62,6 +63,7 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
         : <RetirosPendientes persona={usuario.id} pagina={pagina} />)}
       {cola === "incidencias" && <IncidenciasAdmin pagina={pagina} resueltas={resueltos} />}
       {cola === "documentos" && <DocumentosPendientes persona={usuario.id} pagina={pagina} />}
+      {cola === "emergencias" && <EmergenciasPendientes pagina={pagina} />}
       {cola === "reportes" && <ReportesRecibidos pagina={pagina} />}
       {cola && cola !== "incidencias" && !(cola === "retiros" && resueltos) && (
         <PaginasAdmin pagina={pagina} total={contadores[cola]} href={(n) => `/admin?cola=${cola}&pagina=${n}`} />

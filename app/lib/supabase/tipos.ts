@@ -132,6 +132,22 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["ubicaciones_viaje"]["Insert"]>;
         Relationships: Relacion[];
       };
+      emergencias: {
+        Row: {
+          atendida_en: string | null;
+          atendida_por: string | null;
+          autor_id: string;
+          creada_en: string;
+          cupo_id: string | null;
+          id: string;
+          lat: number | null;
+          lng: number | null;
+          viaje_id: string | null;
+        };
+        Insert: { autor_id: string; viaje_id?: string | null; cupo_id?: string | null; lat?: number | null; lng?: number | null };
+        Update: Partial<Database["public"]["Tables"]["emergencias"]["Insert"]>;
+        Relationships: Relacion[];
+      };
       reportes: {
         Row: { autor_id: string; creado_en: string; id: string; motivo: string; revisado_en: string | null; sobre_id: string; viaje_id: string | null };
         Insert: { autor_id: string; sobre_id: string; motivo: string };
@@ -472,6 +488,8 @@ export type Database = {
       checkout_wompi_disponible: { Args: { p_ambiente: "test" | "prod" }; Returns: boolean };
       usar_asistente: { Args: Record<string, never>; Returns: boolean };
       voy_para_la_u: { Args: { p_cupo: string }; Returns: undefined };
+      reportar_emergencia: { Args: { p_viaje?: string; p_cupo?: string; p_lat?: number; p_lng?: number }; Returns: string };
+      atender_emergencia: { Args: { p_emergencia: string }; Returns: undefined };
       mis_logros: { Args: Record<string, never>; Returns: {
         viajes_estudiante: number; viajes_conductor: number; cinco_estrellas: number; celebrados: string[];
       } | null };

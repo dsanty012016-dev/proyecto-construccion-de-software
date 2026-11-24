@@ -137,6 +137,12 @@ La otra forma de viajar: el conductor publica su recorrido y los estudiantes pid
 - **Conductor:** aceptaron su oferta; nueva solicitud de su universidad (si está disponible y verificado); pidieron puesto en su cupo; el estudiante canceló el viaje o dejó el puesto.
 - En iPhone solo con la app instalada. Configuración en `docs/notificaciones.md`.
 
+## Emergencias (migración 037)
+- En viajes con conductor (aceptado o en curso) y en cupos activos (publicado o en camino), el estudiante con el puesto pagado y el conductor ven un botón **Emergencia**.
+- El primer toque abre un panel (así no se llama por accidente). **«Llamar al 123»** marca la línea única de emergencias de Colombia y, a la vez, avisa al equipo de UniGo. También se puede **solo avisar al equipo**, y el estudiante puede **compartir el viaje** en vivo desde ahí.
+- El aviso guarda quién, en qué viaje o cupo, cuándo y dónde: la ubicación del teléfono si la da en 6 segundos; si no, la última del conductor. Dos toques en menos de 2 minutos no duplican el aviso.
+- Los administradores reciben una notificación y lo ven en la cola **Emergencias**, con el teléfono de quien avisó y la ubicación; lo marcan como atendido. Nadie más ve los avisos.
+
 ## Provisional (falta que el equipo decida)
 | # | Pregunta | Cómo quedó mientras tanto |
 |---|---|---|
