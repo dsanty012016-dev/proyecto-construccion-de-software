@@ -5,6 +5,7 @@ import { type Coordenada } from "@/app/lib/mapa";
 import { compararParadas, type ComparacionDeParadas } from "@/app/lib/orden-paradas";
 import { buscarTiempos } from "@/app/lib/ruta-vial";
 import { Mapa } from "@/app/ui/comun/mapa";
+import { RutaHastaPunto } from "./ruta-hasta-punto";
 
 interface Parada {
   id: string;
@@ -23,6 +24,8 @@ interface Props {
   otrasParadas: Coordenada[];
   solicitudes?: ReactNode;
   seguimiento?: ReactNode;
+  /** Regreso (036): el botón "Voy para la U" o el aviso de que ya va. */
+  rumbo?: ReactNode;
   porPagar?: ReactNode;
 }
 
@@ -62,7 +65,7 @@ function duracionTexto(segundos: number) {
 }
 
 export function RecorridoCupo({
-  cupoId, salida, destino, regreso, publicado, confirmadas, otrasParadas, solicitudes, seguimiento, porPagar,
+  cupoId, salida, destino, regreso, publicado, confirmadas, otrasParadas, solicitudes, seguimiento, rumbo, porPagar,
 }: Props) {
   const clave = `unigo:recorrido:${cupoId}`;
   const ids = confirmadas.map(({ id }) => id);
@@ -77,6 +80,8 @@ export function RecorridoCupo({
   const [comparacion, setComparacion] = useState<ComparacionDeParadas | null>(null);
   const ahorro = comparacion ? comparacion.segundosActuales - comparacion.segundosSugeridos : 0;
   const tipo = regreso ? "bajada" : "recogida";
+  // Antes de salir: cómo llegar al primer punto (la U en el regreso; la primera recogida pagada en la ida).
+  const primerPunto = regreso ? { punto: salida, nombre: "la U" } : recorrido[0] ? { punto: recorrido[0].punto, nombre: "tu primera recogida" } : null;
 
   async function comparar() {
     setEstado("consultando");
@@ -109,6 +114,8 @@ export function RecorridoCupo({
         uEnElOrigen={regreso}
         className="h-56"
       />
+      {publicado && primerPunto && <RutaHastaPunto key={`${primerPunto.punto.lat},${primerPunto.punto.lng}`} destino={primerPunto.punto} nombre={primerPunto.nombre} esLaU={regreso} />}
+      {rumbo}
       {seguimiento}
 
       {publicado && hayConfirmadas && (

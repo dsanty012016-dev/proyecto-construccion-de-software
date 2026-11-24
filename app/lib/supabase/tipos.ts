@@ -151,6 +151,7 @@ export type Database = {
           iniciado_en: string | null;
           precio: number;
           puestos: number;
+          rumbo_a_la_u_en: string | null;
           sale_en: string;
           salida_lat: number;
           salida_lng: number;
@@ -470,6 +471,7 @@ export type Database = {
       iniciar_recarga: { Args: { p_monto: number }; Returns: string };
       checkout_wompi_disponible: { Args: { p_ambiente: "test" | "prod" }; Returns: boolean };
       usar_asistente: { Args: Record<string, never>; Returns: boolean };
+      voy_para_la_u: { Args: { p_cupo: string }; Returns: undefined };
       mis_logros: { Args: Record<string, never>; Returns: {
         viajes_estudiante: number; viajes_conductor: number; cinco_estrellas: number; celebrados: string[];
       } | null };

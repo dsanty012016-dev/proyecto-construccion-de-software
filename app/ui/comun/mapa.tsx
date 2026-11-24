@@ -42,6 +42,8 @@ interface Props {
   aRas?: boolean;
   /** Regreso (017): la "U" va en el origen y el punto azul (la casa) en el destino. */
   uEnElOrigen?: boolean;
+  /** Sin marcador en el origen (cuando el origen es el propio carro, que ya se dibuja como vehículo). */
+  sinMarcadorOrigen?: boolean;
   /** Estado del seguimiento visible en los dos tamaños. */
   avisoSeguimiento?: ReactNode;
   className?: string;
@@ -167,7 +169,7 @@ function encuadrar(mapa: MapaLibre, caja: [[number, number], [number, number]], 
   }, 1500);
 }
 
-export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, numerarParadas, vehiculo, aRas, uEnElOrigen, avisoSeguimiento, className }: Props) {
+export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas, numerarParadas, vehiculo, aRas, uEnElOrigen, sinMarcadorOrigen, avisoSeguimiento, className }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const visor = useRef<HTMLDialogElement>(null);
   const botonAmpliar = useRef<HTMLButtonElement>(null);
@@ -338,7 +340,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     // Estilo de cada punta: la "U" va donde está la universidad.
     const estilos = uEnElOrigen ? ({ origen: "destino", destino: "origen" } as const) : ({ origen: "origen", destino: "destino" } as const);
     for (const [tipo, punto] of [
-      ["origen", o],
+      ["origen", sinMarcadorOrigen ? null : o],
       ["destino", d],
     ] as const) {
       const actual = marcadores.current[tipo];
@@ -380,7 +382,7 @@ export function Mapa({ etiqueta, centro, origen, destino, alElegir, irA, paradas
     return () => {
       vigente = false;
     };
-  }, [estado, oLat, oLng, dLat, dLng, uEnElOrigen, claveParadasDeRuta, claveRuta]);
+  }, [estado, oLat, oLng, dLat, dLng, uEnElOrigen, sinMarcadorOrigen, claveParadasDeRuta, claveRuta]);
 
   // Paradas de los estudiantes (se comparan por contenido).
   useEffect(() => {
